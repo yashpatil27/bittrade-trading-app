@@ -1,0 +1,56 @@
+The app is working fine. But the ui feels very dry. I want it to look fun and intuitive, with a nice card style design. I want the buy/sell operations to be done in a separate popup modals where the users see the buy/sell rate and input the amount and are shown an estimated amount of bitcoin/cash that theyll receive. Overall the ui you have made isnt made with the user in mind. Like WITTHDRAW_INR should be shown with Cash Withdrawal rather than its raw term. There are no icons anywhere on the home page which makes it looks old and stuffy. and when you do use icons use white sleek icons from lucide-react. Can you redesign the ui keeping the dark theme but making it fun, modern and a little gamified.  
+
+I want the app to be pretty monochromatic like how the login page is. 
+white icons, white buttons with black text. I feel colors are too distracting, and not using them makes the design process simpler.
+I want the app to show bitcoin amounts a ₿ 0.005 instead of 0.005 BTC. The same way we do with rupee amounts. 
+I transaction cards on the history tab look very cramped, It needs some redesigning to make it look clean.
+In the Buy and Sell Modals, I want nice small buttons that populate 25%, 50%, 75%, Max of the available balance.
+I still see icons other than lucide react. like in the recent activity section and history page. Only use lucide-react icons and that too in white for a clean look.
+
+Also the app is not working on my phone thats on the same network, make necessary fixes, I think you have used localhostt somewhere instead of the ip address.
+
+Admin Dashboard
+•  User Management Page - Admin should be able to see all users(including himself) and their balances, and manage them with a single modal.
+•  User Management Modal - Single modal to manage users' INR/BTC balances via deposit/withdraw transactions
+•  All Transactions View - See every transaction across all users
+•  User Administration - Reset passwords, create/delete users
+•  System Controls - Change buy/sell multipliers
+•  Health Monitoring - Check database, backend, price service, Redis status
+•  Dashboard Toggle - Easy switch between trading and admin views
+•  Tabs - I like the existing tabs that the admin has. the admin should be able to navigate to these features using the bottom navbar. All features should be located in their respective tabs.
+
+Overall App Improvements:
+•  Bitcoin Formatting - Remove trailing zeros (0.01230000 → 0.0123)
+•  History Page Redesign - Make it look like Recent Activity but show all transactions
+•  Transaction Detail Modals - Clean popups with full transaction info
+•  Price Update Timer - Countdown to next price update instead of "live" indicator
+•  Persistent Top Bar - Bitcoin balance display when scrolling
+•  Bitcoin Value Display - Show INR equivalent at current sell rate
+
+Make sure ui elements and modals are in line with the design language of the rest of the app.
+
+Admin Dashboard Suggestions
+The UserManagementModal Should be able to deposit/ withdraw bitcoin from a users account, by creating DEPOSIT_BTC and WITHDRAWAL_BTC transactions.
+6	2	"DEPOSIT_BTC"	8800	100000	8800000	1400	200000	"2025-07-02 03:13:09.339579" 
+The admin deposited 0.001 bitcoin to users account. 
+the btc_usd price was 100000, so the sell rate was 8800000, an the inr_amount field is populated with 0.001*8800000. 
+This is to make internal performance calculations. only the btc_balance is updated and not the inr_balance.
+the inr_amount field in the database is autopopulated based on the bitcoin_amount*btc_usd_price*sell_multiplier.
+
+- On the Admin Dashboard, on the Dashboard Tab, remove the Quick Actions Section.
+
+I dont see any easy toggle icon to switch between trading dashboard and admin dashboard for the admin.
+
+General App Suggestions
+Make the top bar and bottom nav bar have a black background, that would look better.
+The Transaction Details Modals are too big when it comes to buy and sell transactions, details are being cutoff.
+
+User Dashboard Tweaks.
+In the top bar there is a 0 written beside the name of the user. Remove that and also remove the User Name from the top bar. This would be cleaner.
+The Transaction Details Modals require to be scrolled through. This is not good. Redesign them with smaller sections and smaller font sizes, so that all the information can still be showing without the user needing to scroll through them.
+Now that we have transaction details Modals, the condensed form of the transactions can show only the modt important info about the transaction, so that the whole space looks neat and clean. Reduce font sizes to make it look cleaner.
+
+Admin Dashboard Tweaks
+The User Management Modal, in the Balances tab, needs to be scrolled. Just give it a toggle for cash/bitcoin so the same input box can be used with the same deposit and withdraw buttons to handle both cash/bitcoin balances without needing to scroll within the modal.
+
+

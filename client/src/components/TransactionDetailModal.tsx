@@ -70,121 +70,96 @@ const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-zinc-900 border border-zinc-700 rounded-xl w-full max-w-sm max-h-[85vh] overflow-hidden">
+      <div className="bg-zinc-900 border border-zinc-700 rounded-xl w-full max-w-sm">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-zinc-800">
-          <div className="flex items-center gap-3">
-            <div className="p-3 bg-zinc-800 rounded-lg">
+        <div className="flex items-center justify-between p-4 border-b border-zinc-800">
+          <div className="flex items-center gap-2">
+            <div className="p-2 bg-zinc-800 rounded-lg">
               {getIconComponent(getTransactionIcon(transaction.type))}
             </div>
             <div>
-              <h2 className="text-lg font-semibold text-white">Transaction Details</h2>
-              <p className={`text-sm font-medium ${getTransactionTypeColor()}`}>
+              <h2 className="text-base font-semibold text-white">Transaction</h2>
+              <p className={`text-xs font-medium ${getTransactionTypeColor()}`}>
                 {getTransactionDisplayName(transaction.type)}
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-2 text-zinc-400 hover:text-white transition-colors"
+            className="p-1 text-zinc-400 hover:text-white transition-colors"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4" />
           </button>
         </div>
 
         {/* Content */}
-        <div className="p-4 space-y-4 max-h-[60vh] overflow-y-auto">
-          {/* Transaction ID */}
-          <div className="bg-zinc-800/50 rounded-lg p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <Hash className="w-4 h-4 text-zinc-400" />
-              <p className="text-zinc-400 text-sm">Transaction ID</p>
+        <div className="p-4 space-y-3">
+          {/* Transaction ID & Amount */}
+          <div className="bg-zinc-800/50 rounded-lg p-3">
+            <div className="flex justify-between items-center mb-2">
+              <span className="text-zinc-400 text-xs">ID</span>
+              <span className="text-white font-mono text-xs">#{transaction.id.toString().padStart(8, '0')}</span>
             </div>
-            <p className="text-white font-mono text-sm">#{transaction.id.toString().padStart(8, '0')}</p>
-          </div>
-
-          {/* Amount */}
-          <div className="bg-zinc-800/50 rounded-lg p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <Wallet className="w-4 h-4 text-zinc-400" />
-              <p className="text-zinc-400 text-sm">Amount</p>
+            <div className="text-center">
+              <p className="text-white font-bold text-lg">{formatAmount()}</p>
             </div>
-            <p className="text-white font-bold text-lg">{formatAmount()}</p>
           </div>
 
           {/* Price Information (for BUY/SELL) */}
           {(transaction.type === 'BUY' || transaction.type === 'SELL') && (
-            <div className="bg-zinc-800/50 rounded-lg p-4">
-              <div className="flex items-center gap-2 mb-3">
-                <Bitcoin className="w-4 h-4 text-zinc-400" />
-                <p className="text-zinc-400 text-sm">Price Information</p>
-              </div>
-              <div className="space-y-2">
+            <div className="bg-zinc-800/50 rounded-lg p-3">
+              <div className="space-y-1">
                 <div className="flex justify-between">
-                  <span className="text-zinc-400 text-sm">Bitcoin Price:</span>
-                  <span className="text-white">₹{transaction.btc_price.toLocaleString()}</span>
+                  <span className="text-zinc-400 text-xs">BTC Price:</span>
+                  <span className="text-white text-xs">₹{transaction.btc_price.toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-zinc-400 text-sm">INR Amount:</span>
-                  <span className="text-white">₹{transaction.inr_amount.toLocaleString()}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-zinc-400 text-sm">Bitcoin Amount:</span>
-                  <span className="text-white">₿{formatBitcoin(transaction.btc_amount)}</span>
+                  <span className="text-zinc-400 text-xs">BTC Amount:</span>
+                  <span className="text-white text-xs">₿{formatBitcoin(transaction.btc_amount)}</span>
                 </div>
               </div>
             </div>
           )}
 
           {/* Balances After Transaction */}
-          <div className="bg-zinc-800/50 rounded-lg p-4">
-            <div className="flex items-center gap-2 mb-3">
-              <DollarSign className="w-4 h-4 text-zinc-400" />
-              <p className="text-zinc-400 text-sm">Balances After Transaction</p>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
+          <div className="bg-zinc-800/50 rounded-lg p-3">
+            <p className="text-zinc-400 text-xs mb-2">Balances After</p>
+            <div className="grid grid-cols-2 gap-3">
               <div className="text-center">
-                <p className="text-zinc-400 text-xs">INR Balance</p>
-                <p className="text-white font-bold">₹{transaction.inr_balance.toLocaleString()}</p>
+                <p className="text-zinc-400 text-xs">INR</p>
+                <p className="text-white font-medium text-sm">₹{transaction.inr_balance.toLocaleString()}</p>
               </div>
               <div className="text-center">
-                <p className="text-zinc-400 text-xs">₿ Balance</p>
-                <p className="text-white font-bold">₿{formatBitcoin(transaction.btc_balance)}</p>
+                <p className="text-zinc-400 text-xs">₿</p>
+                <p className="text-white font-medium text-sm">₿{formatBitcoin(transaction.btc_balance)}</p>
               </div>
             </div>
           </div>
 
-          {/* Date and Time */}
-          <div className="bg-zinc-800/50 rounded-lg p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <Calendar className="w-4 h-4 text-zinc-400" />
-              <p className="text-zinc-400 text-sm">Date & Time</p>
+          {/* Date and Status */}
+          <div className="bg-zinc-800/50 rounded-lg p-3">
+            <div className="flex justify-between items-center mb-2">
+              <span className="text-zinc-400 text-xs">Date</span>
+              <div className="flex items-center gap-1">
+                <div className="w-1.5 h-1.5 bg-green-400 rounded-full" />
+                <span className="text-green-300 text-xs">Completed</span>
+              </div>
             </div>
-            <div className="space-y-1">
-              <p className="text-white">
+            <div className="text-center">
+              <p className="text-white text-sm">
                 {new Date(transaction.created_at).toLocaleDateString('en-IN', {
-                  weekday: 'long',
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric'
+                  day: 'numeric',
+                  month: 'short',
+                  year: 'numeric'
                 })}
               </p>
-              <p className="text-zinc-400 text-sm">
+              <p className="text-zinc-400 text-xs">
                 {new Date(transaction.created_at).toLocaleTimeString('en-IN', {
                   hour: '2-digit',
                   minute: '2-digit',
-                  second: '2-digit',
                   hour12: true
                 })}
               </p>
-            </div>
-          </div>
-
-          {/* Status */}
-          <div className="bg-green-900/20 border border-green-800 rounded-lg p-4">
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-green-400 rounded-full" />
-              <p className="text-green-300 font-medium">Completed</p>
             </div>
           </div>
         </div>

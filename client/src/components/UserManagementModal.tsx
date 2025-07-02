@@ -37,6 +37,7 @@ const UserManagementModal: React.FC<UserManagementModalProps> = ({
   // Balance management
   const [inrAmount, setInrAmount] = useState('');
   const [btcAmount, setBtcAmount] = useState('');
+  const [balanceMode, setBalanceMode] = useState<'INR' | 'BTC'>('INR');
   const [showPassword, setShowPassword] = useState(false);
   const [newPassword, setNewPassword] = useState('');
 
@@ -259,87 +260,81 @@ const UserManagementModal: React.FC<UserManagementModalProps> = ({
 
           {/* Balances Tab */}
           {activeTab === 'balances' && (
-            <div className="space-y-6">
+            <div className="space-y-4">
+              {/* Current Balances */}
               <div className="bg-zinc-800/50 rounded-lg p-4">
-                <h3 className="text-white font-medium mb-4 flex items-center gap-2">
+                <h3 className="text-white font-medium mb-3 flex items-center gap-2">
                   <Wallet className="w-4 h-4" />
                   Current Balances
                 </h3>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-3">
                   <div className="text-center">
-                    <p className="text-zinc-400 text-sm">INR Balance</p>
+                    <p className="text-zinc-400 text-xs">INR Balance</p>
                     <p className="text-white font-bold text-lg">₹{user.inr_balance.toLocaleString()}</p>
                   </div>
                   <div className="text-center">
-                    <p className="text-zinc-400 text-sm">₿ Balance</p>
+                    <p className="text-zinc-400 text-xs">₿ Balance</p>
                     <p className="text-white font-bold text-lg">₿{formatBitcoin(user.btc_balance)}</p>
                   </div>
                 </div>
               </div>
 
+              {/* Currency Toggle */}
               <div className="bg-zinc-800/50 rounded-lg p-4">
-                <h3 className="text-white font-medium mb-4">INR Balance Management</h3>
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-zinc-400 text-sm mb-2">Amount (₹)</label>
-                    <input
-                      type="number"
-                      value={inrAmount}
-                      onChange={(e) => setInrAmount(e.target.value)}
-                      placeholder="Enter amount..."
-                      className="w-full bg-zinc-700 border border-zinc-600 rounded-lg py-2 px-3 text-white placeholder-zinc-400 focus:outline-none focus:border-white"
-                    />
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <button
-                      onClick={() => handleBalanceOperation('deposit', 'INR')}
-                      disabled={isLoading || !inrAmount}
-                      className="bg-green-900/20 border border-green-800 text-green-300 hover:bg-green-900/30 disabled:opacity-50 disabled:cursor-not-allowed py-2 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
-                    >
-                      <Plus className="w-4 h-4" />
-                      Deposit
-                    </button>
-                    <button
-                      onClick={() => handleBalanceOperation('withdraw', 'INR')}
-                      disabled={isLoading || !inrAmount}
-                      className="bg-red-900/20 border border-red-800 text-red-300 hover:bg-red-900/30 disabled:opacity-50 disabled:cursor-not-allowed py-2 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
-                    >
-                      <Minus className="w-4 h-4" />
-                      Withdraw
-                    </button>
-                  </div>
+                <div className="flex bg-zinc-700 rounded-lg p-1 mb-4">
+                  <button
+                    onClick={() => setBalanceMode('INR')}
+                    className={`flex-1 py-2 px-3 rounded-md text-sm font-medium transition-colors flex items-center justify-center gap-2 ${
+                      balanceMode === 'INR' 
+                        ? 'bg-white text-black' 
+                        : 'text-zinc-400 hover:text-white'
+                    }`}
+                  >
+                    <DollarSign className="w-4 h-4" />
+                    INR
+                  </button>
+                  <button
+                    onClick={() => setBalanceMode('BTC')}
+                    className={`flex-1 py-2 px-3 rounded-md text-sm font-medium transition-colors flex items-center justify-center gap-2 ${
+                      balanceMode === 'BTC' 
+                        ? 'bg-white text-black' 
+                        : 'text-zinc-400 hover:text-white'
+                    }`}
+                  >
+                    <Bitcoin className="w-4 h-4" />
+                    BTC
+                  </button>
                 </div>
-              </div>
 
-              <div className="bg-zinc-800/50 rounded-lg p-4">
-                <h3 className="text-white font-medium mb-4 flex items-center gap-2">
-                  <Bitcoin className="w-4 h-4" />
-                  Bitcoin Balance Management
-                </h3>
-                <div className="space-y-4">
+                {/* Amount Input */}
+                <div className="space-y-3">
                   <div>
-                    <label className="block text-zinc-400 text-sm mb-2">Amount (₿)</label>
+                    <label className="block text-zinc-400 text-sm mb-2">
+                      Amount ({balanceMode === 'INR' ? '₹' : '₿'})
+                    </label>
                     <input
                       type="number"
-                      step="0.00000001"
-                      value={btcAmount}
-                      onChange={(e) => setBtcAmount(e.target.value)}
-                      placeholder="Enter amount..."
+                      step={balanceMode === 'BTC' ? '0.00000001' : '1'}
+                      value={balanceMode === 'INR' ? inrAmount : btcAmount}
+                      onChange={(e) => balanceMode === 'INR' ? setInrAmount(e.target.value) : setBtcAmount(e.target.value)}
+                      placeholder={`Enter ${balanceMode} amount...`}
                       className="w-full bg-zinc-700 border border-zinc-600 rounded-lg py-2 px-3 text-white placeholder-zinc-400 focus:outline-none focus:border-white"
                     />
                   </div>
+                  
+                  {/* Action Buttons */}
                   <div className="grid grid-cols-2 gap-3">
                     <button
-                      onClick={() => handleBalanceOperation('deposit', 'BTC')}
-                      disabled={isLoading || !btcAmount}
+                      onClick={() => handleBalanceOperation('deposit', balanceMode)}
+                      disabled={isLoading || (balanceMode === 'INR' ? !inrAmount : !btcAmount)}
                       className="bg-green-900/20 border border-green-800 text-green-300 hover:bg-green-900/30 disabled:opacity-50 disabled:cursor-not-allowed py-2 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
                     >
                       <Plus className="w-4 h-4" />
                       Deposit
                     </button>
                     <button
-                      onClick={() => handleBalanceOperation('withdraw', 'BTC')}
-                      disabled={isLoading || !btcAmount}
+                      onClick={() => handleBalanceOperation('withdraw', balanceMode)}
+                      disabled={isLoading || (balanceMode === 'INR' ? !inrAmount : !btcAmount)}
                       className="bg-red-900/20 border border-red-800 text-red-300 hover:bg-red-900/30 disabled:opacity-50 disabled:cursor-not-allowed py-2 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
                     >
                       <Minus className="w-4 h-4" />
