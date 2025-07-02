@@ -156,7 +156,7 @@ const Home: React.FC = () => {
             </div>
             <div className="space-y-1">
               <p className="text-zinc-400 text-sm">Cash Balance</p>
-              <p className="text-xl font-bold">₹{balances?.inr.toLocaleString()}</p>
+              <p className="text-xl font-bold">₹{balances?.inr.toLocaleString('en-IN')}</p>
             </div>
           </div>
 
@@ -173,7 +173,7 @@ const Home: React.FC = () => {
               <p className="text-xl font-bold">{formatCurrency(balances?.btc || 0, 'BTC')}</p>
               {balances && prices && (
                 <p className="text-xs text-zinc-500">
-                  ≈ ₹{Math.floor((balances.btc || 0) * (prices.sell_rate || 0)).toLocaleString()}
+                  ≈ ₹{Math.floor((balances.btc || 0) * (prices.sell_rate || 0)).toLocaleString('en-IN')}
                 </p>
               )}
             </div>
@@ -193,15 +193,15 @@ const Home: React.FC = () => {
           <div className="grid grid-cols-3 gap-4">
             <div className="text-center">
               <p className="text-zinc-400 text-xs">USD Price</p>
-              <p className="font-bold">${(prices?.btc_usd ?? 0).toLocaleString()}</p>
+              <p className="font-bold">${(prices?.btc_usd ?? 0).toLocaleString('en-US')}</p>
             </div>
             <div className="text-center">
               <p className="text-zinc-400 text-xs">Buy Rate</p>
-              <p className="font-bold text-white">₹{(prices?.buy_rate ?? 0).toLocaleString()}</p>
+              <p className="font-bold text-white">₹{(prices?.buy_rate ?? 0).toLocaleString('en-IN')}</p>
             </div>
             <div className="text-center">
               <p className="text-zinc-400 text-xs">Sell Rate</p>
-              <p className="font-bold text-white">₹{(prices?.sell_rate ?? 0).toLocaleString()}</p>
+              <p className="font-bold text-white">₹{(prices?.sell_rate ?? 0).toLocaleString('en-IN')}</p>
             </div>
           </div>
         </div>
@@ -268,7 +268,7 @@ const Home: React.FC = () => {
                         {transaction.type === 'BUY' || transaction.type === 'SELL' ? (
                           <div>
                             <p className="font-bold text-sm text-white">
-                              ₹{transaction.inr_amount.toLocaleString()}
+                              ₹{transaction.inr_amount.toLocaleString('en-IN')}
                             </p>
                             <p className="text-xs text-zinc-400">
                               {formatCurrency(transaction.btc_amount, 'BTC')}
@@ -277,7 +277,7 @@ const Home: React.FC = () => {
                         ) : (
                           <p className="font-bold text-sm text-white">
                             {transaction.type.includes('INR') ? (
-                              `₹${transaction.inr_amount.toLocaleString()}`
+                              `₹${transaction.inr_amount.toLocaleString('en-IN')}`
                             ) : (
                               formatCurrency(transaction.btc_amount, 'BTC')
                             )}

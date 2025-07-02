@@ -91,7 +91,7 @@ const TradingModal: React.FC<TradingModalProps> = ({
                 {isBuy ? 'Buy Bitcoin' : 'Sell Bitcoin'}
               </h2>
               <p className="text-sm text-zinc-400">
-                Rate: ₹{rate?.toLocaleString()}/BTC
+                Rate: ₹{rate?.toLocaleString('en-IN')}/BTC
               </p>
             </div>
           </div>
@@ -109,7 +109,7 @@ const TradingModal: React.FC<TradingModalProps> = ({
             <span className="text-zinc-400">Available Balance:</span>
             <span className="font-medium">
               {isBuy ? (
-                `₹${availableBalance.toLocaleString()}`
+                `₹${availableBalance.toLocaleString('en-IN')}`
               ) : (
                 `${availableBalance.toFixed(8)} BTC`
               )}
@@ -177,7 +177,7 @@ const TradingModal: React.FC<TradingModalProps> = ({
               {isBuy ? (
                 `₿ ${estimation.toFixed(8)}`
               ) : (
-                `₹${Math.floor(estimation).toLocaleString()}`
+                `₹${Math.floor(estimation).toLocaleString('en-IN')}`
               )}
             </div>
           </div>

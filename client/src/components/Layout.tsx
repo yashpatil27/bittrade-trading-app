@@ -105,7 +105,7 @@ const Layout: React.FC<LayoutProps> = ({ children, isAdmin = false }) => {
                 ₿{formatBitcoin(bitcoinBalance)}
               </span>
               <span className="text-zinc-400 text-sm">
-                (₹{Math.floor(bitcoinBalance * sellRate).toLocaleString()})
+                (₹{Math.floor(bitcoinBalance * sellRate).toLocaleString('en-IN')})
               </span>
             </div>
           </div>

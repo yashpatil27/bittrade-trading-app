@@ -63,7 +63,7 @@ const History: React.FC = () => {
 
   const formatAmount = (transaction: Transaction) => {
     if (transaction.type.includes('INR')) {
-      return `₹${transaction.inr_amount.toLocaleString()}`;
+      return `₹${transaction.inr_amount.toLocaleString('en-IN')}`;
     } else if (transaction.type.includes('BTC')) {
       return formatCurrency(transaction.btc_amount, 'BTC');
     }
@@ -153,7 +153,7 @@ const History: React.FC = () => {
                       {transaction.type === 'BUY' || transaction.type === 'SELL' ? (
                         <div>
                           <p className="font-bold text-sm text-white">
-                            ₹{transaction.inr_amount.toLocaleString()}
+                            ₹{transaction.inr_amount.toLocaleString('en-IN')}
                           </p>
                           <p className="text-xs text-zinc-400">
                             {formatCurrency(transaction.btc_amount, 'BTC')}

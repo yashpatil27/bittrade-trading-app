@@ -34,7 +34,7 @@ export const getTransactionColor = (type: Transaction['type']): string => {
 
 export const formatCurrency = (amount: number, currency: 'INR' | 'BTC'): string => {
   if (currency === 'INR') {
-    return `₹${amount.toLocaleString()}`;
+    return `₹${amount.toLocaleString('en-IN')}`;
   } else {
     return `₿${formatBitcoin(amount)}`;
   }

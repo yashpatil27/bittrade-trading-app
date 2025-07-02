@@ -48,7 +48,7 @@ const AdminDashboard: React.FC = () => {
         </div>
         <div className="card text-center">
           <p className="text-zinc-400 text-sm">Total INR</p>
-          <p className="text-xl font-bold">₹{(data?.stats.total_inr_on_platform || 0).toLocaleString()}</p>
+          <p className="text-xl font-bold">₹{(data?.stats.total_inr_on_platform || 0).toLocaleString('en-IN')}</p>
         </div>
         <div className="card text-center">
           <p className="text-zinc-400 text-sm">Total BTC</p>
@@ -62,15 +62,15 @@ const AdminDashboard: React.FC = () => {
         <div className="space-y-2">
           <div className="flex justify-between">
             <span className="text-zinc-400">BTC/USD:</span>
-            <span>${(data?.current_prices.btc_usd || 0).toLocaleString()}</span>
+            <span>${(data?.current_prices.btc_usd || 0).toLocaleString('en-US')}</span>
           </div>
           <div className="flex justify-between">
             <span className="text-zinc-400">Buy Rate:</span>
-            <span>₹{(data?.current_prices.buy_rate || 0).toLocaleString()}</span>
+            <span>₹{(data?.current_prices.buy_rate || 0).toLocaleString('en-IN')}</span>
           </div>
           <div className="flex justify-between">
             <span className="text-zinc-400">Sell Rate:</span>
-            <span>₹{(data?.current_prices.sell_rate || 0).toLocaleString()}</span>
+            <span>₹{(data?.current_prices.sell_rate || 0).toLocaleString('en-IN')}</span>
           </div>
           <div className="flex justify-between text-sm">
             <span className="text-zinc-500">Buy Multiplier:</span>

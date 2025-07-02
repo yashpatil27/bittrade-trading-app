@@ -47,9 +47,9 @@ const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
 
   const formatAmount = () => {
     if (transaction.type === 'BUY' || transaction.type === 'SELL') {
-      return `₹${transaction.inr_amount.toLocaleString()} / ₿${formatBitcoin(transaction.btc_amount)}`;
+      return `₹${transaction.inr_amount.toLocaleString('en-IN')} / ₿${formatBitcoin(transaction.btc_amount)}`;
     } else if (transaction.type.includes('INR')) {
-      return `₹${transaction.inr_amount.toLocaleString()}`;
+      return `₹${transaction.inr_amount.toLocaleString('en-IN')}`;
     } else if (transaction.type.includes('BTC')) {
       return `₿${formatBitcoin(transaction.btc_amount)}`;
     }
@@ -111,7 +111,7 @@ const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
               <div className="space-y-1">
                 <div className="flex justify-between">
                   <span className="text-zinc-400 text-xs">BTC Price:</span>
-                  <span className="text-white text-xs">₹{transaction.btc_price.toLocaleString()}</span>
+                  <span className="text-white text-xs">₹{transaction.btc_price.toLocaleString('en-IN')}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-zinc-400 text-xs">BTC Amount:</span>
@@ -127,7 +127,7 @@ const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
             <div className="grid grid-cols-2 gap-3">
               <div className="text-center">
                 <p className="text-zinc-400 text-xs">INR</p>
-                <p className="text-white font-medium text-sm">₹{transaction.inr_balance.toLocaleString()}</p>
+                <p className="text-white font-medium text-sm">₹{transaction.inr_balance.toLocaleString('en-IN')}</p>
               </div>
               <div className="text-center">
                 <p className="text-zinc-400 text-xs">₿</p>

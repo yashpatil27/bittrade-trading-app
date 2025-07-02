@@ -235,7 +235,7 @@ const UserManagementModal: React.FC<UserManagementModalProps> = ({
                 <div className="bg-zinc-800/50 rounded-lg p-4 text-center">
                   <DollarSign className="w-6 h-6 text-white mx-auto mb-2" />
                   <p className="text-zinc-400 text-sm">INR Balance</p>
-                  <p className="text-white font-bold">₹{user.inr_balance.toLocaleString()}</p>
+            <p className="text-white font-bold">₹{user.inr_balance.toLocaleString('en-IN')}</p>
                 </div>
                 <div className="bg-zinc-800/50 rounded-lg p-4 text-center">
                   <Bitcoin className="w-6 h-6 text-white mx-auto mb-2" />
@@ -270,7 +270,7 @@ const UserManagementModal: React.FC<UserManagementModalProps> = ({
                 <div className="grid grid-cols-2 gap-3">
                   <div className="text-center">
                     <p className="text-zinc-400 text-xs">INR Balance</p>
-                    <p className="text-white font-bold text-lg">₹{user.inr_balance.toLocaleString()}</p>
+                    <p className="text-white font-bold text-lg">₹{user.inr_balance.toLocaleString('en-IN')}</p>
                   </div>
                   <div className="text-center">
                     <p className="text-zinc-400 text-xs">₿ Balance</p>
