@@ -62,14 +62,21 @@ const History: React.FC = () => {
   };
 
   const formatAmount = (transaction: Transaction) => {
-    if (transaction.type === 'BUY' || transaction.type === 'SELL') {
-      return `₹${transaction.inr_amount.toLocaleString()} / ${formatCurrency(transaction.btc_amount, 'BTC')}`;
-    } else if (transaction.type.includes('INR')) {
+    if (transaction.type.includes('INR')) {
       return `₹${transaction.inr_amount.toLocaleString()}`;
     } else if (transaction.type.includes('BTC')) {
       return formatCurrency(transaction.btc_amount, 'BTC');
     }
     return '';
+  };
+
+  const formatSecondaryAmount = (transaction: Transaction) => {
+    if (transaction.type === 'BUY' || transaction.type === 'SELL') {
+      if (transaction.type.includes('INR') || transaction.type === 'BUY' || transaction.type === 'SELL') {
+        return formatCurrency(transaction.btc_amount, 'BTC');
+      }
+    }
+    return null;
   };
 
   return (
@@ -143,9 +150,20 @@ const History: React.FC = () => {
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="font-bold text-sm text-white">
-                        {formatAmount(transaction)}
-                      </p>
+                      {transaction.type === 'BUY' || transaction.type === 'SELL' ? (
+                        <div>
+                          <p className="font-bold text-sm text-white">
+                            ₹{transaction.inr_amount.toLocaleString()}
+                          </p>
+                          <p className="text-xs text-zinc-400">
+                            {formatCurrency(transaction.btc_amount, 'BTC')}
+                          </p>
+                        </div>
+                      ) : (
+                        <p className="font-bold text-sm text-white">
+                          {formatAmount(transaction)}
+                        </p>
+                      )}
                     </div>
                   </div>
                 </div>

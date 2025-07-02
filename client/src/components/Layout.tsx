@@ -97,7 +97,7 @@ const Layout: React.FC<LayoutProps> = ({ children, isAdmin = false }) => {
 
       {/* Persistent Bitcoin Balance Bar */}
       {!isAdmin && showPersistentBar && (
-        <div className="fixed top-0 left-0 right-0 bg-zinc-800/95 backdrop-blur-sm border-b border-zinc-700 px-4 py-2 z-40">
+        <div className="fixed top-0 left-0 right-0 bg-black/95 backdrop-blur-sm border-b border-zinc-700 px-4 py-2 z-40">
           <div className="flex items-center justify-center max-w-md mx-auto">
             <div className="flex items-center gap-2">
               <Bitcoin className="w-4 h-4 text-white" />
@@ -130,14 +130,17 @@ const Layout: React.FC<LayoutProps> = ({ children, isAdmin = false }) => {
               <Link
                 key={item.path}
                 to={item.path}
-                className={`flex-1 flex flex-col items-center py-3 px-2 transition-colors ${
+                className={`flex-1 flex flex-col items-center py-3 px-2 transition-colors relative ${
                   isActive 
-                    ? 'text-white bg-zinc-800' 
+                    ? 'text-white' 
                     : 'text-zinc-400 hover:text-white'
                 }`}
               >
                 <Icon size={20} />
                 <span className="text-xs mt-1">{item.name}</span>
+                {isActive && (
+                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-white" />
+                )}
               </Link>
             );
           })}

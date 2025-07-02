@@ -37,6 +37,7 @@ export interface Prices {
 
 export interface Transaction {
   id: number;
+  user_id: number;
   type: 'SETUP' | 'DEPOSIT_INR' | 'BUY' | 'SELL' | 'WITHDRAW_INR' | 'DEPOSIT_BTC' | 'WITHDRAW_BTC';
   inr_amount: number;
   btc_amount: number;

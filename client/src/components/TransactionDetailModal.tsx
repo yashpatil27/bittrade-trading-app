@@ -96,8 +96,8 @@ const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
         <div className="p-4 space-y-3">
           {/* Transaction ID & Amount */}
           <div className="bg-zinc-800/50 rounded-lg p-3">
-            <div className="flex justify-between items-center mb-2">
-              <span className="text-zinc-400 text-xs">ID</span>
+            <div className="mb-2">
+              <span className="text-zinc-400 text-xs">ID: </span>
               <span className="text-white font-mono text-xs">#{transaction.id.toString().padStart(8, '0')}</span>
             </div>
             <div className="text-center">

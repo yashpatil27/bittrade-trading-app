@@ -21,6 +21,7 @@ import { userAPI } from '../services/api';
 import { Balances, Prices, Transaction, DashboardData } from '../types';
 import TradingModal from '../components/TradingModal';
 import PriceUpdateTimer from '../components/PriceUpdateTimer';
+import TransactionDetailModal from '../components/TransactionDetailModal';
 import { 
   getTransactionDisplayName, 
   getTransactionIcon, 
@@ -38,6 +39,8 @@ const Home: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalType, setModalType] = useState<'buy' | 'sell'>('buy');
+  const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
+  const [isTransactionModalOpen, setIsTransactionModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -100,6 +103,11 @@ const Home: React.FC = () => {
     } catch (error) {
       console.error('Error refreshing data:', error);
     }
+  };
+
+  const handleTransactionClick = (transaction: Transaction) => {
+    setSelectedTransaction(transaction);
+    setIsTransactionModalOpen(true);
   };
 
   return (
@@ -230,39 +238,51 @@ const Home: React.FC = () => {
             {recentTransactions.length > 0 ? (
               <div className="space-y-3">
                 {recentTransactions.map((transaction) => (
-                  <div key={transaction.id} className="flex items-center justify-between p-3 bg-zinc-800/50 rounded-lg hover:bg-zinc-800 transition-colors">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 bg-zinc-700 rounded-lg">
-                        {getTransactionIcon(transaction.type) === 'User' && <User className="w-4 h-4 text-white" />}
-                        {getTransactionIcon(transaction.type) === 'ArrowUp' && <ArrowUp className="w-4 h-4 text-white" />}
-                        {getTransactionIcon(transaction.type) === 'TrendingUp' && <TrendingUp className="w-4 h-4 text-white" />}
-                        {getTransactionIcon(transaction.type) === 'TrendingDown' && <TrendingDown className="w-4 h-4 text-white" />}
-                        {getTransactionIcon(transaction.type) === 'ArrowDown' && <ArrowDown className="w-4 h-4 text-white" />}
-                        {getTransactionIcon(transaction.type) === 'Plus' && <Plus className="w-4 h-4 text-white" />}
-                        {getTransactionIcon(transaction.type) === 'Minus' && <Minus className="w-4 h-4 text-white" />}
-                        {!['User', 'ArrowUp', 'TrendingUp', 'TrendingDown', 'ArrowDown', 'Plus', 'Minus'].includes(getTransactionIcon(transaction.type)) && <Circle className="w-4 h-4 text-white" />}
+                  <div 
+                    key={transaction.id} 
+                    onClick={() => handleTransactionClick(transaction)}
+                    className="bg-zinc-800/50 rounded-lg p-4 hover:bg-zinc-800 transition-colors cursor-pointer"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="p-1.5 bg-zinc-700 rounded-lg">
+                          {getTransactionIcon(transaction.type) === 'User' && <User className="w-3 h-3 text-white" />}
+                          {getTransactionIcon(transaction.type) === 'ArrowUp' && <ArrowUp className="w-3 h-3 text-white" />}
+                          {getTransactionIcon(transaction.type) === 'TrendingUp' && <TrendingUp className="w-3 h-3 text-white" />}
+                          {getTransactionIcon(transaction.type) === 'TrendingDown' && <TrendingDown className="w-3 h-3 text-white" />}
+                          {getTransactionIcon(transaction.type) === 'ArrowDown' && <ArrowDown className="w-3 h-3 text-white" />}
+                          {getTransactionIcon(transaction.type) === 'Plus' && <Plus className="w-3 h-3 text-white" />}
+                          {getTransactionIcon(transaction.type) === 'Minus' && <Minus className="w-3 h-3 text-white" />}
+                          {!['User', 'ArrowUp', 'TrendingUp', 'TrendingDown', 'ArrowDown', 'Plus', 'Minus'].includes(getTransactionIcon(transaction.type)) && <Circle className="w-3 h-3 text-white" />}
+                        </div>
+                        <div>
+                          <p className="font-medium text-white text-sm">
+                            {getTransactionDisplayName(transaction.type)}
+                          </p>
+                          <p className="text-zinc-400 text-xs">
+                            {formatTimeAgo(transaction.created_at)}
+                          </p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="font-medium text-white">
-                          {getTransactionDisplayName(transaction.type)}
-                        </p>
-                        <p className="text-zinc-400 text-sm">
-                          {formatTimeAgo(transaction.created_at)}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-medium text-sm">
+                      <div className="text-right">
                         {transaction.type === 'BUY' || transaction.type === 'SELL' ? (
-                          <>₹{transaction.inr_amount.toLocaleString()}</>
-                        ) : transaction.type.includes('INR') ? (
-                          <>₹{transaction.inr_amount.toLocaleString()}</>
+                          <div>
+                            <p className="font-bold text-sm text-white">
+                              ₹{transaction.inr_amount.toLocaleString()}
+                            </p>
+                            <p className="text-xs text-zinc-400">
+                              {formatCurrency(transaction.btc_amount, 'BTC')}
+                            </p>
+                          </div>
                         ) : (
-                          <>{formatCurrency(transaction.btc_amount, 'BTC')}</>
+                          <p className="font-bold text-sm text-white">
+                            {transaction.type.includes('INR') ? (
+                              `₹${transaction.inr_amount.toLocaleString()}`
+                            ) : (
+                              formatCurrency(transaction.btc_amount, 'BTC')
+                            )}
+                          </p>
                         )}
-                      </p>
-                      <div className="flex items-center gap-1 text-xs text-zinc-500">
-                        <ChevronRight className="w-3 h-3" />
                       </div>
                     </div>
                   </div>
@@ -288,6 +308,13 @@ const Home: React.FC = () => {
         userBalance={balances || { inr: 0, btc: 0 }}
         onTrade={handleTrade}
         isLoading={isLoading}
+      />
+
+      {/* Transaction Detail Modal */}
+      <TransactionDetailModal
+        isOpen={isTransactionModalOpen}
+        onClose={() => setIsTransactionModalOpen(false)}
+        transaction={selectedTransaction}
       />
     </>
   );

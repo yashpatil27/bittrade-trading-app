@@ -64,9 +64,7 @@ const AdminTransactions: React.FC = () => {
   };
 
   const formatAmount = (transaction: Transaction) => {
-    if (transaction.type === 'BUY' || transaction.type === 'SELL') {
-      return `₹${transaction.inr_amount.toLocaleString()} / ₿${formatBitcoin(transaction.btc_amount)}`;
-    } else if (transaction.type.includes('INR')) {
+    if (transaction.type.includes('INR')) {
       return `₹${transaction.inr_amount.toLocaleString()}`;
     } else if (transaction.type.includes('BTC')) {
       return `₿${formatBitcoin(transaction.btc_amount)}`;
@@ -186,31 +184,45 @@ const AdminTransactions: React.FC = () => {
                   className="bg-zinc-800/50 rounded-lg p-4 hover:bg-zinc-800 transition-colors cursor-pointer"
                 >
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 bg-zinc-700 rounded-lg">
-                        {getIconComponent(getTransactionIcon(transaction.type))}
+                    <div className="flex items-center gap-2">
+                      <div className="p-1.5 bg-zinc-700 rounded-lg">
+                        {getTransactionIcon(transaction.type) === 'User' && <User className="w-3 h-3 text-white" />}
+                        {getTransactionIcon(transaction.type) === 'ArrowUp' && <ArrowUp className="w-3 h-3 text-white" />}
+                        {getTransactionIcon(transaction.type) === 'TrendingUp' && <TrendingUp className="w-3 h-3 text-white" />}
+                        {getTransactionIcon(transaction.type) === 'TrendingDown' && <TrendingDown className="w-3 h-3 text-white" />}
+                        {getTransactionIcon(transaction.type) === 'ArrowDown' && <ArrowDown className="w-3 h-3 text-white" />}
+                        {getTransactionIcon(transaction.type) === 'Plus' && <Plus className="w-3 h-3 text-white" />}
+                        {getTransactionIcon(transaction.type) === 'Minus' && <Minus className="w-3 h-3 text-white" />}
+                        {!['User', 'ArrowUp', 'TrendingUp', 'TrendingDown', 'ArrowDown', 'Plus', 'Minus'].includes(getTransactionIcon(transaction.type)) && <Circle className="w-3 h-3 text-white" />}
                       </div>
                       <div>
-                        <div className="flex items-center gap-2">
-                          <p className="font-semibold text-white">
-                            {getTransactionDisplayName(transaction.type)}
-                          </p>
-                          <span className="text-xs text-zinc-500 font-mono">
-                            #{transaction.id.toString().padStart(6, '0')}
+                        <p className="font-medium text-white text-sm">
+                          {getTransactionDisplayName(transaction.type)}
+                        </p>
+                        <div className="flex items-center gap-1 text-xs">
+                          <span className="text-zinc-400">
+                            {formatTimeAgo(transaction.created_at)}
+                          </span>
+                          <span className="text-zinc-500">•</span>
+                          <span className="text-zinc-400">
+                            User #{transaction.user_id}
                           </span>
                         </div>
-                        <p className="text-zinc-400 text-sm">
-                          {formatTimeAgo(transaction.created_at)} • {new Date(transaction.created_at).toLocaleDateString()}
-                        </p>
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="font-bold text-sm text-white">
-                        {formatAmount(transaction)}
-                      </p>
-                      {(transaction.type === 'BUY' || transaction.type === 'SELL') && (
-                        <p className="text-xs text-zinc-400">
-                          @ ₹{transaction.btc_price.toLocaleString()}/₿
+                      {transaction.type === 'BUY' || transaction.type === 'SELL' ? (
+                        <div>
+                          <p className="font-bold text-sm text-white">
+                            ₹{transaction.inr_amount.toLocaleString()}
+                          </p>
+                          <p className="text-xs text-zinc-400">
+                            ₿{formatBitcoin(transaction.btc_amount)}
+                          </p>
+                        </div>
+                      ) : (
+                        <p className="font-bold text-sm text-white">
+                          {formatAmount(transaction)}
                         </p>
                       )}
                     </div>
