@@ -1,0 +1,8 @@
+I want the app to be pretty monochromatic like how the login page is. 
+white icons, white buttons with black text. I feel colors are too distracting, and not using them makes the design process simpler.
+I want the app to show bitcoin amounts a ₿ 0.005 instead of 0.005 BTC. The same way we do with rupee amounts. 
+I transaction cards on the history tab look very cramped, It needs some redesigning to make it look clean.
+In the Buy and Sell Modals, I want nice small buttons that populate 25%, 50%, 75%, Max of the available balance.
+I still see icons other than lucide react. like in the recent activity section and history page. Only use lucide-react icons and that too in white for a clean look.
+
+Also the app is not working on my phone thats on the same network, make necessary fixes, I think you have used localhostt somewhere instead of the ip address.

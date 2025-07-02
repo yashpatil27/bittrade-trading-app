@@ -1,0 +1,112 @@
+I want you to make a webapp for my website bittrade.co.in.
+₿itTrade is a trading app for Bitcoin only. All transactions in bittrade are finally settled in cash. So the app looks quite like a paper trading or a fake trading app.
+The website is mobile first and has a modern, simple and intuitive ui which relies more on icons than long lines of text to convey information. 
+
+-- ₿itTrade Database Schema
+
+-- Create ENUM type for transaction types
+CREATE TYPE transaction_type AS ENUM (
+  'SETUP',
+  'DEPOSIT_INR', 
+  'BUY',
+  'SELL',
+  'WITHDRAW_INR',
+  'DEPOSIT_BTC',
+  'WITHDRAW_BTC'
+);
+
+-- Users table
+CREATE TABLE users (
+  id SERIAL PRIMARY KEY,
+  email VARCHAR(100) UNIQUE NOT NULL,
+  name VARCHAR(100) NOT NULL,
+  password_hash VARCHAR(255) NOT NULL,
+  is_admin BOOLEAN DEFAULT false,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Transactions table (stores balance snapshots after each transaction)
+CREATE TABLE transactions (
+  id SERIAL PRIMARY KEY,
+  user_id INTEGER REFERENCES users(id),
+  type transaction_type NOT NULL,
+  inr_amount INTEGER NOT NULL, -- 1 = 1 rupee
+  btc_amount BIGINT NOT NULL, -- 1 = 1 satoshi
+  btc_price INTEGER NOT NULL, -- 1 = 1 INR per BTC (calculated price used for transaction)
+  inr_balance INTEGER NOT NULL, -- user's INR balance after this transaction
+  btc_balance BIGINT NOT NULL, -- user's BTC balance after this transaction (in satoshis)
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- System settings (for buy/sell multipliers)
+CREATE TABLE settings (
+  id SERIAL PRIMARY KEY,
+  key VARCHAR(100) UNIQUE NOT NULL, -- 'buy_rate' or 'sell_rate'
+  value INTEGER NOT NULL, -- 91 for buy_rate, 88 for sell_rate
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Price table (only stores raw BTC/USD price from CoinGecko API every 30 seconds)
+CREATE TABLE prices (
+  id SERIAL PRIMARY KEY,
+  btc_usd_price INTEGER NOT NULL, -- Raw BTC/USD price from CoinGecko
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Insert default settings
+INSERT INTO settings (key, value) VALUES 
+('buy_multiplier', 91),
+('sell_multiplier', 88);
+
+-- Create an admin user (password: admin123) as seed
+
+Make the database in MySQL.
+
+How the business works. The user registers on the website and creates his account. He then logs into his account. He sees his cash and bitcoin balances which are both 0. Below he sees the price of Bitcoin in USD along with a Buy Rate and a Sell Rate.
+Then gives the Admin physical inr cash, the admin then adds cash to this users account, using his admin dashboard.
+Now the user can buy or sell at the buy and sell rates as much as he wants. The buy rate is calculated by multiplying btc_usd_price from Prices Table with the buy_multiplier from the Settings Table. Similarly for the sell rate.
+The users screen only has two tabs. One 'Home' where he sees his balances, the bitcoin prices (btc_usd, buy rate and sell rate), buttons for buying and selling bitcoin, and a Recent Activity Section where he sees his last 5 transactions in a condensed form.
+The second Tab is a 'History' tab, which can be access easily by a bottom nav bar. On the History tab the user sees all his past transactions in condensed form.
+
+These are all the transactions that can happen on this app
+'SETUP' - This is used when a new user is created. This transaction sets the users balances to 0.
+'DEPOSIT_INR' - This is created by the admin when he deposits inr to a users account.
+'BUY' - This is created by the user when he buys bitcoin with his cash balance
+'SELL' - This is created by the user when he sells bitcoin to receive cash.
+'WITHDRAW_INR' - This is created by the admin when he withdraws inr from a users account.
+'DEPOSIT_BTC' - This is created by the admin when he deposits bitcoin to a users account.
+'WITHDRAW_BTC' - This is created by the admin when he withdraws bitcoin from a users account.
+
+The transaction table stores amounts as integer where 1 = 1 rupee for inr amounts and 1 = 1 sat for bitcoin amount. The sat number are converted back to bitcoin amounts before they are displayed to te user.
+Ill give an example of a transaction table.
+
+1	1	"SETUP"	0	0	0	0	0	"2025-07-01 23:31:23.86088" // This is the admin users setup transaction.
+2	2	"SETUP"	0	0	0	0	0	"2025-07-02 03:13:09.329536" // This is a test users setup transaction
+3	2	"DEPOSIT_INR"	10000	0	0	10000	0	"2025-07-02 03:13:09.335847" // The admin deposited 10000 inr to the users account.
+4	2	"BUY"	9100	100000	9100000	900	100000	"2025-07-02 03:13:09.336886" // The user bought 9100 inr worth of bitcoin. when btc_usd price was 100000 usd/btc. So the buy rate was calculated as 100000*91 inr/btc
+5	2	"DEPOSIT_INR"	500	0	0	1400	100000	"2025-07-02 03:13:09.338159" // The admin deposited 500 inr to users account
+6	2	"DEPOSIT_BTC"	8800	100000	8800000	1400	200000	"2025-07-02 03:13:09.339579" // The admin deposited 0.001 bitcoin to users account. the btc_usd price was 100000, so the sell rate was 8800000, an the inr_amount field is populated with 0.001*8800000. This is to make internal performance calculations. only the btc_balance is updated and not the inr_balance.
+6	2	"SELL"	4400	50000	8800000	5800	150000	"2025-07-02 03:13:09.339579" // The user sells 0.0005 btc from his account at the sell rate which is 100000*88 to recieve 4400 inr in his account.
+7	2	"WITHDRAW_BTC"	4400	50000	8800000	5800	100000	"2025-07-02 03:13:09.340974" // The admin withdraws 0.0005 btc from the users account, the btc_usd price was 100000, so the sell rate was 8800000, an the inr_amount field is populated with 0.001*8800000. This is to make internal performance calculations. only the btc_balance is updated and not the inr_balance.
+
+The app need to have a clean design with small text and dark ui. Icons from lucide-react are used Only in white. The overall app uses only black, zinc grey, and white.
+Use react-js and tailwindcss from frontend. REST API for backend. MySQL for database. The app should have a unified structure, so that its easy to deploy.
+
+Price updates using CoinGecko API.
+
+Admin dashboard should have the same design language as the users app, He should be able to see all users and their balances and deposit/withdraw cash or bitcoin to/from any users account.
+Admin should see basic stats like no of users, total trades, total cash on platform, total bitcoin on platform.
+Admin should be able to change the buy_multiplier and sell_multiplier in the settings Table.
+Admin should be able to create/delete users as well.
+Admin should be able to see all transactions that have happened over the platform.
+Admin should be able to change any users password
+
+Authentication: Give me options with their pros and cons.
+
+Deployment: it will be deployed over a vps. I already have the vps, so dont worry about that.
+
+Real-time Updates: Prices are refreshed every 30 seconds from the database and balances updated from the database. Use redis wherever it is beneficial.
+
+No transaction validation as of now.
+
+Any more questions?

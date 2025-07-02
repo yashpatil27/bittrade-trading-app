@@ -1,0 +1,1899 @@
+
+> bittrade-client@1.0.0 start
+> react-scripts start
+
+(node:52603) [DEP0176] DeprecationWarning: fs.F_OK is deprecated, use fs.constants.F_OK instead
+(Use `node --trace-deprecation ...` to show where the warning was created)
+(node:52603) [DEP_WEBPACK_DEV_SERVER_ON_AFTER_SETUP_MIDDLEWARE] DeprecationWarning: 'onAfterSetupMiddleware' option is deprecated. Please use the 'setupMiddlewares' option.
+(node:52603) [DEP_WEBPACK_DEV_SERVER_ON_BEFORE_SETUP_MIDDLEWARE] DeprecationWarning: 'onBeforeSetupMiddleware' option is deprecated. Please use the 'setupMiddlewares' option.
+Starting the development server...
+
+Failed to compile.
+
+[eslint] 
+src/App.tsx
+Syntax error: JSX element 'Router' has no corresponding closing tag (18:7)
+ERROR in ./src/App.tsx
+Module build failed (from ./node_modules/babel-loader/lib/index.js):
+SyntaxError: /Users/roots/Desktop/bittrade-trading-app/client/src/App.tsx: Unterminated JSX contents. (78:14)
+
+  76 |             <Route path="*" element={<Navigate to="/" replace />} />
+  77 |           </Routes>
+> 78 |         </div>
+     |               ^
+  79 |
+    at constructor (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:367:19)
+    at TypeScriptParserMixin.raise (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:6627:19)
+    at TypeScriptParserMixin.jsxReadToken (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:4478:20)
+    at TypeScriptParserMixin.getTokenFromCode (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:4804:12)
+    at TypeScriptParserMixin.getTokenFromCode (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:10004:11)
+    at TypeScriptParserMixin.nextToken (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:5810:10)
+    at TypeScriptParserMixin.next (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:5720:10)
+    at TypeScriptParserMixin.eat (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:5724:12)
+    at TypeScriptParserMixin.expect (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:6926:15)
+    at TypeScriptParserMixin.jsxParseClosingElementAt (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:4710:10)
+    at TypeScriptParserMixin.jsxParseElementAt (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:4725:37)
+    at TypeScriptParserMixin.jsxParseElementAt (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:4728:32)
+    at TypeScriptParserMixin.jsxParseElementAt (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:4728:32)
+    at TypeScriptParserMixin.jsxParseElement (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:4779:17)
+    at TypeScriptParserMixin.parseExprAtom (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:4789:19)
+    at TypeScriptParserMixin.parseExprSubscripts (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:11076:23)
+    at TypeScriptParserMixin.parseUpdate (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:11061:21)
+    at TypeScriptParserMixin.parseMaybeUnary (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:11041:23)
+    at TypeScriptParserMixin.parseMaybeUnary (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:9852:18)
+    at TypeScriptParserMixin.parseMaybeUnaryOrPrivate (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:10894:61)
+    at TypeScriptParserMixin.parseExprOps (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:10899:23)
+    at TypeScriptParserMixin.parseMaybeConditional (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:10876:23)
+    at TypeScriptParserMixin.parseMaybeAssign (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:10826:21)
+    at /Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:9790:39
+    at TypeScriptParserMixin.tryParse (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:6935:20)
+    at TypeScriptParserMixin.parseMaybeAssign (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:9790:18)
+    at /Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:10795:39
+    at TypeScriptParserMixin.allowInAnd (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:12427:12)
+    at TypeScriptParserMixin.parseMaybeAssignAllowIn (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:10795:17)
+    at TypeScriptParserMixin.parseMaybeAssignAllowInOrVoidPattern (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:12494:17)
+    at TypeScriptParserMixin.parseParenAndDistinguishExpression (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:11674:28)
+    at TypeScriptParserMixin.parseExprAtom (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:11326:23)
+    at TypeScriptParserMixin.parseExprAtom (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:4794:20)
+    at TypeScriptParserMixin.parseExprSubscripts (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:11076:23)
+    at TypeScriptParserMixin.parseUpdate (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:11061:21)
+    at TypeScriptParserMixin.parseMaybeUnary (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:11041:23)
+    at TypeScriptParserMixin.parseMaybeUnary (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:9852:18)
+    at TypeScriptParserMixin.parseMaybeUnaryOrPrivate (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:10894:61)
+    at TypeScriptParserMixin.parseExprOps (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:10899:23)
+    at TypeScriptParserMixin.parseMaybeConditional (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:10876:23)
+    at TypeScriptParserMixin.parseMaybeAssign (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:10826:21)
+    at TypeScriptParserMixin.parseMaybeAssign (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:9801:20)
+    at TypeScriptParserMixin.parseExpressionBase (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:10779:23)
+    at /Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:10775:39
+    at TypeScriptParserMixin.allowInAnd (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:12422:16)
+    at TypeScriptParserMixin.parseExpression (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:10775:17)
+    at TypeScriptParserMixin.parseReturnStatement (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:13142:28)
+    at TypeScriptParserMixin.parseStatementContent (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:12798:21)
+    at TypeScriptParserMixin.parseStatementContent (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:9527:18)
+    at TypeScriptParserMixin.parseStatementLike (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:12767:17)
+
+ERROR in [eslint] 
+src/App.tsx
+  Line 18:7:  Parsing error: JSX element 'Router' has no corresponding closing tag
+
+webpack compiled with 2 errors
+ERROR in src/App.tsx
+TS1005: '</' expected.
+
+ERROR in src/App.tsx:17:6
+TS17008: JSX element 'AuthProvider' has no corresponding closing tag.
+    15 | function App() {
+    16 |   return (
+  > 17 |     <AuthProvider>
+       |      ^^^^^^^^^^^^
+    18 |       <Router>
+    19 |         <div className="min-h-screen bg-black text-white">
+    20 |           <Routes>
+
+ERROR in src/App.tsx:18:8
+TS17008: JSX element 'Router' has no corresponding closing tag.
+    16 |   return (
+    17 |     <AuthProvider>
+  > 18 |       <Router>
+       |        ^^^^^^
+    19 |         <div className="min-h-screen bg-black text-white">
+    20 |           <Routes>
+    21 |             {/* Public routes */}
+
+ERROR in src/index.tsx:4:8
+TS1192: Module '"/Users/roots/Desktop/bittrade-trading-app/client/src/App"' has no default export.
+    2 | import ReactDOM from 'react-dom/client';
+    3 | import './index.css';
+  > 4 | import App from './App';
+      |        ^^^
+    5 |
+    6 | const root = ReactDOM.createRoot(
+    7 |   document.getElementById('root') as HTMLElement
+
+ERROR in src/pages/Home.tsx:33:17
+TS2339: Property 'balances' does not exist on type 'DashboardData | undefined'.
+    31 |       try {
+    32 |         const dashboardResponse = await userAPI.getDashboard();
+  > 33 |         const { balances, prices, recent_transactions } = dashboardResponse.data.data;
+       |                 ^^^^^^^^
+    34 |         setBalances(balances);
+    35 |         setPrices(prices);
+    36 |         setRecentTransactions(recent_transactions);
+
+ERROR in src/pages/Home.tsx:33:27
+TS2339: Property 'prices' does not exist on type 'DashboardData | undefined'.
+    31 |       try {
+    32 |         const dashboardResponse = await userAPI.getDashboard();
+  > 33 |         const { balances, prices, recent_transactions } = dashboardResponse.data.data;
+       |                           ^^^^^^
+    34 |         setBalances(balances);
+    35 |         setPrices(prices);
+    36 |         setRecentTransactions(recent_transactions);
+
+ERROR in src/pages/Home.tsx:33:35
+TS2339: Property 'recent_transactions' does not exist on type 'DashboardData | undefined'.
+    31 |       try {
+    32 |         const dashboardResponse = await userAPI.getDashboard();
+  > 33 |         const { balances, prices, recent_transactions } = dashboardResponse.data.data;
+       |                                   ^^^^^^^^^^^^^^^^^^^
+    34 |         setBalances(balances);
+    35 |         setPrices(prices);
+    36 |         setRecentTransactions(recent_transactions);
+
+ERROR in src/pages/Home.tsx:57:30
+TS2322: Type 'TradeResponse | undefined' is not assignable to type 'Transaction'.
+  Type 'undefined' is not assignable to type 'Transaction'.
+    55 |
+    56 |       setSuccess('Bitcoin purchased successfully!');
+  > 57 |       setRecentTransactions([response.data.data, ...recentTransactions]);
+       |                              ^^^^^^^^^^^^^^^^^^
+    58 |       setAmount('');
+    59 |     } catch (error: any) {
+    60 |       setError(error.response?.data?.message || 'Failed to buy Bitcoin');
+
+ERROR in src/pages/Home.tsx:78:30
+TS2322: Type 'TradeResponse | undefined' is not assignable to type 'Transaction'.
+  Type 'undefined' is not assignable to type 'Transaction'.
+    76 |
+    77 |       setSuccess('Bitcoin sold successfully!');
+  > 78 |       setRecentTransactions([response.data.data, ...recentTransactions]);
+       |                              ^^^^^^^^^^^^^^^^^^
+    79 |       setBtcAmount('');
+    80 |     } catch (error: any) {
+    81 |       setError(error.response?.data?.message || 'Failed to sell Bitcoin');
+
+Compiling...
+Failed to compile.
+
+[eslint] 
+src/App.tsx
+Syntax error: JSX element 'Router' has no corresponding closing tag (18:7)
+ERROR in ./src/App.tsx
+Module build failed (from ./node_modules/babel-loader/lib/index.js):
+SyntaxError: /Users/roots/Desktop/bittrade-trading-app/client/src/App.tsx: Unterminated JSX contents. (78:14)
+
+  76 |             <Route path="*" element={<Navigate to="/" replace />} />
+  77 |           </Routes>
+> 78 |         </div>
+     |               ^
+  79 |
+    at constructor (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:367:19)
+    at TypeScriptParserMixin.raise (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:6627:19)
+    at TypeScriptParserMixin.jsxReadToken (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:4478:20)
+    at TypeScriptParserMixin.getTokenFromCode (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:4804:12)
+    at TypeScriptParserMixin.getTokenFromCode (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:10004:11)
+    at TypeScriptParserMixin.nextToken (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:5810:10)
+    at TypeScriptParserMixin.next (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:5720:10)
+    at TypeScriptParserMixin.eat (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:5724:12)
+    at TypeScriptParserMixin.expect (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:6926:15)
+    at TypeScriptParserMixin.jsxParseClosingElementAt (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:4710:10)
+    at TypeScriptParserMixin.jsxParseElementAt (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:4725:37)
+    at TypeScriptParserMixin.jsxParseElementAt (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:4728:32)
+    at TypeScriptParserMixin.jsxParseElementAt (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:4728:32)
+    at TypeScriptParserMixin.jsxParseElement (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:4779:17)
+    at TypeScriptParserMixin.parseExprAtom (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:4789:19)
+    at TypeScriptParserMixin.parseExprSubscripts (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:11076:23)
+    at TypeScriptParserMixin.parseUpdate (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:11061:21)
+    at TypeScriptParserMixin.parseMaybeUnary (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:11041:23)
+    at TypeScriptParserMixin.parseMaybeUnary (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:9852:18)
+    at TypeScriptParserMixin.parseMaybeUnaryOrPrivate (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:10894:61)
+    at TypeScriptParserMixin.parseExprOps (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:10899:23)
+    at TypeScriptParserMixin.parseMaybeConditional (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:10876:23)
+    at TypeScriptParserMixin.parseMaybeAssign (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:10826:21)
+    at /Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:9790:39
+    at TypeScriptParserMixin.tryParse (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:6935:20)
+    at TypeScriptParserMixin.parseMaybeAssign (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:9790:18)
+    at /Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:10795:39
+    at TypeScriptParserMixin.allowInAnd (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:12427:12)
+    at TypeScriptParserMixin.parseMaybeAssignAllowIn (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:10795:17)
+    at TypeScriptParserMixin.parseMaybeAssignAllowInOrVoidPattern (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:12494:17)
+    at TypeScriptParserMixin.parseParenAndDistinguishExpression (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:11674:28)
+    at TypeScriptParserMixin.parseExprAtom (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:11326:23)
+    at TypeScriptParserMixin.parseExprAtom (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:4794:20)
+    at TypeScriptParserMixin.parseExprSubscripts (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:11076:23)
+    at TypeScriptParserMixin.parseUpdate (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:11061:21)
+    at TypeScriptParserMixin.parseMaybeUnary (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:11041:23)
+    at TypeScriptParserMixin.parseMaybeUnary (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:9852:18)
+    at TypeScriptParserMixin.parseMaybeUnaryOrPrivate (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:10894:61)
+    at TypeScriptParserMixin.parseExprOps (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:10899:23)
+    at TypeScriptParserMixin.parseMaybeConditional (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:10876:23)
+    at TypeScriptParserMixin.parseMaybeAssign (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:10826:21)
+    at TypeScriptParserMixin.parseMaybeAssign (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:9801:20)
+    at TypeScriptParserMixin.parseExpressionBase (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:10779:23)
+    at /Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:10775:39
+    at TypeScriptParserMixin.allowInAnd (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:12422:16)
+    at TypeScriptParserMixin.parseExpression (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:10775:17)
+    at TypeScriptParserMixin.parseReturnStatement (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:13142:28)
+    at TypeScriptParserMixin.parseStatementContent (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:12798:21)
+    at TypeScriptParserMixin.parseStatementContent (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:9527:18)
+    at TypeScriptParserMixin.parseStatementLike (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:12767:17)
+
+ERROR in [eslint] 
+src/App.tsx
+  Line 18:7:  Parsing error: JSX element 'Router' has no corresponding closing tag
+
+webpack compiled with 2 errors
+ERROR in src/App.tsx
+TS1005: '</' expected.
+
+ERROR in src/App.tsx:17:6
+TS17008: JSX element 'AuthProvider' has no corresponding closing tag.
+    15 | function App() {
+    16 |   return (
+  > 17 |     <AuthProvider>
+       |      ^^^^^^^^^^^^
+    18 |       <Router>
+    19 |         <div className="min-h-screen bg-black text-white">
+    20 |           <Routes>
+
+ERROR in src/App.tsx:18:8
+TS17008: JSX element 'Router' has no corresponding closing tag.
+    16 |   return (
+    17 |     <AuthProvider>
+  > 18 |       <Router>
+       |        ^^^^^^
+    19 |         <div className="min-h-screen bg-black text-white">
+    20 |           <Routes>
+    21 |             {/* Public routes */}
+
+ERROR in src/index.tsx:4:8
+TS1192: Module '"/Users/roots/Desktop/bittrade-trading-app/client/src/App"' has no default export.
+    2 | import ReactDOM from 'react-dom/client';
+    3 | import './index.css';
+  > 4 | import App from './App';
+      |        ^^^
+    5 |
+    6 | const root = ReactDOM.createRoot(
+    7 |   document.getElementById('root') as HTMLElement
+
+ERROR in src/pages/Home.tsx:33:17
+TS2339: Property 'balances' does not exist on type 'DashboardData | undefined'.
+    31 |       try {
+    32 |         const dashboardResponse = await userAPI.getDashboard();
+  > 33 |         const { balances, prices, recent_transactions } = dashboardResponse.data.data;
+       |                 ^^^^^^^^
+    34 |         setBalances(balances);
+    35 |         setPrices(prices);
+    36 |         setRecentTransactions(recent_transactions);
+
+ERROR in src/pages/Home.tsx:33:27
+TS2339: Property 'prices' does not exist on type 'DashboardData | undefined'.
+    31 |       try {
+    32 |         const dashboardResponse = await userAPI.getDashboard();
+  > 33 |         const { balances, prices, recent_transactions } = dashboardResponse.data.data;
+       |                           ^^^^^^
+    34 |         setBalances(balances);
+    35 |         setPrices(prices);
+    36 |         setRecentTransactions(recent_transactions);
+
+ERROR in src/pages/Home.tsx:33:35
+TS2339: Property 'recent_transactions' does not exist on type 'DashboardData | undefined'.
+    31 |       try {
+    32 |         const dashboardResponse = await userAPI.getDashboard();
+  > 33 |         const { balances, prices, recent_transactions } = dashboardResponse.data.data;
+       |                                   ^^^^^^^^^^^^^^^^^^^
+    34 |         setBalances(balances);
+    35 |         setPrices(prices);
+    36 |         setRecentTransactions(recent_transactions);
+
+ERROR in src/pages/Home.tsx:59:15
+TS2339: Property 'balances' does not exist on type 'DashboardData | undefined'.
+    57 |       // Refresh data after successful trade
+    58 |       const dashboardResponse = await userAPI.getDashboard();
+  > 59 |       const { balances, prices, recent_transactions } = dashboardResponse.data.data;
+       |               ^^^^^^^^
+    60 |       setBalances(balances);
+    61 |       setPrices(prices);
+    62 |       setRecentTransactions(recent_transactions);
+
+ERROR in src/pages/Home.tsx:59:25
+TS2339: Property 'prices' does not exist on type 'DashboardData | undefined'.
+    57 |       // Refresh data after successful trade
+    58 |       const dashboardResponse = await userAPI.getDashboard();
+  > 59 |       const { balances, prices, recent_transactions } = dashboardResponse.data.data;
+       |                         ^^^^^^
+    60 |       setBalances(balances);
+    61 |       setPrices(prices);
+    62 |       setRecentTransactions(recent_transactions);
+
+ERROR in src/pages/Home.tsx:59:33
+TS2339: Property 'recent_transactions' does not exist on type 'DashboardData | undefined'.
+    57 |       // Refresh data after successful trade
+    58 |       const dashboardResponse = await userAPI.getDashboard();
+  > 59 |       const { balances, prices, recent_transactions } = dashboardResponse.data.data;
+       |                                 ^^^^^^^^^^^^^^^^^^^
+    60 |       setBalances(balances);
+    61 |       setPrices(prices);
+    62 |       setRecentTransactions(recent_transactions);
+
+ERROR in src/pages/Home.tsx:83:30
+TS2322: Type 'TradeResponse | undefined' is not assignable to type 'Transaction'.
+  Type 'undefined' is not assignable to type 'Transaction'.
+    81 |
+    82 |       setSuccess('Bitcoin sold successfully!');
+  > 83 |       setRecentTransactions([response.data.data, ...recentTransactions]);
+       |                              ^^^^^^^^^^^^^^^^^^
+    84 |       setBtcAmount('');
+    85 |     } catch (error: any) {
+    86 |       setError(error.response?.data?.message || 'Failed to sell Bitcoin');
+
+Compiling...
+Failed to compile.
+
+[eslint] 
+src/App.tsx
+Syntax error: JSX element 'Router' has no corresponding closing tag (18:7)
+ERROR in ./src/App.tsx
+Module build failed (from ./node_modules/babel-loader/lib/index.js):
+SyntaxError: /Users/roots/Desktop/bittrade-trading-app/client/src/App.tsx: Unterminated JSX contents. (78:14)
+
+  76 |             <Route path="*" element={<Navigate to="/" replace />} />
+  77 |           </Routes>
+> 78 |         </div>
+     |               ^
+  79 |
+    at constructor (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:367:19)
+    at TypeScriptParserMixin.raise (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:6627:19)
+    at TypeScriptParserMixin.jsxReadToken (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:4478:20)
+    at TypeScriptParserMixin.getTokenFromCode (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:4804:12)
+    at TypeScriptParserMixin.getTokenFromCode (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:10004:11)
+    at TypeScriptParserMixin.nextToken (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:5810:10)
+    at TypeScriptParserMixin.next (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:5720:10)
+    at TypeScriptParserMixin.eat (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:5724:12)
+    at TypeScriptParserMixin.expect (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:6926:15)
+    at TypeScriptParserMixin.jsxParseClosingElementAt (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:4710:10)
+    at TypeScriptParserMixin.jsxParseElementAt (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:4725:37)
+    at TypeScriptParserMixin.jsxParseElementAt (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:4728:32)
+    at TypeScriptParserMixin.jsxParseElementAt (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:4728:32)
+    at TypeScriptParserMixin.jsxParseElement (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:4779:17)
+    at TypeScriptParserMixin.parseExprAtom (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:4789:19)
+    at TypeScriptParserMixin.parseExprSubscripts (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:11076:23)
+    at TypeScriptParserMixin.parseUpdate (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:11061:21)
+    at TypeScriptParserMixin.parseMaybeUnary (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:11041:23)
+    at TypeScriptParserMixin.parseMaybeUnary (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:9852:18)
+    at TypeScriptParserMixin.parseMaybeUnaryOrPrivate (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:10894:61)
+    at TypeScriptParserMixin.parseExprOps (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:10899:23)
+    at TypeScriptParserMixin.parseMaybeConditional (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:10876:23)
+    at TypeScriptParserMixin.parseMaybeAssign (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:10826:21)
+    at /Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:9790:39
+    at TypeScriptParserMixin.tryParse (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:6935:20)
+    at TypeScriptParserMixin.parseMaybeAssign (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:9790:18)
+    at /Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:10795:39
+    at TypeScriptParserMixin.allowInAnd (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:12427:12)
+    at TypeScriptParserMixin.parseMaybeAssignAllowIn (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:10795:17)
+    at TypeScriptParserMixin.parseMaybeAssignAllowInOrVoidPattern (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:12494:17)
+    at TypeScriptParserMixin.parseParenAndDistinguishExpression (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:11674:28)
+    at TypeScriptParserMixin.parseExprAtom (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:11326:23)
+    at TypeScriptParserMixin.parseExprAtom (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:4794:20)
+    at TypeScriptParserMixin.parseExprSubscripts (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:11076:23)
+    at TypeScriptParserMixin.parseUpdate (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:11061:21)
+    at TypeScriptParserMixin.parseMaybeUnary (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:11041:23)
+    at TypeScriptParserMixin.parseMaybeUnary (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:9852:18)
+    at TypeScriptParserMixin.parseMaybeUnaryOrPrivate (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:10894:61)
+    at TypeScriptParserMixin.parseExprOps (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:10899:23)
+    at TypeScriptParserMixin.parseMaybeConditional (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:10876:23)
+    at TypeScriptParserMixin.parseMaybeAssign (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:10826:21)
+    at TypeScriptParserMixin.parseMaybeAssign (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:9801:20)
+    at TypeScriptParserMixin.parseExpressionBase (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:10779:23)
+    at /Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:10775:39
+    at TypeScriptParserMixin.allowInAnd (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:12422:16)
+    at TypeScriptParserMixin.parseExpression (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:10775:17)
+    at TypeScriptParserMixin.parseReturnStatement (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:13142:28)
+    at TypeScriptParserMixin.parseStatementContent (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:12798:21)
+    at TypeScriptParserMixin.parseStatementContent (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:9527:18)
+    at TypeScriptParserMixin.parseStatementLike (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:12767:17)
+
+ERROR in [eslint] 
+src/App.tsx
+  Line 18:7:  Parsing error: JSX element 'Router' has no corresponding closing tag
+
+webpack compiled with 2 errors
+Files successfully emitted, waiting for typecheck results...
+Issues checking in progress...
+ERROR in src/App.tsx
+TS1005: '</' expected.
+
+ERROR in src/App.tsx:17:6
+TS17008: JSX element 'AuthProvider' has no corresponding closing tag.
+    15 | function App() {
+    16 |   return (
+  > 17 |     <AuthProvider>
+       |      ^^^^^^^^^^^^
+    18 |       <Router>
+    19 |         <div className="min-h-screen bg-black text-white">
+    20 |           <Routes>
+
+ERROR in src/App.tsx:18:8
+TS17008: JSX element 'Router' has no corresponding closing tag.
+    16 |   return (
+    17 |     <AuthProvider>
+  > 18 |       <Router>
+       |        ^^^^^^
+    19 |         <div className="min-h-screen bg-black text-white">
+    20 |           <Routes>
+    21 |             {/* Public routes */}
+
+ERROR in src/index.tsx:4:8
+TS1192: Module '"/Users/roots/Desktop/bittrade-trading-app/client/src/App"' has no default export.
+    2 | import ReactDOM from 'react-dom/client';
+    3 | import './index.css';
+  > 4 | import App from './App';
+      |        ^^^
+    5 |
+    6 | const root = ReactDOM.createRoot(
+    7 |   document.getElementById('root') as HTMLElement
+
+ERROR in src/pages/Home.tsx:33:17
+TS2339: Property 'balances' does not exist on type 'DashboardData | undefined'.
+    31 |       try {
+    32 |         const dashboardResponse = await userAPI.getDashboard();
+  > 33 |         const { balances, prices, recent_transactions } = dashboardResponse.data.data;
+       |                 ^^^^^^^^
+    34 |         setBalances(balances);
+    35 |         setPrices(prices);
+    36 |         setRecentTransactions(recent_transactions);
+
+ERROR in src/pages/Home.tsx:33:27
+TS2339: Property 'prices' does not exist on type 'DashboardData | undefined'.
+    31 |       try {
+    32 |         const dashboardResponse = await userAPI.getDashboard();
+  > 33 |         const { balances, prices, recent_transactions } = dashboardResponse.data.data;
+       |                           ^^^^^^
+    34 |         setBalances(balances);
+    35 |         setPrices(prices);
+    36 |         setRecentTransactions(recent_transactions);
+
+ERROR in src/pages/Home.tsx:33:35
+TS2339: Property 'recent_transactions' does not exist on type 'DashboardData | undefined'.
+    31 |       try {
+    32 |         const dashboardResponse = await userAPI.getDashboard();
+  > 33 |         const { balances, prices, recent_transactions } = dashboardResponse.data.data;
+       |                                   ^^^^^^^^^^^^^^^^^^^
+    34 |         setBalances(balances);
+    35 |         setPrices(prices);
+    36 |         setRecentTransactions(recent_transactions);
+
+ERROR in src/pages/Home.tsx:59:15
+TS2339: Property 'balances' does not exist on type 'DashboardData | undefined'.
+    57 |       // Refresh data after successful trade
+    58 |       const dashboardResponse = await userAPI.getDashboard();
+  > 59 |       const { balances, prices, recent_transactions } = dashboardResponse.data.data;
+       |               ^^^^^^^^
+    60 |       setBalances(balances);
+    61 |       setPrices(prices);
+    62 |       setRecentTransactions(recent_transactions);
+
+ERROR in src/pages/Home.tsx:59:25
+TS2339: Property 'prices' does not exist on type 'DashboardData | undefined'.
+    57 |       // Refresh data after successful trade
+    58 |       const dashboardResponse = await userAPI.getDashboard();
+  > 59 |       const { balances, prices, recent_transactions } = dashboardResponse.data.data;
+       |                         ^^^^^^
+    60 |       setBalances(balances);
+    61 |       setPrices(prices);
+    62 |       setRecentTransactions(recent_transactions);
+
+ERROR in src/pages/Home.tsx:59:33
+TS2339: Property 'recent_transactions' does not exist on type 'DashboardData | undefined'.
+    57 |       // Refresh data after successful trade
+    58 |       const dashboardResponse = await userAPI.getDashboard();
+  > 59 |       const { balances, prices, recent_transactions } = dashboardResponse.data.data;
+       |                                 ^^^^^^^^^^^^^^^^^^^
+    60 |       setBalances(balances);
+    61 |       setPrices(prices);
+    62 |       setRecentTransactions(recent_transactions);
+
+ERROR in src/pages/Home.tsx:85:15
+TS2339: Property 'balances' does not exist on type 'DashboardData | undefined'.
+    83 |       // Refresh data after successful trade
+    84 |       const dashboardResponse = await userAPI.getDashboard();
+  > 85 |       const { balances, prices, recent_transactions } = dashboardResponse.data.data;
+       |               ^^^^^^^^
+    86 |       setBalances(balances);
+    87 |       setPrices(prices);
+    88 |       setRecentTransactions(recent_transactions);
+
+ERROR in src/pages/Home.tsx:85:25
+TS2339: Property 'prices' does not exist on type 'DashboardData | undefined'.
+    83 |       // Refresh data after successful trade
+    84 |       const dashboardResponse = await userAPI.getDashboard();
+  > 85 |       const { balances, prices, recent_transactions } = dashboardResponse.data.data;
+       |                         ^^^^^^
+    86 |       setBalances(balances);
+    87 |       setPrices(prices);
+    88 |       setRecentTransactions(recent_transactions);
+
+ERROR in src/pages/Home.tsx:85:33
+TS2339: Property 'recent_transactions' does not exist on type 'DashboardData | undefined'.
+    83 |       // Refresh data after successful trade
+    84 |       const dashboardResponse = await userAPI.getDashboard();
+  > 85 |       const { balances, prices, recent_transactions } = dashboardResponse.data.data;
+       |                                 ^^^^^^^^^^^^^^^^^^^
+    86 |       setBalances(balances);
+    87 |       setPrices(prices);
+    88 |       setRecentTransactions(recent_transactions);
+
+Compiling...
+Failed to compile.
+
+[eslint] 
+src/App.tsx
+Syntax error: ')' expected (81:undefined)
+ERROR in ./src/App.tsx
+Module build failed (from ./node_modules/babel-loader/lib/index.js):
+SyntaxError: /Users/roots/Desktop/bittrade-trading-app/client/src/App.tsx: Unexpected token, expected "," (81:0)
+
+  79 |       </Router>
+  80 |     </AuthProvider>
+> 81 |
+     | ^
+    at constructor (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:367:19)
+    at TypeScriptParserMixin.raise (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:6627:19)
+    at TypeScriptParserMixin.unexpected (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:6647:16)
+    at TypeScriptParserMixin.expect (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:6927:12)
+    at TypeScriptParserMixin.parseParenAndDistinguishExpression (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:11660:14)
+    at TypeScriptParserMixin.parseExprAtom (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:11326:23)
+    at TypeScriptParserMixin.parseExprAtom (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:4794:20)
+    at TypeScriptParserMixin.parseExprSubscripts (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:11076:23)
+    at TypeScriptParserMixin.parseUpdate (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:11061:21)
+    at TypeScriptParserMixin.parseMaybeUnary (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:11041:23)
+    at TypeScriptParserMixin.parseMaybeUnary (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:9852:18)
+    at TypeScriptParserMixin.parseMaybeUnaryOrPrivate (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:10894:61)
+    at TypeScriptParserMixin.parseExprOps (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:10899:23)
+    at TypeScriptParserMixin.parseMaybeConditional (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:10876:23)
+    at TypeScriptParserMixin.parseMaybeAssign (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:10826:21)
+    at TypeScriptParserMixin.parseMaybeAssign (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:9801:20)
+    at TypeScriptParserMixin.parseExpressionBase (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:10779:23)
+    at /Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:10775:39
+    at TypeScriptParserMixin.allowInAnd (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:12422:16)
+    at TypeScriptParserMixin.parseExpression (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:10775:17)
+    at TypeScriptParserMixin.parseReturnStatement (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:13142:28)
+    at TypeScriptParserMixin.parseStatementContent (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:12798:21)
+    at TypeScriptParserMixin.parseStatementContent (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:9527:18)
+    at TypeScriptParserMixin.parseStatementLike (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:12767:17)
+    at TypeScriptParserMixin.parseStatementListItem (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:12747:17)
+    at TypeScriptParserMixin.parseBlockOrModuleBlockBody (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:13316:61)
+    at TypeScriptParserMixin.parseBlockBody (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:13309:10)
+    at TypeScriptParserMixin.parseBlock (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:13297:10)
+    at TypeScriptParserMixin.parseFunctionBody (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:12101:24)
+    at TypeScriptParserMixin.parseFunctionBodyAndFinish (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:12087:10)
+    at TypeScriptParserMixin.parseFunctionBodyAndFinish (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:9248:18)
+    at /Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:13445:12
+    at TypeScriptParserMixin.withSmartMixTopicForbiddingContext (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:12404:14)
+    at TypeScriptParserMixin.parseFunction (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:13444:10)
+    at TypeScriptParserMixin.parseFunctionStatement (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:13125:17)
+    at TypeScriptParserMixin.parseStatementContent (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:12791:21)
+    at TypeScriptParserMixin.parseStatementContent (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:9527:18)
+    at TypeScriptParserMixin.parseStatementLike (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:12767:17)
+    at TypeScriptParserMixin.parseModuleItem (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:12744:17)
+    at TypeScriptParserMixin.parseBlockOrModuleBlockBody (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:13316:36)
+    at TypeScriptParserMixin.parseBlockBody (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:13309:10)
+    at TypeScriptParserMixin.parseProgram (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:12625:10)
+    at TypeScriptParserMixin.parseTopLevel (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:12615:25)
+    at TypeScriptParserMixin.parse (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:14492:10)
+    at TypeScriptParserMixin.parse (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:10144:18)
+    at parse (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:14526:38)
+    at parser (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/core/lib/parser/index.js:41:34)
+    at parser.next (<anonymous>)
+    at normalizeFile (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/core/lib/transformation/normalize-file.js:64:37)
+    at normalizeFile.next (<anonymous>)
+
+ERROR in [eslint] 
+src/App.tsx
+  Line 81:  Parsing error: ')' expected
+
+webpack compiled with 2 errors
+ERROR in src/App.tsx
+TS1005: ')' expected.
+
+ERROR in src/index.tsx:4:8
+TS1192: Module '"/Users/roots/Desktop/bittrade-trading-app/client/src/App"' has no default export.
+    2 | import ReactDOM from 'react-dom/client';
+    3 | import './index.css';
+  > 4 | import App from './App';
+      |        ^^^
+    5 |
+    6 | const root = ReactDOM.createRoot(
+    7 |   document.getElementById('root') as HTMLElement
+
+ERROR in src/pages/Home.tsx:33:17
+TS2339: Property 'balances' does not exist on type 'DashboardData | undefined'.
+    31 |       try {
+    32 |         const dashboardResponse = await userAPI.getDashboard();
+  > 33 |         const { balances, prices, recent_transactions } = dashboardResponse.data.data;
+       |                 ^^^^^^^^
+    34 |         setBalances(balances);
+    35 |         setPrices(prices);
+    36 |         setRecentTransactions(recent_transactions);
+
+ERROR in src/pages/Home.tsx:33:27
+TS2339: Property 'prices' does not exist on type 'DashboardData | undefined'.
+    31 |       try {
+    32 |         const dashboardResponse = await userAPI.getDashboard();
+  > 33 |         const { balances, prices, recent_transactions } = dashboardResponse.data.data;
+       |                           ^^^^^^
+    34 |         setBalances(balances);
+    35 |         setPrices(prices);
+    36 |         setRecentTransactions(recent_transactions);
+
+ERROR in src/pages/Home.tsx:33:35
+TS2339: Property 'recent_transactions' does not exist on type 'DashboardData | undefined'.
+    31 |       try {
+    32 |         const dashboardResponse = await userAPI.getDashboard();
+  > 33 |         const { balances, prices, recent_transactions } = dashboardResponse.data.data;
+       |                                   ^^^^^^^^^^^^^^^^^^^
+    34 |         setBalances(balances);
+    35 |         setPrices(prices);
+    36 |         setRecentTransactions(recent_transactions);
+
+ERROR in src/pages/Home.tsx:59:15
+TS2339: Property 'balances' does not exist on type 'DashboardData | undefined'.
+    57 |       // Refresh data after successful trade
+    58 |       const dashboardResponse = await userAPI.getDashboard();
+  > 59 |       const { balances, prices, recent_transactions } = dashboardResponse.data.data;
+       |               ^^^^^^^^
+    60 |       setBalances(balances);
+    61 |       setPrices(prices);
+    62 |       setRecentTransactions(recent_transactions);
+
+ERROR in src/pages/Home.tsx:59:25
+TS2339: Property 'prices' does not exist on type 'DashboardData | undefined'.
+    57 |       // Refresh data after successful trade
+    58 |       const dashboardResponse = await userAPI.getDashboard();
+  > 59 |       const { balances, prices, recent_transactions } = dashboardResponse.data.data;
+       |                         ^^^^^^
+    60 |       setBalances(balances);
+    61 |       setPrices(prices);
+    62 |       setRecentTransactions(recent_transactions);
+
+ERROR in src/pages/Home.tsx:59:33
+TS2339: Property 'recent_transactions' does not exist on type 'DashboardData | undefined'.
+    57 |       // Refresh data after successful trade
+    58 |       const dashboardResponse = await userAPI.getDashboard();
+  > 59 |       const { balances, prices, recent_transactions } = dashboardResponse.data.data;
+       |                                 ^^^^^^^^^^^^^^^^^^^
+    60 |       setBalances(balances);
+    61 |       setPrices(prices);
+    62 |       setRecentTransactions(recent_transactions);
+
+ERROR in src/pages/Home.tsx:85:15
+TS2339: Property 'balances' does not exist on type 'DashboardData | undefined'.
+    83 |       // Refresh data after successful trade
+    84 |       const dashboardResponse = await userAPI.getDashboard();
+  > 85 |       const { balances, prices, recent_transactions } = dashboardResponse.data.data;
+       |               ^^^^^^^^
+    86 |       setBalances(balances);
+    87 |       setPrices(prices);
+    88 |       setRecentTransactions(recent_transactions);
+
+ERROR in src/pages/Home.tsx:85:25
+TS2339: Property 'prices' does not exist on type 'DashboardData | undefined'.
+    83 |       // Refresh data after successful trade
+    84 |       const dashboardResponse = await userAPI.getDashboard();
+  > 85 |       const { balances, prices, recent_transactions } = dashboardResponse.data.data;
+       |                         ^^^^^^
+    86 |       setBalances(balances);
+    87 |       setPrices(prices);
+    88 |       setRecentTransactions(recent_transactions);
+
+ERROR in src/pages/Home.tsx:85:33
+TS2339: Property 'recent_transactions' does not exist on type 'DashboardData | undefined'.
+    83 |       // Refresh data after successful trade
+    84 |       const dashboardResponse = await userAPI.getDashboard();
+  > 85 |       const { balances, prices, recent_transactions } = dashboardResponse.data.data;
+       |                                 ^^^^^^^^^^^^^^^^^^^
+    86 |       setBalances(balances);
+    87 |       setPrices(prices);
+    88 |       setRecentTransactions(recent_transactions);
+
+Compiling...
+Compiled with warnings.
+
+[eslint] 
+src/pages/Home.tsx
+  Line 5:7:    'mockTransactions' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  Line 54:13:  'response' is assigned a value but never used          @typescript-eslint/no-unused-vars
+  Line 80:13:  'response' is assigned a value but never used          @typescript-eslint/no-unused-vars
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in [eslint] 
+src/pages/Home.tsx
+  Line 5:7:    'mockTransactions' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  Line 54:13:  'response' is assigned a value but never used          @typescript-eslint/no-unused-vars
+  Line 80:13:  'response' is assigned a value but never used          @typescript-eslint/no-unused-vars
+
+webpack compiled with 1 warning
+ERROR in src/pages/Home.tsx:33:17
+TS2339: Property 'balances' does not exist on type 'DashboardData | undefined'.
+    31 |       try {
+    32 |         const dashboardResponse = await userAPI.getDashboard();
+  > 33 |         const { balances, prices, recent_transactions } = dashboardResponse.data.data;
+       |                 ^^^^^^^^
+    34 |         setBalances(balances);
+    35 |         setPrices(prices);
+    36 |         setRecentTransactions(recent_transactions);
+
+ERROR in src/pages/Home.tsx:33:27
+TS2339: Property 'prices' does not exist on type 'DashboardData | undefined'.
+    31 |       try {
+    32 |         const dashboardResponse = await userAPI.getDashboard();
+  > 33 |         const { balances, prices, recent_transactions } = dashboardResponse.data.data;
+       |                           ^^^^^^
+    34 |         setBalances(balances);
+    35 |         setPrices(prices);
+    36 |         setRecentTransactions(recent_transactions);
+
+ERROR in src/pages/Home.tsx:33:35
+TS2339: Property 'recent_transactions' does not exist on type 'DashboardData | undefined'.
+    31 |       try {
+    32 |         const dashboardResponse = await userAPI.getDashboard();
+  > 33 |         const { balances, prices, recent_transactions } = dashboardResponse.data.data;
+       |                                   ^^^^^^^^^^^^^^^^^^^
+    34 |         setBalances(balances);
+    35 |         setPrices(prices);
+    36 |         setRecentTransactions(recent_transactions);
+
+ERROR in src/pages/Home.tsx:59:15
+TS2339: Property 'balances' does not exist on type 'DashboardData | undefined'.
+    57 |       // Refresh data after successful trade
+    58 |       const dashboardResponse = await userAPI.getDashboard();
+  > 59 |       const { balances, prices, recent_transactions } = dashboardResponse.data.data;
+       |               ^^^^^^^^
+    60 |       setBalances(balances);
+    61 |       setPrices(prices);
+    62 |       setRecentTransactions(recent_transactions);
+
+ERROR in src/pages/Home.tsx:59:25
+TS2339: Property 'prices' does not exist on type 'DashboardData | undefined'.
+    57 |       // Refresh data after successful trade
+    58 |       const dashboardResponse = await userAPI.getDashboard();
+  > 59 |       const { balances, prices, recent_transactions } = dashboardResponse.data.data;
+       |                         ^^^^^^
+    60 |       setBalances(balances);
+    61 |       setPrices(prices);
+    62 |       setRecentTransactions(recent_transactions);
+
+ERROR in src/pages/Home.tsx:59:33
+TS2339: Property 'recent_transactions' does not exist on type 'DashboardData | undefined'.
+    57 |       // Refresh data after successful trade
+    58 |       const dashboardResponse = await userAPI.getDashboard();
+  > 59 |       const { balances, prices, recent_transactions } = dashboardResponse.data.data;
+       |                                 ^^^^^^^^^^^^^^^^^^^
+    60 |       setBalances(balances);
+    61 |       setPrices(prices);
+    62 |       setRecentTransactions(recent_transactions);
+
+ERROR in src/pages/Home.tsx:85:15
+TS2339: Property 'balances' does not exist on type 'DashboardData | undefined'.
+    83 |       // Refresh data after successful trade
+    84 |       const dashboardResponse = await userAPI.getDashboard();
+  > 85 |       const { balances, prices, recent_transactions } = dashboardResponse.data.data;
+       |               ^^^^^^^^
+    86 |       setBalances(balances);
+    87 |       setPrices(prices);
+    88 |       setRecentTransactions(recent_transactions);
+
+ERROR in src/pages/Home.tsx:85:25
+TS2339: Property 'prices' does not exist on type 'DashboardData | undefined'.
+    83 |       // Refresh data after successful trade
+    84 |       const dashboardResponse = await userAPI.getDashboard();
+  > 85 |       const { balances, prices, recent_transactions } = dashboardResponse.data.data;
+       |                         ^^^^^^
+    86 |       setBalances(balances);
+    87 |       setPrices(prices);
+    88 |       setRecentTransactions(recent_transactions);
+
+ERROR in src/pages/Home.tsx:85:33
+TS2339: Property 'recent_transactions' does not exist on type 'DashboardData | undefined'.
+    83 |       // Refresh data after successful trade
+    84 |       const dashboardResponse = await userAPI.getDashboard();
+  > 85 |       const { balances, prices, recent_transactions } = dashboardResponse.data.data;
+       |                                 ^^^^^^^^^^^^^^^^^^^
+    86 |       setBalances(balances);
+    87 |       setPrices(prices);
+    88 |       setRecentTransactions(recent_transactions);
+
+(node:52603) [DEP0060] DeprecationWarning: The `util._extend` API is deprecated. Please use Object.assign() instead.
+Compiling...
+Compiled with warnings.
+
+[eslint] 
+src/pages/Home.tsx
+  Line 5:7:    'mockTransactions' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  Line 55:13:  'response' is assigned a value but never used          @typescript-eslint/no-unused-vars
+  Line 81:13:  'response' is assigned a value but never used          @typescript-eslint/no-unused-vars
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in [eslint] 
+src/pages/Home.tsx
+  Line 5:7:    'mockTransactions' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  Line 55:13:  'response' is assigned a value but never used          @typescript-eslint/no-unused-vars
+  Line 81:13:  'response' is assigned a value but never used          @typescript-eslint/no-unused-vars
+
+webpack compiled with 1 warning
+ERROR in src/pages/Home.tsx:34:17
+TS2339: Property 'balances' does not exist on type 'DashboardData | undefined'.
+    32 |         const dashboardResponse = await userAPI.getDashboard();
+    33 |         const dashboardData = dashboardResponse.data.data;
+  > 34 |         const { balances, prices, recent_transactions } = dashboardData;
+       |                 ^^^^^^^^
+    35 |         setBalances(balances);
+    36 |         setPrices(prices);
+    37 |         setRecentTransactions(recent_transactions);
+
+ERROR in src/pages/Home.tsx:34:27
+TS2339: Property 'prices' does not exist on type 'DashboardData | undefined'.
+    32 |         const dashboardResponse = await userAPI.getDashboard();
+    33 |         const dashboardData = dashboardResponse.data.data;
+  > 34 |         const { balances, prices, recent_transactions } = dashboardData;
+       |                           ^^^^^^
+    35 |         setBalances(balances);
+    36 |         setPrices(prices);
+    37 |         setRecentTransactions(recent_transactions);
+
+ERROR in src/pages/Home.tsx:34:35
+TS2339: Property 'recent_transactions' does not exist on type 'DashboardData | undefined'.
+    32 |         const dashboardResponse = await userAPI.getDashboard();
+    33 |         const dashboardData = dashboardResponse.data.data;
+  > 34 |         const { balances, prices, recent_transactions } = dashboardData;
+       |                                   ^^^^^^^^^^^^^^^^^^^
+    35 |         setBalances(balances);
+    36 |         setPrices(prices);
+    37 |         setRecentTransactions(recent_transactions);
+
+ERROR in src/pages/Home.tsx:60:15
+TS2339: Property 'balances' does not exist on type 'DashboardData | undefined'.
+    58 |       // Refresh data after successful trade
+    59 |       const dashboardResponse = await userAPI.getDashboard();
+  > 60 |       const { balances, prices, recent_transactions } = dashboardResponse.data.data;
+       |               ^^^^^^^^
+    61 |       setBalances(balances);
+    62 |       setPrices(prices);
+    63 |       setRecentTransactions(recent_transactions);
+
+ERROR in src/pages/Home.tsx:60:25
+TS2339: Property 'prices' does not exist on type 'DashboardData | undefined'.
+    58 |       // Refresh data after successful trade
+    59 |       const dashboardResponse = await userAPI.getDashboard();
+  > 60 |       const { balances, prices, recent_transactions } = dashboardResponse.data.data;
+       |                         ^^^^^^
+    61 |       setBalances(balances);
+    62 |       setPrices(prices);
+    63 |       setRecentTransactions(recent_transactions);
+
+ERROR in src/pages/Home.tsx:60:33
+TS2339: Property 'recent_transactions' does not exist on type 'DashboardData | undefined'.
+    58 |       // Refresh data after successful trade
+    59 |       const dashboardResponse = await userAPI.getDashboard();
+  > 60 |       const { balances, prices, recent_transactions } = dashboardResponse.data.data;
+       |                                 ^^^^^^^^^^^^^^^^^^^
+    61 |       setBalances(balances);
+    62 |       setPrices(prices);
+    63 |       setRecentTransactions(recent_transactions);
+
+ERROR in src/pages/Home.tsx:86:15
+TS2339: Property 'balances' does not exist on type 'DashboardData | undefined'.
+    84 |       // Refresh data after successful trade
+    85 |       const dashboardResponse = await userAPI.getDashboard();
+  > 86 |       const { balances, prices, recent_transactions } = dashboardResponse.data.data;
+       |               ^^^^^^^^
+    87 |       setBalances(balances);
+    88 |       setPrices(prices);
+    89 |       setRecentTransactions(recent_transactions);
+
+ERROR in src/pages/Home.tsx:86:25
+TS2339: Property 'prices' does not exist on type 'DashboardData | undefined'.
+    84 |       // Refresh data after successful trade
+    85 |       const dashboardResponse = await userAPI.getDashboard();
+  > 86 |       const { balances, prices, recent_transactions } = dashboardResponse.data.data;
+       |                         ^^^^^^
+    87 |       setBalances(balances);
+    88 |       setPrices(prices);
+    89 |       setRecentTransactions(recent_transactions);
+
+ERROR in src/pages/Home.tsx:86:33
+TS2339: Property 'recent_transactions' does not exist on type 'DashboardData | undefined'.
+    84 |       // Refresh data after successful trade
+    85 |       const dashboardResponse = await userAPI.getDashboard();
+  > 86 |       const { balances, prices, recent_transactions } = dashboardResponse.data.data;
+       |                                 ^^^^^^^^^^^^^^^^^^^
+    87 |       setBalances(balances);
+    88 |       setPrices(prices);
+    89 |       setRecentTransactions(recent_transactions);
+
+Compiling...
+Compiled with warnings.
+
+[eslint] 
+src/pages/Home.tsx
+  Line 5:7:    'mockTransactions' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  Line 55:13:  'response' is assigned a value but never used          @typescript-eslint/no-unused-vars
+  Line 82:13:  'response' is assigned a value but never used          @typescript-eslint/no-unused-vars
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in [eslint] 
+src/pages/Home.tsx
+  Line 5:7:    'mockTransactions' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  Line 55:13:  'response' is assigned a value but never used          @typescript-eslint/no-unused-vars
+  Line 82:13:  'response' is assigned a value but never used          @typescript-eslint/no-unused-vars
+
+webpack compiled with 1 warning
+ERROR in src/pages/Home.tsx:34:17
+TS2339: Property 'balances' does not exist on type 'DashboardData | undefined'.
+    32 |         const dashboardResponse = await userAPI.getDashboard();
+    33 |         const dashboardData = dashboardResponse.data.data;
+  > 34 |         const { balances, prices, recent_transactions } = dashboardData;
+       |                 ^^^^^^^^
+    35 |         setBalances(balances);
+    36 |         setPrices(prices);
+    37 |         setRecentTransactions(recent_transactions);
+
+ERROR in src/pages/Home.tsx:34:27
+TS2339: Property 'prices' does not exist on type 'DashboardData | undefined'.
+    32 |         const dashboardResponse = await userAPI.getDashboard();
+    33 |         const dashboardData = dashboardResponse.data.data;
+  > 34 |         const { balances, prices, recent_transactions } = dashboardData;
+       |                           ^^^^^^
+    35 |         setBalances(balances);
+    36 |         setPrices(prices);
+    37 |         setRecentTransactions(recent_transactions);
+
+ERROR in src/pages/Home.tsx:34:35
+TS2339: Property 'recent_transactions' does not exist on type 'DashboardData | undefined'.
+    32 |         const dashboardResponse = await userAPI.getDashboard();
+    33 |         const dashboardData = dashboardResponse.data.data;
+  > 34 |         const { balances, prices, recent_transactions } = dashboardData;
+       |                                   ^^^^^^^^^^^^^^^^^^^
+    35 |         setBalances(balances);
+    36 |         setPrices(prices);
+    37 |         setRecentTransactions(recent_transactions);
+
+ERROR in src/pages/Home.tsx:61:15
+TS2339: Property 'balances' does not exist on type 'DashboardData | undefined'.
+    59 |       const dashboardResponse = await userAPI.getDashboard();
+    60 |       const dashboardData = dashboardResponse.data.data;
+  > 61 |       const { balances, prices, recent_transactions } = dashboardData;
+       |               ^^^^^^^^
+    62 |       setBalances(balances);
+    63 |       setPrices(prices);
+    64 |       setRecentTransactions(recent_transactions);
+
+ERROR in src/pages/Home.tsx:61:25
+TS2339: Property 'prices' does not exist on type 'DashboardData | undefined'.
+    59 |       const dashboardResponse = await userAPI.getDashboard();
+    60 |       const dashboardData = dashboardResponse.data.data;
+  > 61 |       const { balances, prices, recent_transactions } = dashboardData;
+       |                         ^^^^^^
+    62 |       setBalances(balances);
+    63 |       setPrices(prices);
+    64 |       setRecentTransactions(recent_transactions);
+
+ERROR in src/pages/Home.tsx:61:33
+TS2339: Property 'recent_transactions' does not exist on type 'DashboardData | undefined'.
+    59 |       const dashboardResponse = await userAPI.getDashboard();
+    60 |       const dashboardData = dashboardResponse.data.data;
+  > 61 |       const { balances, prices, recent_transactions } = dashboardData;
+       |                                 ^^^^^^^^^^^^^^^^^^^
+    62 |       setBalances(balances);
+    63 |       setPrices(prices);
+    64 |       setRecentTransactions(recent_transactions);
+
+ERROR in src/pages/Home.tsx:87:15
+TS2339: Property 'balances' does not exist on type 'DashboardData | undefined'.
+    85 |       // Refresh data after successful trade
+    86 |       const dashboardResponse = await userAPI.getDashboard();
+  > 87 |       const { balances, prices, recent_transactions } = dashboardResponse.data.data;
+       |               ^^^^^^^^
+    88 |       setBalances(balances);
+    89 |       setPrices(prices);
+    90 |       setRecentTransactions(recent_transactions);
+
+ERROR in src/pages/Home.tsx:87:25
+TS2339: Property 'prices' does not exist on type 'DashboardData | undefined'.
+    85 |       // Refresh data after successful trade
+    86 |       const dashboardResponse = await userAPI.getDashboard();
+  > 87 |       const { balances, prices, recent_transactions } = dashboardResponse.data.data;
+       |                         ^^^^^^
+    88 |       setBalances(balances);
+    89 |       setPrices(prices);
+    90 |       setRecentTransactions(recent_transactions);
+
+ERROR in src/pages/Home.tsx:87:33
+TS2339: Property 'recent_transactions' does not exist on type 'DashboardData | undefined'.
+    85 |       // Refresh data after successful trade
+    86 |       const dashboardResponse = await userAPI.getDashboard();
+  > 87 |       const { balances, prices, recent_transactions } = dashboardResponse.data.data;
+       |                                 ^^^^^^^^^^^^^^^^^^^
+    88 |       setBalances(balances);
+    89 |       setPrices(prices);
+    90 |       setRecentTransactions(recent_transactions);
+
+Compiling...
+Compiled with warnings.
+
+[eslint] 
+src/pages/Home.tsx
+  Line 5:7:    'mockTransactions' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  Line 55:13:  'response' is assigned a value but never used          @typescript-eslint/no-unused-vars
+  Line 82:13:  'response' is assigned a value but never used          @typescript-eslint/no-unused-vars
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in [eslint] 
+src/pages/Home.tsx
+  Line 5:7:    'mockTransactions' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  Line 55:13:  'response' is assigned a value but never used          @typescript-eslint/no-unused-vars
+  Line 82:13:  'response' is assigned a value but never used          @typescript-eslint/no-unused-vars
+
+webpack compiled with 1 warning
+ERROR in src/pages/Home.tsx:34:17
+TS2339: Property 'balances' does not exist on type 'DashboardData | undefined'.
+    32 |         const dashboardResponse = await userAPI.getDashboard();
+    33 |         const dashboardData = dashboardResponse.data.data;
+  > 34 |         const { balances, prices, recent_transactions } = dashboardData;
+       |                 ^^^^^^^^
+    35 |         setBalances(balances);
+    36 |         setPrices(prices);
+    37 |         setRecentTransactions(recent_transactions);
+
+ERROR in src/pages/Home.tsx:34:27
+TS2339: Property 'prices' does not exist on type 'DashboardData | undefined'.
+    32 |         const dashboardResponse = await userAPI.getDashboard();
+    33 |         const dashboardData = dashboardResponse.data.data;
+  > 34 |         const { balances, prices, recent_transactions } = dashboardData;
+       |                           ^^^^^^
+    35 |         setBalances(balances);
+    36 |         setPrices(prices);
+    37 |         setRecentTransactions(recent_transactions);
+
+ERROR in src/pages/Home.tsx:34:35
+TS2339: Property 'recent_transactions' does not exist on type 'DashboardData | undefined'.
+    32 |         const dashboardResponse = await userAPI.getDashboard();
+    33 |         const dashboardData = dashboardResponse.data.data;
+  > 34 |         const { balances, prices, recent_transactions } = dashboardData;
+       |                                   ^^^^^^^^^^^^^^^^^^^
+    35 |         setBalances(balances);
+    36 |         setPrices(prices);
+    37 |         setRecentTransactions(recent_transactions);
+
+ERROR in src/pages/Home.tsx:61:15
+TS2339: Property 'balances' does not exist on type 'DashboardData | undefined'.
+    59 |       const dashboardResponse = await userAPI.getDashboard();
+    60 |       const dashboardData = dashboardResponse.data.data;
+  > 61 |       const { balances, prices, recent_transactions } = dashboardData;
+       |               ^^^^^^^^
+    62 |       setBalances(balances);
+    63 |       setPrices(prices);
+    64 |       setRecentTransactions(recent_transactions);
+
+ERROR in src/pages/Home.tsx:61:25
+TS2339: Property 'prices' does not exist on type 'DashboardData | undefined'.
+    59 |       const dashboardResponse = await userAPI.getDashboard();
+    60 |       const dashboardData = dashboardResponse.data.data;
+  > 61 |       const { balances, prices, recent_transactions } = dashboardData;
+       |                         ^^^^^^
+    62 |       setBalances(balances);
+    63 |       setPrices(prices);
+    64 |       setRecentTransactions(recent_transactions);
+
+ERROR in src/pages/Home.tsx:61:33
+TS2339: Property 'recent_transactions' does not exist on type 'DashboardData | undefined'.
+    59 |       const dashboardResponse = await userAPI.getDashboard();
+    60 |       const dashboardData = dashboardResponse.data.data;
+  > 61 |       const { balances, prices, recent_transactions } = dashboardData;
+       |                                 ^^^^^^^^^^^^^^^^^^^
+    62 |       setBalances(balances);
+    63 |       setPrices(prices);
+    64 |       setRecentTransactions(recent_transactions);
+
+ERROR in src/pages/Home.tsx:88:15
+TS2339: Property 'balances' does not exist on type 'DashboardData | undefined'.
+    86 |       const dashboardResponse = await userAPI.getDashboard();
+    87 |       const dashboardData = dashboardResponse.data.data;
+  > 88 |       const { balances, prices, recent_transactions } = dashboardData;
+       |               ^^^^^^^^
+    89 |       setBalances(balances);
+    90 |       setPrices(prices);
+    91 |       setRecentTransactions(recent_transactions);
+
+ERROR in src/pages/Home.tsx:88:25
+TS2339: Property 'prices' does not exist on type 'DashboardData | undefined'.
+    86 |       const dashboardResponse = await userAPI.getDashboard();
+    87 |       const dashboardData = dashboardResponse.data.data;
+  > 88 |       const { balances, prices, recent_transactions } = dashboardData;
+       |                         ^^^^^^
+    89 |       setBalances(balances);
+    90 |       setPrices(prices);
+    91 |       setRecentTransactions(recent_transactions);
+
+ERROR in src/pages/Home.tsx:88:33
+TS2339: Property 'recent_transactions' does not exist on type 'DashboardData | undefined'.
+    86 |       const dashboardResponse = await userAPI.getDashboard();
+    87 |       const dashboardData = dashboardResponse.data.data;
+  > 88 |       const { balances, prices, recent_transactions } = dashboardData;
+       |                                 ^^^^^^^^^^^^^^^^^^^
+    89 |       setBalances(balances);
+    90 |       setPrices(prices);
+    91 |       setRecentTransactions(recent_transactions);
+
+Compiling...
+Compiled with warnings.
+
+[eslint] 
+src/pages/Home.tsx
+  Line 5:7:    'mockTransactions' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  Line 55:13:  'response' is assigned a value but never used          @typescript-eslint/no-unused-vars
+  Line 82:13:  'response' is assigned a value but never used          @typescript-eslint/no-unused-vars
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in [eslint] 
+src/pages/Home.tsx
+  Line 5:7:    'mockTransactions' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  Line 55:13:  'response' is assigned a value but never used          @typescript-eslint/no-unused-vars
+  Line 82:13:  'response' is assigned a value but never used          @typescript-eslint/no-unused-vars
+
+webpack compiled with 1 warning
+ERROR in src/pages/Home.tsx:33:62
+TS2304: Cannot find name 'DashboardData'.
+    31 |       try {
+    32 |         const dashboardResponse = await userAPI.getDashboard();
+  > 33 |         const dashboardData = dashboardResponse.data.data as DashboardData;
+       |                                                              ^^^^^^^^^^^^^
+    34 |         const { balances, prices, recent_transactions } = dashboardData;
+    35 |         setBalances(balances);
+    36 |         setPrices(prices);
+
+ERROR in src/pages/Home.tsx:61:15
+TS2339: Property 'balances' does not exist on type 'DashboardData | undefined'.
+    59 |       const dashboardResponse = await userAPI.getDashboard();
+    60 |       const dashboardData = dashboardResponse.data.data;
+  > 61 |       const { balances, prices, recent_transactions } = dashboardData;
+       |               ^^^^^^^^
+    62 |       setBalances(balances);
+    63 |       setPrices(prices);
+    64 |       setRecentTransactions(recent_transactions);
+
+ERROR in src/pages/Home.tsx:61:25
+TS2339: Property 'prices' does not exist on type 'DashboardData | undefined'.
+    59 |       const dashboardResponse = await userAPI.getDashboard();
+    60 |       const dashboardData = dashboardResponse.data.data;
+  > 61 |       const { balances, prices, recent_transactions } = dashboardData;
+       |                         ^^^^^^
+    62 |       setBalances(balances);
+    63 |       setPrices(prices);
+    64 |       setRecentTransactions(recent_transactions);
+
+ERROR in src/pages/Home.tsx:61:33
+TS2339: Property 'recent_transactions' does not exist on type 'DashboardData | undefined'.
+    59 |       const dashboardResponse = await userAPI.getDashboard();
+    60 |       const dashboardData = dashboardResponse.data.data;
+  > 61 |       const { balances, prices, recent_transactions } = dashboardData;
+       |                                 ^^^^^^^^^^^^^^^^^^^
+    62 |       setBalances(balances);
+    63 |       setPrices(prices);
+    64 |       setRecentTransactions(recent_transactions);
+
+ERROR in src/pages/Home.tsx:88:15
+TS2339: Property 'balances' does not exist on type 'DashboardData | undefined'.
+    86 |       const dashboardResponse = await userAPI.getDashboard();
+    87 |       const dashboardData = dashboardResponse.data.data;
+  > 88 |       const { balances, prices, recent_transactions } = dashboardData;
+       |               ^^^^^^^^
+    89 |       setBalances(balances);
+    90 |       setPrices(prices);
+    91 |       setRecentTransactions(recent_transactions);
+
+ERROR in src/pages/Home.tsx:88:25
+TS2339: Property 'prices' does not exist on type 'DashboardData | undefined'.
+    86 |       const dashboardResponse = await userAPI.getDashboard();
+    87 |       const dashboardData = dashboardResponse.data.data;
+  > 88 |       const { balances, prices, recent_transactions } = dashboardData;
+       |                         ^^^^^^
+    89 |       setBalances(balances);
+    90 |       setPrices(prices);
+    91 |       setRecentTransactions(recent_transactions);
+
+ERROR in src/pages/Home.tsx:88:33
+TS2339: Property 'recent_transactions' does not exist on type 'DashboardData | undefined'.
+    86 |       const dashboardResponse = await userAPI.getDashboard();
+    87 |       const dashboardData = dashboardResponse.data.data;
+  > 88 |       const { balances, prices, recent_transactions } = dashboardData;
+       |                                 ^^^^^^^^^^^^^^^^^^^
+    89 |       setBalances(balances);
+    90 |       setPrices(prices);
+    91 |       setRecentTransactions(recent_transactions);
+
+Compiling...
+Compiled with warnings.
+
+[eslint] 
+src/pages/Home.tsx
+  Line 5:7:    'mockTransactions' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  Line 55:13:  'response' is assigned a value but never used          @typescript-eslint/no-unused-vars
+  Line 82:13:  'response' is assigned a value but never used          @typescript-eslint/no-unused-vars
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in [eslint] 
+src/pages/Home.tsx
+  Line 5:7:    'mockTransactions' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  Line 55:13:  'response' is assigned a value but never used          @typescript-eslint/no-unused-vars
+  Line 82:13:  'response' is assigned a value but never used          @typescript-eslint/no-unused-vars
+
+webpack compiled with 1 warning
+ERROR in src/pages/Home.tsx:61:15
+TS2339: Property 'balances' does not exist on type 'DashboardData | undefined'.
+    59 |       const dashboardResponse = await userAPI.getDashboard();
+    60 |       const dashboardData = dashboardResponse.data.data;
+  > 61 |       const { balances, prices, recent_transactions } = dashboardData;
+       |               ^^^^^^^^
+    62 |       setBalances(balances);
+    63 |       setPrices(prices);
+    64 |       setRecentTransactions(recent_transactions);
+
+ERROR in src/pages/Home.tsx:61:25
+TS2339: Property 'prices' does not exist on type 'DashboardData | undefined'.
+    59 |       const dashboardResponse = await userAPI.getDashboard();
+    60 |       const dashboardData = dashboardResponse.data.data;
+  > 61 |       const { balances, prices, recent_transactions } = dashboardData;
+       |                         ^^^^^^
+    62 |       setBalances(balances);
+    63 |       setPrices(prices);
+    64 |       setRecentTransactions(recent_transactions);
+
+ERROR in src/pages/Home.tsx:61:33
+TS2339: Property 'recent_transactions' does not exist on type 'DashboardData | undefined'.
+    59 |       const dashboardResponse = await userAPI.getDashboard();
+    60 |       const dashboardData = dashboardResponse.data.data;
+  > 61 |       const { balances, prices, recent_transactions } = dashboardData;
+       |                                 ^^^^^^^^^^^^^^^^^^^
+    62 |       setBalances(balances);
+    63 |       setPrices(prices);
+    64 |       setRecentTransactions(recent_transactions);
+
+ERROR in src/pages/Home.tsx:88:15
+TS2339: Property 'balances' does not exist on type 'DashboardData | undefined'.
+    86 |       const dashboardResponse = await userAPI.getDashboard();
+    87 |       const dashboardData = dashboardResponse.data.data;
+  > 88 |       const { balances, prices, recent_transactions } = dashboardData;
+       |               ^^^^^^^^
+    89 |       setBalances(balances);
+    90 |       setPrices(prices);
+    91 |       setRecentTransactions(recent_transactions);
+
+ERROR in src/pages/Home.tsx:88:25
+TS2339: Property 'prices' does not exist on type 'DashboardData | undefined'.
+    86 |       const dashboardResponse = await userAPI.getDashboard();
+    87 |       const dashboardData = dashboardResponse.data.data;
+  > 88 |       const { balances, prices, recent_transactions } = dashboardData;
+       |                         ^^^^^^
+    89 |       setBalances(balances);
+    90 |       setPrices(prices);
+    91 |       setRecentTransactions(recent_transactions);
+
+ERROR in src/pages/Home.tsx:88:33
+TS2339: Property 'recent_transactions' does not exist on type 'DashboardData | undefined'.
+    86 |       const dashboardResponse = await userAPI.getDashboard();
+    87 |       const dashboardData = dashboardResponse.data.data;
+  > 88 |       const { balances, prices, recent_transactions } = dashboardData;
+       |                                 ^^^^^^^^^^^^^^^^^^^
+    89 |       setBalances(balances);
+    90 |       setPrices(prices);
+    91 |       setRecentTransactions(recent_transactions);
+
+Compiling...
+Compiled with warnings.
+
+[eslint] 
+src/pages/Home.tsx
+  Line 5:7:    'mockTransactions' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  Line 55:13:  'response' is assigned a value but never used          @typescript-eslint/no-unused-vars
+  Line 82:13:  'response' is assigned a value but never used          @typescript-eslint/no-unused-vars
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in [eslint] 
+src/pages/Home.tsx
+  Line 5:7:    'mockTransactions' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  Line 55:13:  'response' is assigned a value but never used          @typescript-eslint/no-unused-vars
+  Line 82:13:  'response' is assigned a value but never used          @typescript-eslint/no-unused-vars
+
+webpack compiled with 1 warning
+ERROR in src/pages/Home.tsx:88:15
+TS2339: Property 'balances' does not exist on type 'DashboardData | undefined'.
+    86 |       const dashboardResponse = await userAPI.getDashboard();
+    87 |       const dashboardData = dashboardResponse.data.data;
+  > 88 |       const { balances, prices, recent_transactions } = dashboardData;
+       |               ^^^^^^^^
+    89 |       setBalances(balances);
+    90 |       setPrices(prices);
+    91 |       setRecentTransactions(recent_transactions);
+
+ERROR in src/pages/Home.tsx:88:25
+TS2339: Property 'prices' does not exist on type 'DashboardData | undefined'.
+    86 |       const dashboardResponse = await userAPI.getDashboard();
+    87 |       const dashboardData = dashboardResponse.data.data;
+  > 88 |       const { balances, prices, recent_transactions } = dashboardData;
+       |                         ^^^^^^
+    89 |       setBalances(balances);
+    90 |       setPrices(prices);
+    91 |       setRecentTransactions(recent_transactions);
+
+ERROR in src/pages/Home.tsx:88:33
+TS2339: Property 'recent_transactions' does not exist on type 'DashboardData | undefined'.
+    86 |       const dashboardResponse = await userAPI.getDashboard();
+    87 |       const dashboardData = dashboardResponse.data.data;
+  > 88 |       const { balances, prices, recent_transactions } = dashboardData;
+       |                                 ^^^^^^^^^^^^^^^^^^^
+    89 |       setBalances(balances);
+    90 |       setPrices(prices);
+    91 |       setRecentTransactions(recent_transactions);
+
+Compiling...
+Compiled with warnings.
+
+[eslint] 
+src/pages/Home.tsx
+  Line 5:7:    'mockTransactions' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  Line 55:13:  'response' is assigned a value but never used          @typescript-eslint/no-unused-vars
+  Line 82:13:  'response' is assigned a value but never used          @typescript-eslint/no-unused-vars
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in [eslint] 
+src/pages/Home.tsx
+  Line 5:7:    'mockTransactions' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  Line 55:13:  'response' is assigned a value but never used          @typescript-eslint/no-unused-vars
+  Line 82:13:  'response' is assigned a value but never used          @typescript-eslint/no-unused-vars
+
+webpack compiled with 1 warning
+No issues found.
+Compiling...
+Compiled with warnings.
+
+[eslint] 
+src/pages/Home.tsx
+  Line 42:13:  'response' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  Line 69:13:  'response' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in [eslint] 
+src/pages/Home.tsx
+  Line 42:13:  'response' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  Line 69:13:  'response' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+webpack compiled with 1 warning
+No issues found.
+Compiling...
+Compiled with warnings.
+
+[eslint] 
+src/pages/Home.tsx
+  Line 42:13:  'response' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  Line 69:13:  'response' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in [eslint] 
+src/pages/Home.tsx
+  Line 42:13:  'response' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  Line 69:13:  'response' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+webpack compiled with 1 warning
+No issues found.
+Compiling...
+Compiled with warnings.
+
+[eslint] 
+src/pages/Home.tsx
+  Line 42:13:  'response' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  Line 69:13:  'response' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in [eslint] 
+src/pages/Home.tsx
+  Line 42:13:  'response' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  Line 69:13:  'response' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+webpack compiled with 1 warning
+No issues found.
+Compiling...
+Compiled with warnings.
+
+[eslint] 
+src/pages/Home.tsx
+  Line 42:13:  'response' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  Line 69:13:  'response' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in [eslint] 
+src/pages/Home.tsx
+  Line 42:13:  'response' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  Line 69:13:  'response' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+webpack compiled with 1 warning
+No issues found.
+Compiling...
+Compiled with warnings.
+
+[eslint] 
+src/pages/Home.tsx
+  Line 42:13:  'response' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  Line 69:13:  'response' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in [eslint] 
+src/pages/Home.tsx
+  Line 42:13:  'response' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  Line 69:13:  'response' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+webpack compiled with 1 warning
+No issues found.
+Compiling...
+Compiled with warnings.
+
+[eslint] 
+src/pages/Home.tsx
+  Line 3:3:    'Wallet' is defined but never used                     @typescript-eslint/no-unused-vars
+  Line 4:3:    'TrendingUp' is defined but never used                 @typescript-eslint/no-unused-vars
+  Line 5:3:    'TrendingDown' is defined but never used               @typescript-eslint/no-unused-vars
+  Line 6:3:    'Activity' is defined but never used                   @typescript-eslint/no-unused-vars
+  Line 7:3:    'Zap' is defined but never used                        @typescript-eslint/no-unused-vars
+  Line 8:3:    'Eye' is defined but never used                        @typescript-eslint/no-unused-vars
+  Line 9:3:    'ChevronRight' is defined but never used               @typescript-eslint/no-unused-vars
+  Line 10:3:   'Bitcoin' is defined but never used                    @typescript-eslint/no-unused-vars
+  Line 11:3:   'DollarSign' is defined but never used                 @typescript-eslint/no-unused-vars
+  Line 12:3:   'Clock' is defined but never used                      @typescript-eslint/no-unused-vars
+  Line 13:3:   'Sparkles' is defined but never used                   @typescript-eslint/no-unused-vars
+  Line 17:8:   'TradingModal' is defined but never used               @typescript-eslint/no-unused-vars
+  Line 19:3:   'getTransactionDisplayName' is defined but never used  @typescript-eslint/no-unused-vars
+  Line 20:3:   'getTransactionIcon' is defined but never used         @typescript-eslint/no-unused-vars
+  Line 21:3:   'getTransactionColor' is defined but never used        @typescript-eslint/no-unused-vars
+  Line 22:3:   'formatTimeAgo' is defined but never used              @typescript-eslint/no-unused-vars
+  Line 32:10:  'isModalOpen' is assigned a value but never used       @typescript-eslint/no-unused-vars
+  Line 32:23:  'setIsModalOpen' is assigned a value but never used    @typescript-eslint/no-unused-vars
+  Line 33:10:  'modalType' is assigned a value but never used         @typescript-eslint/no-unused-vars
+  Line 33:21:  'setModalType' is assigned a value but never used      @typescript-eslint/no-unused-vars
+  Line 61:13:  'response' is assigned a value but never used          @typescript-eslint/no-unused-vars
+  Line 88:13:  'response' is assigned a value but never used          @typescript-eslint/no-unused-vars
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in [eslint] 
+src/pages/Home.tsx
+  Line 3:3:    'Wallet' is defined but never used                     @typescript-eslint/no-unused-vars
+  Line 4:3:    'TrendingUp' is defined but never used                 @typescript-eslint/no-unused-vars
+  Line 5:3:    'TrendingDown' is defined but never used               @typescript-eslint/no-unused-vars
+  Line 6:3:    'Activity' is defined but never used                   @typescript-eslint/no-unused-vars
+  Line 7:3:    'Zap' is defined but never used                        @typescript-eslint/no-unused-vars
+  Line 8:3:    'Eye' is defined but never used                        @typescript-eslint/no-unused-vars
+  Line 9:3:    'ChevronRight' is defined but never used               @typescript-eslint/no-unused-vars
+  Line 10:3:   'Bitcoin' is defined but never used                    @typescript-eslint/no-unused-vars
+  Line 11:3:   'DollarSign' is defined but never used                 @typescript-eslint/no-unused-vars
+  Line 12:3:   'Clock' is defined but never used                      @typescript-eslint/no-unused-vars
+  Line 13:3:   'Sparkles' is defined but never used                   @typescript-eslint/no-unused-vars
+  Line 17:8:   'TradingModal' is defined but never used               @typescript-eslint/no-unused-vars
+  Line 19:3:   'getTransactionDisplayName' is defined but never used  @typescript-eslint/no-unused-vars
+  Line 20:3:   'getTransactionIcon' is defined but never used         @typescript-eslint/no-unused-vars
+  Line 21:3:   'getTransactionColor' is defined but never used        @typescript-eslint/no-unused-vars
+  Line 22:3:   'formatTimeAgo' is defined but never used              @typescript-eslint/no-unused-vars
+  Line 32:10:  'isModalOpen' is assigned a value but never used       @typescript-eslint/no-unused-vars
+  Line 32:23:  'setIsModalOpen' is assigned a value but never used    @typescript-eslint/no-unused-vars
+  Line 33:10:  'modalType' is assigned a value but never used         @typescript-eslint/no-unused-vars
+  Line 33:21:  'setModalType' is assigned a value but never used      @typescript-eslint/no-unused-vars
+  Line 61:13:  'response' is assigned a value but never used          @typescript-eslint/no-unused-vars
+  Line 88:13:  'response' is assigned a value but never used          @typescript-eslint/no-unused-vars
+
+webpack compiled with 1 warning
+ERROR in src/pages/Home.tsx:53:10
+TS2304: Cannot find name 'amount'.
+    51 |
+    52 |   const handleBuy = async () => {
+  > 53 |     if (!amount) return;
+       |          ^^^^^^
+    54 |
+    55 |     try {
+    56 |       setIsLoading(true);
+
+ERROR in src/pages/Home.tsx:60:36
+TS2304: Cannot find name 'amount'.
+    58 |       setSuccess('');
+    59 |
+  > 60 |       const inrAmount = parseFloat(amount);
+       |                                    ^^^^^^
+    61 |       const response = await userAPI.buyBitcoin({ amount: inrAmount });
+    62 |
+    63 |       setSuccess('Bitcoin purchased successfully!');
+
+ERROR in src/pages/Home.tsx:71:7
+TS2304: Cannot find name 'setAmount'.
+    69 |       setPrices(prices);
+    70 |       setRecentTransactions(recent_transactions);
+  > 71 |       setAmount('');
+       |       ^^^^^^^^^
+    72 |     } catch (error: any) {
+    73 |       setError(error.response?.data?.message || 'Failed to buy Bitcoin');
+    74 |     } finally {
+
+ERROR in src/pages/Home.tsx:80:10
+TS2304: Cannot find name 'btcAmount'.
+    78 |
+    79 |   const handleSell = async () => {
+  > 80 |     if (!btcAmount) return;
+       |          ^^^^^^^^^
+    81 |
+    82 |     try {
+    83 |       setIsLoading(true);
+
+ERROR in src/pages/Home.tsx:87:40
+TS2304: Cannot find name 'btcAmount'.
+    85 |       setSuccess('');
+    86 |
+  > 87 |       const btcSellAmount = parseFloat(btcAmount);
+       |                                        ^^^^^^^^^
+    88 |       const response = await userAPI.sellBitcoin({ amount: btcSellAmount });
+    89 |
+    90 |       setSuccess('Bitcoin sold successfully!');
+
+ERROR in src/pages/Home.tsx:98:7
+TS2304: Cannot find name 'setBtcAmount'.
+     96 |       setPrices(prices);
+     97 |       setRecentTransactions(recent_transactions);
+  >  98 |       setBtcAmount('');
+        |       ^^^^^^^^^^^^
+     99 |     } catch (error: any) {
+    100 |       setError(error.response?.data?.message || 'Failed to sell Bitcoin');
+    101 |     } finally {
+
+ERROR in src/pages/Home.tsx:144:20
+TS2304: Cannot find name 'amount'.
+    142 |             id="buy-amount"
+    143 |             type="number"
+  > 144 |             value={amount}
+        |                    ^^^^^^
+    145 |             onChange={(e) => setAmount(e.target.value)}
+    146 |             className="input-field w-full"
+    147 |             placeholder="1000"
+
+ERROR in src/pages/Home.tsx:145:30
+TS2304: Cannot find name 'setAmount'.
+    143 |             type="number"
+    144 |             value={amount}
+  > 145 |             onChange={(e) => setAmount(e.target.value)}
+        |                              ^^^^^^^^^
+    146 |             className="input-field w-full"
+    147 |             placeholder="1000"
+    148 |           />
+
+ERROR in src/pages/Home.tsx:161:20
+TS2304: Cannot find name 'btcAmount'.
+    159 |             id="sell-amount"
+    160 |             type="number"
+  > 161 |             value={btcAmount}
+        |                    ^^^^^^^^^
+    162 |             onChange={(e) => setBtcAmount(e.target.value)}
+    163 |             className="input-field w-full"
+    164 |             placeholder="0.001"
+
+ERROR in src/pages/Home.tsx:162:30
+TS2304: Cannot find name 'setBtcAmount'.
+    160 |             type="number"
+    161 |             value={btcAmount}
+  > 162 |             onChange={(e) => setBtcAmount(e.target.value)}
+        |                              ^^^^^^^^^^^^
+    163 |             className="input-field w-full"
+    164 |             placeholder="0.001"
+    165 |           />
+
+Compiling...
+Compiled with warnings.
+
+[eslint] 
+src/pages/Home.tsx
+  Line 3:3:    'Wallet' is defined but never used                     @typescript-eslint/no-unused-vars
+  Line 4:3:    'TrendingUp' is defined but never used                 @typescript-eslint/no-unused-vars
+  Line 5:3:    'TrendingDown' is defined but never used               @typescript-eslint/no-unused-vars
+  Line 6:3:    'Activity' is defined but never used                   @typescript-eslint/no-unused-vars
+  Line 7:3:    'Zap' is defined but never used                        @typescript-eslint/no-unused-vars
+  Line 8:3:    'Eye' is defined but never used                        @typescript-eslint/no-unused-vars
+  Line 9:3:    'ChevronRight' is defined but never used               @typescript-eslint/no-unused-vars
+  Line 10:3:   'Bitcoin' is defined but never used                    @typescript-eslint/no-unused-vars
+  Line 11:3:   'DollarSign' is defined but never used                 @typescript-eslint/no-unused-vars
+  Line 12:3:   'Clock' is defined but never used                      @typescript-eslint/no-unused-vars
+  Line 13:3:   'Sparkles' is defined but never used                   @typescript-eslint/no-unused-vars
+  Line 17:8:   'TradingModal' is defined but never used               @typescript-eslint/no-unused-vars
+  Line 19:3:   'getTransactionDisplayName' is defined but never used  @typescript-eslint/no-unused-vars
+  Line 20:3:   'getTransactionIcon' is defined but never used         @typescript-eslint/no-unused-vars
+  Line 21:3:   'getTransactionColor' is defined but never used        @typescript-eslint/no-unused-vars
+  Line 22:3:   'formatTimeAgo' is defined but never used              @typescript-eslint/no-unused-vars
+  Line 32:10:  'isModalOpen' is assigned a value but never used       @typescript-eslint/no-unused-vars
+  Line 52:9:   'openTradingModal' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  Line 57:9:   'handleTrade' is assigned a value but never used       @typescript-eslint/no-unused-vars
+  Line 85:9:   'refreshData' is assigned a value but never used       @typescript-eslint/no-unused-vars
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in [eslint] 
+src/pages/Home.tsx
+  Line 3:3:    'Wallet' is defined but never used                     @typescript-eslint/no-unused-vars
+  Line 4:3:    'TrendingUp' is defined but never used                 @typescript-eslint/no-unused-vars
+  Line 5:3:    'TrendingDown' is defined but never used               @typescript-eslint/no-unused-vars
+  Line 6:3:    'Activity' is defined but never used                   @typescript-eslint/no-unused-vars
+  Line 7:3:    'Zap' is defined but never used                        @typescript-eslint/no-unused-vars
+  Line 8:3:    'Eye' is defined but never used                        @typescript-eslint/no-unused-vars
+  Line 9:3:    'ChevronRight' is defined but never used               @typescript-eslint/no-unused-vars
+  Line 10:3:   'Bitcoin' is defined but never used                    @typescript-eslint/no-unused-vars
+  Line 11:3:   'DollarSign' is defined but never used                 @typescript-eslint/no-unused-vars
+  Line 12:3:   'Clock' is defined but never used                      @typescript-eslint/no-unused-vars
+  Line 13:3:   'Sparkles' is defined but never used                   @typescript-eslint/no-unused-vars
+  Line 17:8:   'TradingModal' is defined but never used               @typescript-eslint/no-unused-vars
+  Line 19:3:   'getTransactionDisplayName' is defined but never used  @typescript-eslint/no-unused-vars
+  Line 20:3:   'getTransactionIcon' is defined but never used         @typescript-eslint/no-unused-vars
+  Line 21:3:   'getTransactionColor' is defined but never used        @typescript-eslint/no-unused-vars
+  Line 22:3:   'formatTimeAgo' is defined but never used              @typescript-eslint/no-unused-vars
+  Line 32:10:  'isModalOpen' is assigned a value but never used       @typescript-eslint/no-unused-vars
+  Line 52:9:   'openTradingModal' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  Line 57:9:   'handleTrade' is assigned a value but never used       @typescript-eslint/no-unused-vars
+  Line 85:9:   'refreshData' is assigned a value but never used       @typescript-eslint/no-unused-vars
+
+webpack compiled with 1 warning
+ERROR in src/pages/Home.tsx:136:20
+TS2304: Cannot find name 'amount'.
+    134 |             id="buy-amount"
+    135 |             type="number"
+  > 136 |             value={amount}
+        |                    ^^^^^^
+    137 |             onChange={(e) => setAmount(e.target.value)}
+    138 |             className="input-field w-full"
+    139 |             placeholder="1000"
+
+ERROR in src/pages/Home.tsx:137:30
+TS2304: Cannot find name 'setAmount'.
+    135 |             type="number"
+    136 |             value={amount}
+  > 137 |             onChange={(e) => setAmount(e.target.value)}
+        |                              ^^^^^^^^^
+    138 |             className="input-field w-full"
+    139 |             placeholder="1000"
+    140 |           />
+
+ERROR in src/pages/Home.tsx:142:57
+TS2304: Cannot find name 'handleBuy'.
+    140 |           />
+    141 |         </div>
+  > 142 |         <button className="btn-primary w-full" onClick={handleBuy} disabled={isLoading}>
+        |                                                         ^^^^^^^^^
+    143 |           Buy Bitcoin
+    144 |         </button>
+    145 |
+
+ERROR in src/pages/Home.tsx:153:20
+TS2304: Cannot find name 'btcAmount'.
+    151 |             id="sell-amount"
+    152 |             type="number"
+  > 153 |             value={btcAmount}
+        |                    ^^^^^^^^^
+    154 |             onChange={(e) => setBtcAmount(e.target.value)}
+    155 |             className="input-field w-full"
+    156 |             placeholder="0.001"
+
+ERROR in src/pages/Home.tsx:154:30
+TS2304: Cannot find name 'setBtcAmount'.
+    152 |             type="number"
+    153 |             value={btcAmount}
+  > 154 |             onChange={(e) => setBtcAmount(e.target.value)}
+        |                              ^^^^^^^^^^^^
+    155 |             className="input-field w-full"
+    156 |             placeholder="0.001"
+    157 |           />
+
+ERROR in src/pages/Home.tsx:159:59
+TS2304: Cannot find name 'handleSell'.
+    157 |           />
+    158 |         </div>
+  > 159 |         <button className="btn-secondary w-full" onClick={handleSell} disabled={isLoading}>
+        |                                                           ^^^^^^^^^^
+    160 |           Sell Bitcoin
+    161 |         </button>
+    162 |       </div>
+
+Compiling...
+Compiled with warnings.
+
+[eslint] 
+src/pages/Home.tsx
+  Line 7:3:  'Zap' is defined but never used  @typescript-eslint/no-unused-vars
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in [eslint] 
+src/pages/Home.tsx
+  Line 7:3:  'Zap' is defined but never used  @typescript-eslint/no-unused-vars
+
+webpack compiled with 1 warning
+No issues found.
+Compiling...
+Compiled with warnings.
+
+[eslint] 
+src/pages/History.tsx
+  Line 2:10:  'Activity' is defined but never used                   @typescript-eslint/no-unused-vars
+  Line 2:20:  'Filter' is defined but never used                     @typescript-eslint/no-unused-vars
+  Line 2:28:  'ChevronDown' is defined but never used                @typescript-eslint/no-unused-vars
+  Line 2:41:  'Wallet' is defined but never used                     @typescript-eslint/no-unused-vars
+  Line 6:3:   'getTransactionDisplayName' is defined but never used  @typescript-eslint/no-unused-vars
+  Line 7:3:   'getTransactionIcon' is defined but never used         @typescript-eslint/no-unused-vars
+  Line 8:3:   'getTransactionColor' is defined but never used        @typescript-eslint/no-unused-vars
+  Line 9:3:   'formatTimeAgo' is defined but never used              @typescript-eslint/no-unused-vars
+
+src/pages/Home.tsx
+  Line 7:3:  'Zap' is defined but never used  @typescript-eslint/no-unused-vars
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in [eslint] 
+src/pages/History.tsx
+  Line 2:10:  'Activity' is defined but never used                   @typescript-eslint/no-unused-vars
+  Line 2:20:  'Filter' is defined but never used                     @typescript-eslint/no-unused-vars
+  Line 2:28:  'ChevronDown' is defined but never used                @typescript-eslint/no-unused-vars
+  Line 2:41:  'Wallet' is defined but never used                     @typescript-eslint/no-unused-vars
+  Line 6:3:   'getTransactionDisplayName' is defined but never used  @typescript-eslint/no-unused-vars
+  Line 7:3:   'getTransactionIcon' is defined but never used         @typescript-eslint/no-unused-vars
+  Line 8:3:   'getTransactionColor' is defined but never used        @typescript-eslint/no-unused-vars
+  Line 9:3:   'formatTimeAgo' is defined but never used              @typescript-eslint/no-unused-vars
+
+src/pages/Home.tsx
+  Line 7:3:  'Zap' is defined but never used  @typescript-eslint/no-unused-vars
+
+webpack compiled with 1 warning
+No issues found.
+Compiling...
+Compiled with warnings.
+
+[eslint] 
+src/pages/History.tsx
+  Line 2:10:  'Activity' is defined but never used                   @typescript-eslint/no-unused-vars
+  Line 2:20:  'Filter' is defined but never used                     @typescript-eslint/no-unused-vars
+  Line 2:28:  'ChevronDown' is defined but never used                @typescript-eslint/no-unused-vars
+  Line 2:41:  'Wallet' is defined but never used                     @typescript-eslint/no-unused-vars
+  Line 6:3:   'getTransactionDisplayName' is defined but never used  @typescript-eslint/no-unused-vars
+  Line 9:3:   'formatTimeAgo' is defined but never used              @typescript-eslint/no-unused-vars
+
+src/pages/Home.tsx
+  Line 7:3:  'Zap' is defined but never used  @typescript-eslint/no-unused-vars
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in [eslint] 
+src/pages/History.tsx
+  Line 2:10:  'Activity' is defined but never used                   @typescript-eslint/no-unused-vars
+  Line 2:20:  'Filter' is defined but never used                     @typescript-eslint/no-unused-vars
+  Line 2:28:  'ChevronDown' is defined but never used                @typescript-eslint/no-unused-vars
+  Line 2:41:  'Wallet' is defined but never used                     @typescript-eslint/no-unused-vars
+  Line 6:3:   'getTransactionDisplayName' is defined but never used  @typescript-eslint/no-unused-vars
+  Line 9:3:   'formatTimeAgo' is defined but never used              @typescript-eslint/no-unused-vars
+
+src/pages/Home.tsx
+  Line 7:3:  'Zap' is defined but never used  @typescript-eslint/no-unused-vars
+
+webpack compiled with 1 warning
+No issues found.
+Compiling...
+Compiled with warnings.
+
+[eslint] 
+src/pages/Home.tsx
+  Line 7:3:  'Zap' is defined but never used  @typescript-eslint/no-unused-vars
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in [eslint] 
+src/pages/Home.tsx
+  Line 7:3:  'Zap' is defined but never used  @typescript-eslint/no-unused-vars
+
+webpack compiled with 1 warning
+No issues found.
+Compiling...
+Compiled successfully!
+webpack compiled successfully
+No issues found.
+Compiling...
+Compiled successfully!
+webpack compiled successfully
+Files successfully emitted, waiting for typecheck results...
+Issues checking in progress...
+No issues found.
+Compiling...
+Compiled successfully!
+webpack compiled successfully
+No issues found.
+Compiling...
+Compiled successfully!
+webpack compiled successfully
+No issues found.
+Compiling...
+Compiled with warnings.
+
+[eslint] 
+src/pages/Home.tsx
+  Line 26:3:  'getTransactionColor' is defined but never used  @typescript-eslint/no-unused-vars
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in [eslint] 
+src/pages/Home.tsx
+  Line 26:3:  'getTransactionColor' is defined but never used  @typescript-eslint/no-unused-vars
+
+webpack compiled with 1 warning
+No issues found.
+Compiling...
+Compiled with warnings.
+
+[eslint] 
+src/pages/History.tsx
+  Line 21:3:  'getTransactionColor' is defined but never used  @typescript-eslint/no-unused-vars
+
+src/pages/Home.tsx
+  Line 26:3:  'getTransactionColor' is defined but never used  @typescript-eslint/no-unused-vars
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in [eslint] 
+src/pages/History.tsx
+  Line 21:3:  'getTransactionColor' is defined but never used  @typescript-eslint/no-unused-vars
+
+src/pages/Home.tsx
+  Line 26:3:  'getTransactionColor' is defined but never used  @typescript-eslint/no-unused-vars
+
+webpack compiled with 1 warning
+No issues found.

@@ -1,0 +1,94 @@
+import React from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import { Home, History, LogOut, Settings, Users, BarChart3 } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
+
+interface LayoutProps {
+  children: React.ReactNode;
+  isAdmin?: boolean;
+}
+
+const Layout: React.FC<LayoutProps> = ({ children, isAdmin = false }) => {
+  const { user, logout } = useAuth();
+  const location = useLocation();
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
+  };
+
+  const userNavItems = [
+    { name: 'Home', path: '/', icon: Home },
+    { name: 'History', path: '/history', icon: History },
+  ];
+
+  const adminNavItems = [
+    { name: 'Dashboard', path: '/admin', icon: BarChart3 },
+    { name: 'Users', path: '/admin/users', icon: Users },
+    { name: 'Transactions', path: '/admin/transactions', icon: History },
+    { name: 'Settings', path: '/admin/settings', icon: Settings },
+  ];
+
+  const navItems = isAdmin ? adminNavItems : userNavItems;
+
+  return (
+    <div className="min-h-screen bg-black">
+      {/* Header */}
+      <header className="bg-zinc-900 border-b border-zinc-800 px-4 py-3">
+        <div className="flex items-center justify-between max-w-md mx-auto">
+          <h1 className="text-xl font-bold text-white">
+            ₿itTrade {isAdmin && <span className="text-sm text-zinc-400">Admin</span>}
+          </h1>
+          <div className="flex items-center gap-3">
+            <span className="text-sm text-zinc-400">
+              {user?.name}
+            </span>
+            <button
+              onClick={handleLogout}
+              className="p-2 text-zinc-400 hover:text-white transition-colors"
+            >
+              <LogOut size={20} />
+            </button>
+          </div>
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <main className="pb-20 px-4 py-6">
+        <div className="max-w-md mx-auto">
+          {children}
+        </div>
+      </main>
+
+      {/* Bottom Navigation */}
+      <nav className="fixed bottom-0 left-0 right-0 bg-zinc-900 border-t border-zinc-800">
+        <div className="flex max-w-md mx-auto">
+          {navItems.map((item) => {
+            const Icon = item.icon;
+            const isActive = location.pathname === item.path;
+            
+            return (
+              <Link
+                key={item.path}
+                to={item.path}
+                className={`flex-1 flex flex-col items-center py-3 px-2 transition-colors ${
+                  isActive 
+                    ? 'text-white bg-zinc-800' 
+                    : 'text-zinc-400 hover:text-white'
+                }`}
+              >
+                <Icon size={20} />
+                <span className="text-xs mt-1">{item.name}</span>
+              </Link>
+            );
+          })}
+        </div>
+      </nav>
+    </div>
+  );
+};
+
+export default Layout;
