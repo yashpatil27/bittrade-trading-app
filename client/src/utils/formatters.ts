@@ -43,8 +43,9 @@ export const formatCurrency = (amount: number, currency: 'INR' | 'BTC'): string 
 export const formatBitcoin = (amount: number): string => {
   if (amount === 0) return '0';
   const formatted = amount.toFixed(8);
-  // Remove trailing zeros
-  return formatted.replace(/\.?0+$/, '');
+  // Remove trailing zeros but keep at least one decimal place for small amounts
+  const trimmed = formatted.replace(/0+$/, '').replace(/\.$/, '');
+  return trimmed;
 };
 
 export const formatBitcoinWithINRValue = (btcAmount: number, sellRate: number): string => {
