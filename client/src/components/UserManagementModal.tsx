@@ -1,0 +1,346 @@
+import React, { useState, useEffect } from 'react';
+import { 
+  X, 
+  User, 
+  Wallet, 
+  Key, 
+  Plus, 
+  Minus, 
+  Trash2, 
+  DollarSign,
+  Bitcoin,
+  Eye,
+  EyeOff
+} from 'lucide-react';
+import { AdminUser } from '../types';
+import { adminAPI } from '../services/api';
+import { formatBitcoin } from '../utils/formatters';
+
+interface UserManagementModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  user: AdminUser | null;
+  onUserUpdated: () => void;
+}
+
+const UserManagementModal: React.FC<UserManagementModalProps> = ({
+  isOpen,
+  onClose,
+  user,
+  onUserUpdated
+}) => {
+  const [activeTab, setActiveTab] = useState<'info' | 'balances' | 'password'>('info');
+  const [isLoading, setIsLoading] = useState(false);
+  const [message, setMessage] = useState('');
+  const [error, setError] = useState('');
+  
+  // Balance management
+  const [inrAmount, setInrAmount] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [newPassword, setNewPassword] = useState('');
+
+  useEffect(() => {
+    if (isOpen) {
+      setActiveTab('info');
+      setInrAmount('');
+      setNewPassword('');
+      setMessage('');
+      setError('');
+    }
+  }, [isOpen]);
+
+  if (!isOpen || !user) return null;
+
+  const handleBalanceOperation = async (operation: 'deposit' | 'withdraw', currency: 'INR') => {
+    if (!inrAmount || parseFloat(inrAmount) <= 0) {
+      setError('Please enter a valid amount');
+      return;
+    }
+
+    setIsLoading(true);
+    setError('');
+    setMessage('');
+
+    try {
+      const amount = parseFloat(inrAmount);
+      if (operation === 'deposit') {
+        await adminAPI.depositINR(user.id, amount);
+        setMessage(`✅ ₹${amount.toLocaleString()} deposited successfully`);
+      } else {
+        await adminAPI.withdrawINR(user.id, amount);
+        setMessage(`✅ ₹${amount.toLocaleString()} withdrawn successfully`);
+      }
+      setInrAmount('');
+      onUserUpdated();
+    } catch (error: any) {
+      setError(error.response?.data?.message || `Failed to ${operation} ${currency}`);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handlePasswordReset = async () => {
+    if (!newPassword || newPassword.length < 6) {
+      setError('Password must be at least 6 characters long');
+      return;
+    }
+
+    setIsLoading(true);
+    setError('');
+    setMessage('');
+
+    try {
+      await adminAPI.changeUserPassword(user.id, newPassword);
+      setMessage('✅ Password updated successfully');
+      setNewPassword('');
+    } catch (error: any) {
+      setError(error.response?.data?.message || 'Failed to update password');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDeleteUser = async () => {
+    if (!window.confirm(`Are you sure you want to delete user "${user.name}"? This action cannot be undone.`)) {
+      return;
+    }
+
+    setIsLoading(true);
+    setError('');
+
+    try {
+      await adminAPI.deleteUser(user.id);
+      setMessage('User deleted successfully');
+      setTimeout(() => {
+        onUserUpdated();
+        onClose();
+      }, 1000);
+    } catch (error: any) {
+      setError(error.response?.data?.message || 'Failed to delete user');
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="bg-zinc-900 border border-zinc-700 rounded-xl w-full max-w-md max-h-[90vh] overflow-hidden">
+        {/* Header */}
+        <div className="flex items-center justify-between p-6 border-b border-zinc-800">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-zinc-800 rounded-lg">
+              <User className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <h2 className="text-lg font-semibold text-white">Manage User</h2>
+              <p className="text-zinc-400 text-sm">{user.name}</p>
+            </div>
+          </div>
+          <button
+            onClick={onClose}
+            className="p-2 text-zinc-400 hover:text-white transition-colors"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* Tabs */}
+        <div className="flex border-b border-zinc-800">
+          <button
+            onClick={() => setActiveTab('info')}
+            className={`flex-1 py-3 px-4 text-sm font-medium transition-colors ${
+              activeTab === 'info'
+                ? 'text-white border-b-2 border-white'
+                : 'text-zinc-400 hover:text-white'
+            }`}
+          >
+            Info
+          </button>
+          <button
+            onClick={() => setActiveTab('balances')}
+            className={`flex-1 py-3 px-4 text-sm font-medium transition-colors ${
+              activeTab === 'balances'
+                ? 'text-white border-b-2 border-white'
+                : 'text-zinc-400 hover:text-white'
+            }`}
+          >
+            Balances
+          </button>
+          <button
+            onClick={() => setActiveTab('password')}
+            className={`flex-1 py-3 px-4 text-sm font-medium transition-colors ${
+              activeTab === 'password'
+                ? 'text-white border-b-2 border-white'
+                : 'text-zinc-400 hover:text-white'
+            }`}
+          >
+            Security
+          </button>
+        </div>
+
+        {/* Content */}
+        <div className="p-6 space-y-6 max-h-[60vh] overflow-y-auto">
+          {/* Status Messages */}
+          {error && (
+            <div className="bg-red-900/20 border border-red-800 rounded-lg p-3 flex items-center gap-2">
+              <div className="w-2 h-2 bg-red-400 rounded-full" />
+              <span className="text-red-300 text-sm">{error}</span>
+            </div>
+          )}
+          {message && (
+            <div className="bg-green-900/20 border border-green-800 rounded-lg p-3 flex items-center gap-2">
+              <div className="w-2 h-2 bg-green-400 rounded-full" />
+              <span className="text-green-300 text-sm">{message}</span>
+            </div>
+          )}
+
+          {/* User Info Tab */}
+          {activeTab === 'info' && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-zinc-800/50 rounded-lg p-4">
+                  <p className="text-zinc-400 text-sm">Email</p>
+                  <p className="text-white font-medium">{user.email}</p>
+                </div>
+                <div className="bg-zinc-800/50 rounded-lg p-4">
+                  <p className="text-zinc-400 text-sm">Role</p>
+                  <p className="text-white font-medium">{user.is_admin ? 'Admin' : 'User'}</p>
+                </div>
+              </div>
+              
+              <div className="bg-zinc-800/50 rounded-lg p-4">
+                <p className="text-zinc-400 text-sm">Member Since</p>
+                <p className="text-white font-medium">
+                  {user.created_at ? new Date(user.created_at).toLocaleDateString() : 'N/A'}
+                </p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-zinc-800/50 rounded-lg p-4 text-center">
+                  <DollarSign className="w-6 h-6 text-white mx-auto mb-2" />
+                  <p className="text-zinc-400 text-sm">INR Balance</p>
+                  <p className="text-white font-bold">₹{user.inr_balance.toLocaleString()}</p>
+                </div>
+                <div className="bg-zinc-800/50 rounded-lg p-4 text-center">
+                  <Bitcoin className="w-6 h-6 text-white mx-auto mb-2" />
+                  <p className="text-zinc-400 text-sm">₿ Balance</p>
+                  <p className="text-white font-bold">₿{formatBitcoin(user.btc_balance)}</p>
+                </div>
+              </div>
+
+              <button
+                onClick={handleDeleteUser}
+                disabled={isLoading || user.is_admin}
+                className="w-full bg-red-900/20 border border-red-800 text-red-300 hover:bg-red-900/30 disabled:opacity-50 disabled:cursor-not-allowed py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
+              >
+                <Trash2 className="w-4 h-4" />
+                Delete User
+              </button>
+              {user.is_admin && (
+                <p className="text-zinc-500 text-xs text-center">Admin users cannot be deleted</p>
+              )}
+            </div>
+          )}
+
+          {/* Balances Tab */}
+          {activeTab === 'balances' && (
+            <div className="space-y-6">
+              <div className="bg-zinc-800/50 rounded-lg p-4">
+                <h3 className="text-white font-medium mb-4 flex items-center gap-2">
+                  <Wallet className="w-4 h-4" />
+                  Current Balances
+                </h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="text-center">
+                    <p className="text-zinc-400 text-sm">INR Balance</p>
+                    <p className="text-white font-bold text-lg">₹{user.inr_balance.toLocaleString()}</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-zinc-400 text-sm">₿ Balance</p>
+                    <p className="text-white font-bold text-lg">₿{formatBitcoin(user.btc_balance)}</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-zinc-800/50 rounded-lg p-4">
+                <h3 className="text-white font-medium mb-4">INR Balance Management</h3>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-zinc-400 text-sm mb-2">Amount (₹)</label>
+                    <input
+                      type="number"
+                      value={inrAmount}
+                      onChange={(e) => setInrAmount(e.target.value)}
+                      placeholder="Enter amount..."
+                      className="w-full bg-zinc-700 border border-zinc-600 rounded-lg py-2 px-3 text-white placeholder-zinc-400 focus:outline-none focus:border-white"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <button
+                      onClick={() => handleBalanceOperation('deposit', 'INR')}
+                      disabled={isLoading || !inrAmount}
+                      className="bg-green-900/20 border border-green-800 text-green-300 hover:bg-green-900/30 disabled:opacity-50 disabled:cursor-not-allowed py-2 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
+                    >
+                      <Plus className="w-4 h-4" />
+                      Deposit
+                    </button>
+                    <button
+                      onClick={() => handleBalanceOperation('withdraw', 'INR')}
+                      disabled={isLoading || !inrAmount}
+                      className="bg-red-900/20 border border-red-800 text-red-300 hover:bg-red-900/30 disabled:opacity-50 disabled:cursor-not-allowed py-2 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
+                    >
+                      <Minus className="w-4 h-4" />
+                      Withdraw
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Password Tab */}
+          {activeTab === 'password' && (
+            <div className="space-y-4">
+              <div className="bg-zinc-800/50 rounded-lg p-4">
+                <h3 className="text-white font-medium mb-4 flex items-center gap-2">
+                  <Key className="w-4 h-4" />
+                  Reset Password
+                </h3>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-zinc-400 text-sm mb-2">New Password</label>
+                    <div className="relative">
+                      <input
+                        type={showPassword ? 'text' : 'password'}
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                        placeholder="Enter new password..."
+                        className="w-full bg-zinc-700 border border-zinc-600 rounded-lg py-2 px-3 pr-10 text-white placeholder-zinc-400 focus:outline-none focus:border-white"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-zinc-400 hover:text-white"
+                      >
+                        {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
+                    </div>
+                    <p className="text-zinc-500 text-xs mt-1">Minimum 6 characters</p>
+                  </div>
+                  <button
+                    onClick={handlePasswordReset}
+                    disabled={isLoading || !newPassword}
+                    className="w-full bg-white text-black hover:bg-zinc-200 disabled:opacity-50 disabled:cursor-not-allowed py-2 px-4 rounded-lg transition-colors font-medium"
+                  >
+                    {isLoading ? 'Updating...' : 'Update Password'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default UserManagementModal;

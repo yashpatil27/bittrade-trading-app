@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { userAPI } from '../services/api';
 import { Transaction } from '../types';
+import TransactionDetailModal from '../components/TransactionDetailModal';
 import { 
   getTransactionDisplayName, 
   getTransactionIcon, 
@@ -28,6 +29,8 @@ const History: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(false);
+  const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchTransactions = async () => {
@@ -52,6 +55,11 @@ const History: React.FC = () => {
 
     fetchTransactions();
   }, [page]);
+
+  const handleTransactionClick = (transaction: Transaction) => {
+    setSelectedTransaction(transaction);
+    setIsModalOpen(true);
+  };
 
   const formatAmount = (transaction: Transaction) => {
     if (transaction.type === 'BUY' || transaction.type === 'SELL') {
@@ -108,7 +116,11 @@ const History: React.FC = () => {
           {transactions.length > 0 ? (
             <div className="space-y-3">
               {transactions.map((transaction) => (
-                <div key={transaction.id} className="bg-zinc-800/50 rounded-lg p-4 hover:bg-zinc-800 transition-colors">
+                <div 
+                  key={transaction.id} 
+                  onClick={() => handleTransactionClick(transaction)}
+                  className="bg-zinc-800/50 rounded-lg p-4 hover:bg-zinc-800 transition-colors cursor-pointer"
+                >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <div className="p-2 bg-zinc-700 rounded-lg">
@@ -131,19 +143,19 @@ const History: React.FC = () => {
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="font-bold text-lg text-white">
+                      <p className="font-bold text-sm text-white">
                         {formatAmount(transaction)}
                       </p>
                       {(transaction.type === 'BUY' || transaction.type === 'SELL') && (
                         <p className="text-xs text-zinc-400">
-                          @ ₹{transaction.btc_price.toLocaleString()}/BTC
+                          @ ₹{transaction.btc_price.toLocaleString()}/₿
                         </p>
                       )}
                     </div>
                   </div>
                 </div>
               ))}
-
+              
               {/* Load More Button */}
               {hasMore && (
                 <button
@@ -174,6 +186,13 @@ const History: React.FC = () => {
           )}
         </div>
       </div>
+
+      {/* Transaction Detail Modal */}
+      <TransactionDetailModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        transaction={selectedTransaction}
+      />
     </div>
   );
 };

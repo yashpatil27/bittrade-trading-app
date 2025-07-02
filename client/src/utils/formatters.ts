@@ -36,8 +36,21 @@ export const formatCurrency = (amount: number, currency: 'INR' | 'BTC'): string 
   if (currency === 'INR') {
     return `₹${amount.toLocaleString()}`;
   } else {
-    return `₿ ${amount.toFixed(8)}`;
+    return `₿${formatBitcoin(amount)}`;
   }
+};
+
+export const formatBitcoin = (amount: number): string => {
+  if (amount === 0) return '0';
+  const formatted = amount.toFixed(8);
+  // Remove trailing zeros
+  return formatted.replace(/\.?0+$/, '');
+};
+
+export const formatBitcoinWithINRValue = (btcAmount: number, sellRate: number): string => {
+  const btcFormatted = formatBitcoin(btcAmount);
+  const inrValue = Math.floor(btcAmount * sellRate);
+  return `₿${btcFormatted} (₹${inrValue.toLocaleString()})`;
 };
 
 export const formatTimeAgo = (dateString: string): string => {

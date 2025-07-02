@@ -20,6 +20,7 @@ import {
 import { userAPI } from '../services/api';
 import { Balances, Prices, Transaction, DashboardData } from '../types';
 import TradingModal from '../components/TradingModal';
+import PriceUpdateTimer from '../components/PriceUpdateTimer';
 import { 
   getTransactionDisplayName, 
   getTransactionIcon, 
@@ -162,6 +163,11 @@ const Home: React.FC = () => {
             <div className="space-y-1">
               <p className="text-zinc-400 text-sm">Bitcoin Balance</p>
               <p className="text-xl font-bold">{formatCurrency(balances?.btc || 0, 'BTC')}</p>
+              {balances && prices && (
+                <p className="text-xs text-zinc-500">
+                  ≈ ₹{Math.floor((balances.btc || 0) * (prices.sell_rate || 0)).toLocaleString()}
+                </p>
+              )}
             </div>
           </div>
         </div>
@@ -173,10 +179,7 @@ const Home: React.FC = () => {
               <TrendingUp className="w-5 h-5 text-white" />
               Bitcoin Price
             </h2>
-            <div className="flex items-center gap-1 text-xs text-white">
-              <Clock className="w-3 h-3" />
-              Live
-            </div>
+            <PriceUpdateTimer className="text-zinc-400" />
           </div>
           
           <div className="grid grid-cols-3 gap-4">

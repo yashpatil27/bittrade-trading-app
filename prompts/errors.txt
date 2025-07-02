@@ -1,240 +1,391 @@
-Compiled with problems:
-×
-ERROR in ./src/App.tsx
-Module build failed (from ./node_modules/babel-loader/lib/index.js):
-SyntaxError: /Users/roots/Desktop/bittrade-trading-app/client/src/App.tsx: Unterminated JSX contents. (78:14)
+📈 Ready to trade Bitcoin!
 
-  76 |             <Route path="*" element={<Navigate to="/" replace />} />
-  77 |           </Routes>
-> 78 |         </div>
-     |               ^
-  79 |
-    at constructor (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:367:19)
-    at TypeScriptParserMixin.raise (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:6627:19)
-    at TypeScriptParserMixin.jsxReadToken (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:4478:20)
-    at TypeScriptParserMixin.getTokenFromCode (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:4804:12)
-    at TypeScriptParserMixin.getTokenFromCode (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:10004:11)
-    at TypeScriptParserMixin.nextToken (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:5810:10)
-    at TypeScriptParserMixin.next (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:5720:10)
-    at TypeScriptParserMixin.eat (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:5724:12)
-    at TypeScriptParserMixin.expect (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:6926:15)
-    at TypeScriptParserMixin.jsxParseClosingElementAt (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:4710:10)
-    at TypeScriptParserMixin.jsxParseElementAt (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:4725:37)
-    at TypeScriptParserMixin.jsxParseElementAt (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:4728:32)
-    at TypeScriptParserMixin.jsxParseElementAt (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:4728:32)
-    at TypeScriptParserMixin.jsxParseElement (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:4779:17)
-    at TypeScriptParserMixin.parseExprAtom (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:4789:19)
-    at TypeScriptParserMixin.parseExprSubscripts (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:11076:23)
-    at TypeScriptParserMixin.parseUpdate (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:11061:21)
-    at TypeScriptParserMixin.parseMaybeUnary (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:11041:23)
-    at TypeScriptParserMixin.parseMaybeUnary (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:9852:18)
-    at TypeScriptParserMixin.parseMaybeUnaryOrPrivate (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:10894:61)
-    at TypeScriptParserMixin.parseExprOps (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:10899:23)
-    at TypeScriptParserMixin.parseMaybeConditional (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:10876:23)
-    at TypeScriptParserMixin.parseMaybeAssign (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:10826:21)
-    at /Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:9790:39
-    at TypeScriptParserMixin.tryParse (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:6935:20)
-    at TypeScriptParserMixin.parseMaybeAssign (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:9790:18)
-    at /Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:10795:39
-    at TypeScriptParserMixin.allowInAnd (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:12427:12)
-    at TypeScriptParserMixin.parseMaybeAssignAllowIn (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:10795:17)
-    at TypeScriptParserMixin.parseMaybeAssignAllowInOrVoidPattern (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:12494:17)
-    at TypeScriptParserMixin.parseParenAndDistinguishExpression (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:11674:28)
-    at TypeScriptParserMixin.parseExprAtom (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:11326:23)
-    at TypeScriptParserMixin.parseExprAtom (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:4794:20)
-    at TypeScriptParserMixin.parseExprSubscripts (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:11076:23)
-    at TypeScriptParserMixin.parseUpdate (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:11061:21)
-    at TypeScriptParserMixin.parseMaybeUnary (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:11041:23)
-    at TypeScriptParserMixin.parseMaybeUnary (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:9852:18)
-    at TypeScriptParserMixin.parseMaybeUnaryOrPrivate (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:10894:61)
-    at TypeScriptParserMixin.parseExprOps (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:10899:23)
-    at TypeScriptParserMixin.parseMaybeConditional (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:10876:23)
-    at TypeScriptParserMixin.parseMaybeAssign (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:10826:21)
-    at TypeScriptParserMixin.parseMaybeAssign (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:9801:20)
-    at TypeScriptParserMixin.parseExpressionBase (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:10779:23)
-    at /Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:10775:39
-    at TypeScriptParserMixin.allowInAnd (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:12422:16)
-    at TypeScriptParserMixin.parseExpression (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:10775:17)
-    at TypeScriptParserMixin.parseReturnStatement (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:13142:28)
-    at TypeScriptParserMixin.parseStatementContent (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:12798:21)
-    at TypeScriptParserMixin.parseStatementContent (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:9527:18)
-    at TypeScriptParserMixin.parseStatementLike (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:12767:17)
-ERROR
-[eslint] 
-src/App.tsx
-  Line 18:7:  Parsing error: JSX element 'Router' has no corresponding closing tag
-
-ERROR in ./src/App.tsx
-Module build failed (from ./node_modules/babel-loader/lib/index.js):
-SyntaxError: /Users/roots/Desktop/bittrade-trading-app/client/src/App.tsx: Unterminated JSX contents. (78:14)
-
-  76 |             <Route path="*" element={<Navigate to="/" replace />} />
-  77 |           </Routes>
-> 78 |         </div>
-     |               ^
-  79 |
-    at constructor (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:367:19)
-    at TypeScriptParserMixin.raise (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:6627:19)
-    at TypeScriptParserMixin.jsxReadToken (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:4478:20)
-    at TypeScriptParserMixin.getTokenFromCode (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:4804:12)
-    at TypeScriptParserMixin.getTokenFromCode (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:10004:11)
-    at TypeScriptParserMixin.nextToken (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:5810:10)
-    at TypeScriptParserMixin.next (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:5720:10)
-    at TypeScriptParserMixin.eat (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:5724:12)
-    at TypeScriptParserMixin.expect (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:6926:15)
-    at TypeScriptParserMixin.jsxParseClosingElementAt (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:4710:10)
-    at TypeScriptParserMixin.jsxParseElementAt (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:4725:37)
-    at TypeScriptParserMixin.jsxParseElementAt (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:4728:32)
-    at TypeScriptParserMixin.jsxParseElementAt (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:4728:32)
-    at TypeScriptParserMixin.jsxParseElement (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:4779:17)
-    at TypeScriptParserMixin.parseExprAtom (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:4789:19)
-    at TypeScriptParserMixin.parseExprSubscripts (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:11076:23)
-    at TypeScriptParserMixin.parseUpdate (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:11061:21)
-    at TypeScriptParserMixin.parseMaybeUnary (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:11041:23)
-    at TypeScriptParserMixin.parseMaybeUnary (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:9852:18)
-    at TypeScriptParserMixin.parseMaybeUnaryOrPrivate (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:10894:61)
-    at TypeScriptParserMixin.parseExprOps (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:10899:23)
-    at TypeScriptParserMixin.parseMaybeConditional (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:10876:23)
-    at TypeScriptParserMixin.parseMaybeAssign (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:10826:21)
-    at /Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:9790:39
-    at TypeScriptParserMixin.tryParse (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:6935:20)
-    at TypeScriptParserMixin.parseMaybeAssign (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:9790:18)
-    at /Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:10795:39
-    at TypeScriptParserMixin.allowInAnd (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:12427:12)
-    at TypeScriptParserMixin.parseMaybeAssignAllowIn (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:10795:17)
-    at TypeScriptParserMixin.parseMaybeAssignAllowInOrVoidPattern (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:12494:17)
-    at TypeScriptParserMixin.parseParenAndDistinguishExpression (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:11674:28)
-    at TypeScriptParserMixin.parseExprAtom (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:11326:23)
-    at TypeScriptParserMixin.parseExprAtom (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:4794:20)
-    at TypeScriptParserMixin.parseExprSubscripts (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:11076:23)
-    at TypeScriptParserMixin.parseUpdate (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:11061:21)
-    at TypeScriptParserMixin.parseMaybeUnary (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:11041:23)
-    at TypeScriptParserMixin.parseMaybeUnary (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:9852:18)
-    at TypeScriptParserMixin.parseMaybeUnaryOrPrivate (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:10894:61)
-    at TypeScriptParserMixin.parseExprOps (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:10899:23)
-    at TypeScriptParserMixin.parseMaybeConditional (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:10876:23)
-    at TypeScriptParserMixin.parseMaybeAssign (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:10826:21)
-    at TypeScriptParserMixin.parseMaybeAssign (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:9801:20)
-    at TypeScriptParserMixin.parseExpressionBase (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:10779:23)
-    at /Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:10775:39
-    at TypeScriptParserMixin.allowInAnd (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:12422:16)
-    at TypeScriptParserMixin.parseExpression (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:10775:17)
-    at TypeScriptParserMixin.parseReturnStatement (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:13142:28)
-    at TypeScriptParserMixin.parseStatementContent (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:12798:21)
-    at TypeScriptParserMixin.parseStatementContent (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:9527:18)
-    at TypeScriptParserMixin.parseStatementLike (/Users/roots/Desktop/bittrade-trading-app/client/node_modules/@babel/parser/lib/index.js:12767:17)
-ERROR
-[eslint] 
-src/App.tsx
-  Line 18:7:  Parsing error: JSX element 'Router' has no corresponding closing tag
-
-ERROR in src/App.tsx
-TS1005: '</' expected.
-ERROR in src/App.tsx:17:6
-TS17008: JSX element 'AuthProvider' has no corresponding closing tag.
-    15 | function App() {
-    16 |   return (
-  > 17 |     <AuthProvider>
-       |      ^^^^^^^^^^^^
-    18 |       <Router>
-    19 |         <div className="min-h-screen bg-black text-white">
-    20 |           <Routes>
-ERROR in src/App.tsx:18:8
-TS17008: JSX element 'Router' has no corresponding closing tag.
-    16 |   return (
-    17 |     <AuthProvider>
-  > 18 |       <Router>
-       |        ^^^^^^
-    19 |         <div className="min-h-screen bg-black text-white">
-    20 |           <Routes>
-    21 |             {/* Public routes */}
-ERROR in src/index.tsx:4:8
-TS1192: Module '"/Users/roots/Desktop/bittrade-trading-app/client/src/App"' has no default export.
-    2 | import ReactDOM from 'react-dom/client';
-    3 | import './index.css';
-  > 4 | import App from './App';
-      |        ^^^
-    5 |
-    6 | const root = ReactDOM.createRoot(
-    7 |   document.getElementById('root') as HTMLElement
-ERROR in src/pages/Home.tsx:33:17
-TS2339: Property 'balances' does not exist on type 'DashboardData | undefined'.
-    31 |       try {
-    32 |         const dashboardResponse = await userAPI.getDashboard();
-  > 33 |         const { balances, prices, recent_transactions } = dashboardResponse.data.data;
-       |                 ^^^^^^^^
-    34 |         setBalances(balances);
-    35 |         setPrices(prices);
-    36 |         setRecentTransactions(recent_transactions);
-ERROR in src/pages/Home.tsx:33:27
-TS2339: Property 'prices' does not exist on type 'DashboardData | undefined'.
-    31 |       try {
-    32 |         const dashboardResponse = await userAPI.getDashboard();
-  > 33 |         const { balances, prices, recent_transactions } = dashboardResponse.data.data;
-       |                           ^^^^^^
-    34 |         setBalances(balances);
-    35 |         setPrices(prices);
-    36 |         setRecentTransactions(recent_transactions);
-ERROR in src/pages/Home.tsx:33:35
-TS2339: Property 'recent_transactions' does not exist on type 'DashboardData | undefined'.
-    31 |       try {
-    32 |         const dashboardResponse = await userAPI.getDashboard();
-  > 33 |         const { balances, prices, recent_transactions } = dashboardResponse.data.data;
-       |                                   ^^^^^^^^^^^^^^^^^^^
-    34 |         setBalances(balances);
-    35 |         setPrices(prices);
-    36 |         setRecentTransactions(recent_transactions);
-ERROR in src/pages/Home.tsx:59:15
-TS2339: Property 'balances' does not exist on type 'DashboardData | undefined'.
-    57 |       // Refresh data after successful trade
-    58 |       const dashboardResponse = await userAPI.getDashboard();
-  > 59 |       const { balances, prices, recent_transactions } = dashboardResponse.data.data;
-       |               ^^^^^^^^
-    60 |       setBalances(balances);
-    61 |       setPrices(prices);
-    62 |       setRecentTransactions(recent_transactions);
-ERROR in src/pages/Home.tsx:59:25
-TS2339: Property 'prices' does not exist on type 'DashboardData | undefined'.
-    57 |       // Refresh data after successful trade
-    58 |       const dashboardResponse = await userAPI.getDashboard();
-  > 59 |       const { balances, prices, recent_transactions } = dashboardResponse.data.data;
-       |                         ^^^^^^
-    60 |       setBalances(balances);
-    61 |       setPrices(prices);
-    62 |       setRecentTransactions(recent_transactions);
-ERROR in src/pages/Home.tsx:59:33
-TS2339: Property 'recent_transactions' does not exist on type 'DashboardData | undefined'.
-    57 |       // Refresh data after successful trade
-    58 |       const dashboardResponse = await userAPI.getDashboard();
-  > 59 |       const { balances, prices, recent_transactions } = dashboardResponse.data.data;
-       |                                 ^^^^^^^^^^^^^^^^^^^
-    60 |       setBalances(balances);
-    61 |       setPrices(prices);
-    62 |       setRecentTransactions(recent_transactions);
-ERROR in src/pages/Home.tsx:85:15
-TS2339: Property 'balances' does not exist on type 'DashboardData | undefined'.
-    83 |       // Refresh data after successful trade
-    84 |       const dashboardResponse = await userAPI.getDashboard();
-  > 85 |       const { balances, prices, recent_transactions } = dashboardResponse.data.data;
-       |               ^^^^^^^^
-    86 |       setBalances(balances);
-    87 |       setPrices(prices);
-    88 |       setRecentTransactions(recent_transactions);
-ERROR in src/pages/Home.tsx:85:25
-TS2339: Property 'prices' does not exist on type 'DashboardData | undefined'.
-    83 |       // Refresh data after successful trade
-    84 |       const dashboardResponse = await userAPI.getDashboard();
-  > 85 |       const { balances, prices, recent_transactions } = dashboardResponse.data.data;
-       |                         ^^^^^^
-    86 |       setBalances(balances);
-    87 |       setPrices(prices);
-    88 |       setRecentTransactions(recent_transactions);
-ERROR in src/pages/Home.tsx:85:33
-TS2339: Property 'recent_transactions' does not exist on type 'DashboardData | undefined'.
-    83 |       // Refresh data after successful trade
-    84 |       const dashboardResponse = await userAPI.getDashboard();
-  > 85 |       const { balances, prices, recent_transactions } = dashboardResponse.data.data;
-       |                                 ^^^^^^^^^^^^^^^^^^^
-    86 |       setBalances(balances);
-    87 |       setPrices(prices);
-    88 |       setRecentTransactions(recent_transactions);
+BTC price updated: $108,720
+Fetching BTC price...
+BTC price updated: $108,720
+Fetching BTC price...
+BTC price updated: $108,720
+Fetching BTC price...
+BTC price updated: $108,728
+Fetching BTC price...
+BTC price updated: $108,728
+Fetching BTC price...
+BTC price updated: $108,785
+Database query error: Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePoolConnection.execute (/Users/roots/Desktop/bittrade-trading-app/node_modules/mysql2/lib/promise/connection.js:47:22)
+    at query (/Users/roots/Desktop/bittrade-trading-app/server/config/database.js:45:37)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async /Users/roots/Desktop/bittrade-trading-app/server/routes/admin.js:72:19 {
+  code: 'ER_WRONG_ARGUMENTS',
+  errno: 1210,
+  sql: '\n' +
+    '      SELECT \n' +
+    '        u.id, u.email, u.name, u.is_admin, u.created_at,\n' +
+    '        COALESCE(latest.inr_balance, 0) as inr_balance,\n' +
+    '        COALESCE(latest.btc_balance, 0) as btc_balance\n' +
+    '      FROM users u\n' +
+    '      LEFT JOIN (\n' +
+    '        SELECT DISTINCT user_id,\n' +
+    '          FIRST_VALUE(inr_balance) OVER (PARTITION BY user_id ORDER BY id DESC) as inr_balance,\n' +
+    '          FIRST_VALUE(btc_balance) OVER (PARTITION BY user_id ORDER BY id DESC) as btc_balance\n' +
+    '        FROM transactions\n' +
+    '      ) latest ON u.id = latest.user_id\n' +
+    '      ORDER BY u.created_at DESC\n' +
+    '      LIMIT ? OFFSET ?\n' +
+    '    ',
+  sqlState: 'HY000',
+  sqlMessage: 'Incorrect arguments to mysqld_stmt_execute'
+}
+Get users error: Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePoolConnection.execute (/Users/roots/Desktop/bittrade-trading-app/node_modules/mysql2/lib/promise/connection.js:47:22)
+    at query (/Users/roots/Desktop/bittrade-trading-app/server/config/database.js:45:37)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async /Users/roots/Desktop/bittrade-trading-app/server/routes/admin.js:72:19 {
+  code: 'ER_WRONG_ARGUMENTS',
+  errno: 1210,
+  sql: '\n' +
+    '      SELECT \n' +
+    '        u.id, u.email, u.name, u.is_admin, u.created_at,\n' +
+    '        COALESCE(latest.inr_balance, 0) as inr_balance,\n' +
+    '        COALESCE(latest.btc_balance, 0) as btc_balance\n' +
+    '      FROM users u\n' +
+    '      LEFT JOIN (\n' +
+    '        SELECT DISTINCT user_id,\n' +
+    '          FIRST_VALUE(inr_balance) OVER (PARTITION BY user_id ORDER BY id DESC) as inr_balance,\n' +
+    '          FIRST_VALUE(btc_balance) OVER (PARTITION BY user_id ORDER BY id DESC) as btc_balance\n' +
+    '        FROM transactions\n' +
+    '      ) latest ON u.id = latest.user_id\n' +
+    '      ORDER BY u.created_at DESC\n' +
+    '      LIMIT ? OFFSET ?\n' +
+    '    ',
+  sqlState: 'HY000',
+  sqlMessage: 'Incorrect arguments to mysqld_stmt_execute'
+}
+Database query error: Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePoolConnection.execute (/Users/roots/Desktop/bittrade-trading-app/node_modules/mysql2/lib/promise/connection.js:47:22)
+    at query (/Users/roots/Desktop/bittrade-trading-app/server/config/database.js:45:37)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async /Users/roots/Desktop/bittrade-trading-app/server/routes/admin.js:482:26 {
+  code: 'ER_WRONG_ARGUMENTS',
+  errno: 1210,
+  sql: '\n' +
+    '      SELECT \n' +
+    '        t.id, t.user_id, t.type, t.inr_amount, t.btc_amount, t.btc_price,\n' +
+    '        t.inr_balance, t.btc_balance, t.created_at,\n' +
+    '        u.email, u.name\n' +
+    '      FROM transactions t\n' +
+    '      JOIN users u ON t.user_id = u.id\n' +
+    '      ORDER BY t.id DESC\n' +
+    '      LIMIT ? OFFSET ?\n' +
+    '    ',
+  sqlState: 'HY000',
+  sqlMessage: 'Incorrect arguments to mysqld_stmt_execute'
+}
+Get all transactions error: Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePoolConnection.execute (/Users/roots/Desktop/bittrade-trading-app/node_modules/mysql2/lib/promise/connection.js:47:22)
+    at query (/Users/roots/Desktop/bittrade-trading-app/server/config/database.js:45:37)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async /Users/roots/Desktop/bittrade-trading-app/server/routes/admin.js:482:26 {
+  code: 'ER_WRONG_ARGUMENTS',
+  errno: 1210,
+  sql: '\n' +
+    '      SELECT \n' +
+    '        t.id, t.user_id, t.type, t.inr_amount, t.btc_amount, t.btc_price,\n' +
+    '        t.inr_balance, t.btc_balance, t.created_at,\n' +
+    '        u.email, u.name\n' +
+    '      FROM transactions t\n' +
+    '      JOIN users u ON t.user_id = u.id\n' +
+    '      ORDER BY t.id DESC\n' +
+    '      LIMIT ? OFFSET ?\n' +
+    '    ',
+  sqlState: 'HY000',
+  sqlMessage: 'Incorrect arguments to mysqld_stmt_execute'
+}
+Fetching BTC price...
+BTC price updated: $108,785
+Fetching BTC price...
+BTC price updated: $108,805
+Fetching BTC price...
+BTC price updated: $108,805
+Fetching BTC price...
+BTC price updated: $108,805
+Database query error: Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePoolConnection.execute (/Users/roots/Desktop/bittrade-trading-app/node_modules/mysql2/lib/promise/connection.js:47:22)
+    at query (/Users/roots/Desktop/bittrade-trading-app/server/config/database.js:45:37)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async /Users/roots/Desktop/bittrade-trading-app/server/routes/admin.js:482:26 {
+  code: 'ER_WRONG_ARGUMENTS',
+  errno: 1210,
+  sql: '\n' +
+    '      SELECT \n' +
+    '        t.id, t.user_id, t.type, t.inr_amount, t.btc_amount, t.btc_price,\n' +
+    '        t.inr_balance, t.btc_balance, t.created_at,\n' +
+    '        u.email, u.name\n' +
+    '      FROM transactions t\n' +
+    '      JOIN users u ON t.user_id = u.id\n' +
+    '      ORDER BY t.id DESC\n' +
+    '      LIMIT ? OFFSET ?\n' +
+    '    ',
+  sqlState: 'HY000',
+  sqlMessage: 'Incorrect arguments to mysqld_stmt_execute'
+}
+Get all transactions error: Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePoolConnection.execute (/Users/roots/Desktop/bittrade-trading-app/node_modules/mysql2/lib/promise/connection.js:47:22)
+    at query (/Users/roots/Desktop/bittrade-trading-app/server/config/database.js:45:37)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async /Users/roots/Desktop/bittrade-trading-app/server/routes/admin.js:482:26 {
+  code: 'ER_WRONG_ARGUMENTS',
+  errno: 1210,
+  sql: '\n' +
+    '      SELECT \n' +
+    '        t.id, t.user_id, t.type, t.inr_amount, t.btc_amount, t.btc_price,\n' +
+    '        t.inr_balance, t.btc_balance, t.created_at,\n' +
+    '        u.email, u.name\n' +
+    '      FROM transactions t\n' +
+    '      JOIN users u ON t.user_id = u.id\n' +
+    '      ORDER BY t.id DESC\n' +
+    '      LIMIT ? OFFSET ?\n' +
+    '    ',
+  sqlState: 'HY000',
+  sqlMessage: 'Incorrect arguments to mysqld_stmt_execute'
+}
+Database query error: Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePoolConnection.execute (/Users/roots/Desktop/bittrade-trading-app/node_modules/mysql2/lib/promise/connection.js:47:22)
+    at query (/Users/roots/Desktop/bittrade-trading-app/server/config/database.js:45:37)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async /Users/roots/Desktop/bittrade-trading-app/server/routes/admin.js:482:26 {
+  code: 'ER_WRONG_ARGUMENTS',
+  errno: 1210,
+  sql: '\n' +
+    '      SELECT \n' +
+    '        t.id, t.user_id, t.type, t.inr_amount, t.btc_amount, t.btc_price,\n' +
+    '        t.inr_balance, t.btc_balance, t.created_at,\n' +
+    '        u.email, u.name\n' +
+    '      FROM transactions t\n' +
+    '      JOIN users u ON t.user_id = u.id\n' +
+    '      ORDER BY t.id DESC\n' +
+    '      LIMIT ? OFFSET ?\n' +
+    '    ',
+  sqlState: 'HY000',
+  sqlMessage: 'Incorrect arguments to mysqld_stmt_execute'
+}
+Get all transactions error: Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePoolConnection.execute (/Users/roots/Desktop/bittrade-trading-app/node_modules/mysql2/lib/promise/connection.js:47:22)
+    at query (/Users/roots/Desktop/bittrade-trading-app/server/config/database.js:45:37)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async /Users/roots/Desktop/bittrade-trading-app/server/routes/admin.js:482:26 {
+  code: 'ER_WRONG_ARGUMENTS',
+  errno: 1210,
+  sql: '\n' +
+    '      SELECT \n' +
+    '        t.id, t.user_id, t.type, t.inr_amount, t.btc_amount, t.btc_price,\n' +
+    '        t.inr_balance, t.btc_balance, t.created_at,\n' +
+    '        u.email, u.name\n' +
+    '      FROM transactions t\n' +
+    '      JOIN users u ON t.user_id = u.id\n' +
+    '      ORDER BY t.id DESC\n' +
+    '      LIMIT ? OFFSET ?\n' +
+    '    ',
+  sqlState: 'HY000',
+  sqlMessage: 'Incorrect arguments to mysqld_stmt_execute'
+}
+Database query error: Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePoolConnection.execute (/Users/roots/Desktop/bittrade-trading-app/node_modules/mysql2/lib/promise/connection.js:47:22)
+    at query (/Users/roots/Desktop/bittrade-trading-app/server/config/database.js:45:37)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async /Users/roots/Desktop/bittrade-trading-app/server/routes/admin.js:72:19 {
+  code: 'ER_WRONG_ARGUMENTS',
+  errno: 1210,
+  sql: '\n' +
+    '      SELECT \n' +
+    '        u.id, u.email, u.name, u.is_admin, u.created_at,\n' +
+    '        COALESCE(latest.inr_balance, 0) as inr_balance,\n' +
+    '        COALESCE(latest.btc_balance, 0) as btc_balance\n' +
+    '      FROM users u\n' +
+    '      LEFT JOIN (\n' +
+    '        SELECT DISTINCT user_id,\n' +
+    '          FIRST_VALUE(inr_balance) OVER (PARTITION BY user_id ORDER BY id DESC) as inr_balance,\n' +
+    '          FIRST_VALUE(btc_balance) OVER (PARTITION BY user_id ORDER BY id DESC) as btc_balance\n' +
+    '        FROM transactions\n' +
+    '      ) latest ON u.id = latest.user_id\n' +
+    '      ORDER BY u.created_at DESC\n' +
+    '      LIMIT ? OFFSET ?\n' +
+    '    ',
+  sqlState: 'HY000',
+  sqlMessage: 'Incorrect arguments to mysqld_stmt_execute'
+}
+Get users error: Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePoolConnection.execute (/Users/roots/Desktop/bittrade-trading-app/node_modules/mysql2/lib/promise/connection.js:47:22)
+    at query (/Users/roots/Desktop/bittrade-trading-app/server/config/database.js:45:37)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async /Users/roots/Desktop/bittrade-trading-app/server/routes/admin.js:72:19 {
+  code: 'ER_WRONG_ARGUMENTS',
+  errno: 1210,
+  sql: '\n' +
+    '      SELECT \n' +
+    '        u.id, u.email, u.name, u.is_admin, u.created_at,\n' +
+    '        COALESCE(latest.inr_balance, 0) as inr_balance,\n' +
+    '        COALESCE(latest.btc_balance, 0) as btc_balance\n' +
+    '      FROM users u\n' +
+    '      LEFT JOIN (\n' +
+    '        SELECT DISTINCT user_id,\n' +
+    '          FIRST_VALUE(inr_balance) OVER (PARTITION BY user_id ORDER BY id DESC) as inr_balance,\n' +
+    '          FIRST_VALUE(btc_balance) OVER (PARTITION BY user_id ORDER BY id DESC) as btc_balance\n' +
+    '        FROM transactions\n' +
+    '      ) latest ON u.id = latest.user_id\n' +
+    '      ORDER BY u.created_at DESC\n' +
+    '      LIMIT ? OFFSET ?\n' +
+    '    ',
+  sqlState: 'HY000',
+  sqlMessage: 'Incorrect arguments to mysqld_stmt_execute'
+}
+Database query error: Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePoolConnection.execute (/Users/roots/Desktop/bittrade-trading-app/node_modules/mysql2/lib/promise/connection.js:47:22)
+    at query (/Users/roots/Desktop/bittrade-trading-app/server/config/database.js:45:37)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async /Users/roots/Desktop/bittrade-trading-app/server/routes/admin.js:72:19 {
+  code: 'ER_WRONG_ARGUMENTS',
+  errno: 1210,
+  sql: '\n' +
+    '      SELECT \n' +
+    '        u.id, u.email, u.name, u.is_admin, u.created_at,\n' +
+    '        COALESCE(latest.inr_balance, 0) as inr_balance,\n' +
+    '        COALESCE(latest.btc_balance, 0) as btc_balance\n' +
+    '      FROM users u\n' +
+    '      LEFT JOIN (\n' +
+    '        SELECT DISTINCT user_id,\n' +
+    '          FIRST_VALUE(inr_balance) OVER (PARTITION BY user_id ORDER BY id DESC) as inr_balance,\n' +
+    '          FIRST_VALUE(btc_balance) OVER (PARTITION BY user_id ORDER BY id DESC) as btc_balance\n' +
+    '        FROM transactions\n' +
+    '      ) latest ON u.id = latest.user_id\n' +
+    '      ORDER BY u.created_at DESC\n' +
+    '      LIMIT ? OFFSET ?\n' +
+    '    ',
+  sqlState: 'HY000',
+  sqlMessage: 'Incorrect arguments to mysqld_stmt_execute'
+}
+Get users error: Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePoolConnection.execute (/Users/roots/Desktop/bittrade-trading-app/node_modules/mysql2/lib/promise/connection.js:47:22)
+    at query (/Users/roots/Desktop/bittrade-trading-app/server/config/database.js:45:37)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async /Users/roots/Desktop/bittrade-trading-app/server/routes/admin.js:72:19 {
+  code: 'ER_WRONG_ARGUMENTS',
+  errno: 1210,
+  sql: '\n' +
+    '      SELECT \n' +
+    '        u.id, u.email, u.name, u.is_admin, u.created_at,\n' +
+    '        COALESCE(latest.inr_balance, 0) as inr_balance,\n' +
+    '        COALESCE(latest.btc_balance, 0) as btc_balance\n' +
+    '      FROM users u\n' +
+    '      LEFT JOIN (\n' +
+    '        SELECT DISTINCT user_id,\n' +
+    '          FIRST_VALUE(inr_balance) OVER (PARTITION BY user_id ORDER BY id DESC) as inr_balance,\n' +
+    '          FIRST_VALUE(btc_balance) OVER (PARTITION BY user_id ORDER BY id DESC) as btc_balance\n' +
+    '        FROM transactions\n' +
+    '      ) latest ON u.id = latest.user_id\n' +
+    '      ORDER BY u.created_at DESC\n' +
+    '      LIMIT ? OFFSET ?\n' +
+    '    ',
+  sqlState: 'HY000',
+  sqlMessage: 'Incorrect arguments to mysqld_stmt_execute'
+}
+Database query error: Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePoolConnection.execute (/Users/roots/Desktop/bittrade-trading-app/node_modules/mysql2/lib/promise/connection.js:47:22)
+    at query (/Users/roots/Desktop/bittrade-trading-app/server/config/database.js:45:37)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async /Users/roots/Desktop/bittrade-trading-app/server/routes/admin.js:72:19 {
+  code: 'ER_WRONG_ARGUMENTS',
+  errno: 1210,
+  sql: '\n' +
+    '      SELECT \n' +
+    '        u.id, u.email, u.name, u.is_admin, u.created_at,\n' +
+    '        COALESCE(latest.inr_balance, 0) as inr_balance,\n' +
+    '        COALESCE(latest.btc_balance, 0) as btc_balance\n' +
+    '      FROM users u\n' +
+    '      LEFT JOIN (\n' +
+    '        SELECT DISTINCT user_id,\n' +
+    '          FIRST_VALUE(inr_balance) OVER (PARTITION BY user_id ORDER BY id DESC) as inr_balance,\n' +
+    '          FIRST_VALUE(btc_balance) OVER (PARTITION BY user_id ORDER BY id DESC) as btc_balance\n' +
+    '        FROM transactions\n' +
+    '      ) latest ON u.id = latest.user_id\n' +
+    '      ORDER BY u.created_at DESC\n' +
+    '      LIMIT ? OFFSET ?\n' +
+    '    ',
+  sqlState: 'HY000',
+  sqlMessage: 'Incorrect arguments to mysqld_stmt_execute'
+}
+Get users error: Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePoolConnection.execute (/Users/roots/Desktop/bittrade-trading-app/node_modules/mysql2/lib/promise/connection.js:47:22)
+    at query (/Users/roots/Desktop/bittrade-trading-app/server/config/database.js:45:37)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async /Users/roots/Desktop/bittrade-trading-app/server/routes/admin.js:72:19 {
+  code: 'ER_WRONG_ARGUMENTS',
+  errno: 1210,
+  sql: '\n' +
+    '      SELECT \n' +
+    '        u.id, u.email, u.name, u.is_admin, u.created_at,\n' +
+    '        COALESCE(latest.inr_balance, 0) as inr_balance,\n' +
+    '        COALESCE(latest.btc_balance, 0) as btc_balance\n' +
+    '      FROM users u\n' +
+    '      LEFT JOIN (\n' +
+    '        SELECT DISTINCT user_id,\n' +
+    '          FIRST_VALUE(inr_balance) OVER (PARTITION BY user_id ORDER BY id DESC) as inr_balance,\n' +
+    '          FIRST_VALUE(btc_balance) OVER (PARTITION BY user_id ORDER BY id DESC) as btc_balance\n' +
+    '        FROM transactions\n' +
+    '      ) latest ON u.id = latest.user_id\n' +
+    '      ORDER BY u.created_at DESC\n' +
+    '      LIMIT ? OFFSET ?\n' +
+    '    ',
+  sqlState: 'HY000',
+  sqlMessage: 'Incorrect arguments to mysqld_stmt_execute'
+}
+Database query error: Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePoolConnection.execute (/Users/roots/Desktop/bittrade-trading-app/node_modules/mysql2/lib/promise/connection.js:47:22)
+    at query (/Users/roots/Desktop/bittrade-trading-app/server/config/database.js:45:37)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async /Users/roots/Desktop/bittrade-trading-app/server/routes/admin.js:72:19 {
+  code: 'ER_WRONG_ARGUMENTS',
+  errno: 1210,
+  sql: '\n' +
+    '      SELECT \n' +
+    '        u.id, u.email, u.name, u.is_admin, u.created_at,\n' +
+    '        COALESCE(latest.inr_balance, 0) as inr_balance,\n' +
+    '        COALESCE(latest.btc_balance, 0) as btc_balance\n' +
+    '      FROM users u\n' +
+    '      LEFT JOIN (\n' +
+    '        SELECT DISTINCT user_id,\n' +
+    '          FIRST_VALUE(inr_balance) OVER (PARTITION BY user_id ORDER BY id DESC) as inr_balance,\n' +
+    '          FIRST_VALUE(btc_balance) OVER (PARTITION BY user_id ORDER BY id DESC) as btc_balance\n' +
+    '        FROM transactions\n' +
+    '      ) latest ON u.id = latest.user_id\n' +
+    '      ORDER BY u.created_at DESC\n' +
+    '      LIMIT ? OFFSET ?\n' +
+    '    ',
+  sqlState: 'HY000',
+  sqlMessage: 'Incorrect arguments to mysqld_stmt_execute'
+}
+Get users error: Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePoolConnection.execute (/Users/roots/Desktop/bittrade-trading-app/node_modules/mysql2/lib/promise/connection.js:47:22)
+    at query (/Users/roots/Desktop/bittrade-trading-app/server/config/database.js:45:37)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async /Users/roots/Desktop/bittrade-trading-app/server/routes/admin.js:72:19 {
+  code: 'ER_WRONG_ARGUMENTS',
+  errno: 1210,
+  sql: '\n' +
+    '      SELECT \n' +
+    '        u.id, u.email, u.name, u.is_admin, u.created_at,\n' +
+    '        COALESCE(latest.inr_balance, 0) as inr_balance,\n' +
+    '        COALESCE(latest.btc_balance, 0) as btc_balance\n' +
+    '      FROM users u\n' +
+    '      LEFT JOIN (\n' +
+    '        SELECT DISTINCT user_id,\n' +
+    '          FIRST_VALUE(inr_balance) OVER (PARTITION BY user_id ORDER BY id DESC) as inr_balance,\n' +
+    '          FIRST_VALUE(btc_balance) OVER (PARTITION BY user_id ORDER BY id DESC) as btc_balance\n' +
+    '        FROM transactions\n' +
+    '      ) latest ON u.id = latest.user_id\n' +
+    '      ORDER BY u.created_at DESC\n' +
+    '      LIMIT ? OFFSET ?\n' +
+    '    ',
+  sqlState: 'HY000',
+  sqlMessage: 'Incorrect arguments to mysqld_stmt_execute'
+}

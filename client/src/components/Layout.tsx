@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, History, LogOut, Settings, Users, BarChart3 } from 'lucide-react';
+import { Home, History, LogOut, Settings, Users, BarChart3, Bitcoin } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { userAPI } from '../services/api';
+import { formatBitcoin } from '../utils/formatters';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -11,6 +13,36 @@ interface LayoutProps {
 const Layout: React.FC<LayoutProps> = ({ children, isAdmin = false }) => {
   const { user, logout } = useAuth();
   const location = useLocation();
+  const [bitcoinBalance, setBitcoinBalance] = useState<number>(0);
+  const [sellRate, setSellRate] = useState<number>(0);
+  const [showPersistentBar, setShowPersistentBar] = useState(false);
+
+  useEffect(() => {
+    // Fetch Bitcoin balance for non-admin users
+    if (!isAdmin) {
+      const fetchBalance = async () => {
+        try {
+          const response = await userAPI.getDashboard();
+          const data = response.data.data;
+          if (data) {
+            setBitcoinBalance(data.balances.btc || 0);
+            setSellRate(data.prices.sell_rate || 0);
+          }
+        } catch (error) {
+          console.error('Error fetching balance:', error);
+        }
+      };
+      fetchBalance();
+    }
+
+    // Scroll detection
+    const handleScroll = () => {
+      setShowPersistentBar(window.scrollY > 100);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [isAdmin]);
 
   const handleLogout = async () => {
     try {
@@ -55,6 +87,23 @@ const Layout: React.FC<LayoutProps> = ({ children, isAdmin = false }) => {
           </div>
         </div>
       </header>
+
+      {/* Persistent Bitcoin Balance Bar */}
+      {!isAdmin && showPersistentBar && (
+        <div className="fixed top-0 left-0 right-0 bg-zinc-800/95 backdrop-blur-sm border-b border-zinc-700 px-4 py-2 z-40">
+          <div className="flex items-center justify-center max-w-md mx-auto">
+            <div className="flex items-center gap-2">
+              <Bitcoin className="w-4 h-4 text-white" />
+              <span className="text-white font-medium">
+                ₿{formatBitcoin(bitcoinBalance)}
+              </span>
+              <span className="text-zinc-400 text-sm">
+                (₹{Math.floor(bitcoinBalance * sellRate).toLocaleString()})
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Main Content */}
       <main className="pb-20 px-4 py-6">

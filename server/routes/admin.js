@@ -82,8 +82,8 @@ router.get('/users', async (req, res) => {
         FROM transactions
       ) latest ON u.id = latest.user_id
       ORDER BY u.created_at DESC
-      LIMIT ? OFFSET ?
-    `, [limit, offset]);
+      LIMIT ${limit} OFFSET ${offset}
+    `);
 
     const formattedUsers = users.map(user => ({
       ...user,
@@ -487,8 +487,8 @@ router.get('/transactions', async (req, res) => {
       FROM transactions t
       JOIN users u ON t.user_id = u.id
       ORDER BY t.id DESC
-      LIMIT ? OFFSET ?
-    `, [limit, offset]);
+      LIMIT ${limit} OFFSET ${offset}
+    `);
 
     const formattedTransactions = transactions.map(transaction => ({
       ...transaction,
