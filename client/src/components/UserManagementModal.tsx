@@ -36,6 +36,7 @@ const UserManagementModal: React.FC<UserManagementModalProps> = ({
   
   // Balance management
   const [inrAmount, setInrAmount] = useState('');
+  const [btcAmount, setBtcAmount] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [newPassword, setNewPassword] = useState('');
 
@@ -51,8 +52,10 @@ const UserManagementModal: React.FC<UserManagementModalProps> = ({
 
   if (!isOpen || !user) return null;
 
-  const handleBalanceOperation = async (operation: 'deposit' | 'withdraw', currency: 'INR') => {
-    if (!inrAmount || parseFloat(inrAmount) <= 0) {
+  const handleBalanceOperation = async (operation: 'deposit' | 'withdraw', currency: 'INR' | 'BTC') => {
+    const amount = currency === 'INR' ? inrAmount : btcAmount;
+    
+    if (!amount || parseFloat(amount) <= 0) {
       setError('Please enter a valid amount');
       return;
     }
@@ -62,15 +65,28 @@ const UserManagementModal: React.FC<UserManagementModalProps> = ({
     setMessage('');
 
     try {
-      const amount = parseFloat(inrAmount);
-      if (operation === 'deposit') {
-        await adminAPI.depositINR(user.id, amount);
-        setMessage(`✅ ₹${amount.toLocaleString()} deposited successfully`);
+      const parsedAmount = parseFloat(amount);
+      
+      if (currency === 'INR') {
+        if (operation === 'deposit') {
+          await adminAPI.depositINR(user.id, parsedAmount);
+          setMessage(`✅ ₹${parsedAmount.toLocaleString()} deposited successfully`);
+        } else {
+          await adminAPI.withdrawINR(user.id, parsedAmount);
+          setMessage(`✅ ₹${parsedAmount.toLocaleString()} withdrawn successfully`);
+        }
+        setInrAmount('');
       } else {
-        await adminAPI.withdrawINR(user.id, amount);
-        setMessage(`✅ ₹${amount.toLocaleString()} withdrawn successfully`);
+        if (operation === 'deposit') {
+          await adminAPI.depositBTC(user.id, parsedAmount);
+          setMessage(`✅ ₿${parsedAmount} deposited successfully`);
+        } else {
+          await adminAPI.withdrawBTC(user.id, parsedAmount);
+          setMessage(`✅ ₿${parsedAmount} withdrawn successfully`);
+        }
+        setBtcAmount('');
       }
-      setInrAmount('');
+      
       onUserUpdated();
     } catch (error: any) {
       setError(error.response?.data?.message || `Failed to ${operation} ${currency}`);
@@ -286,6 +302,44 @@ const UserManagementModal: React.FC<UserManagementModalProps> = ({
                     <button
                       onClick={() => handleBalanceOperation('withdraw', 'INR')}
                       disabled={isLoading || !inrAmount}
+                      className="bg-red-900/20 border border-red-800 text-red-300 hover:bg-red-900/30 disabled:opacity-50 disabled:cursor-not-allowed py-2 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
+                    >
+                      <Minus className="w-4 h-4" />
+                      Withdraw
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-zinc-800/50 rounded-lg p-4">
+                <h3 className="text-white font-medium mb-4 flex items-center gap-2">
+                  <Bitcoin className="w-4 h-4" />
+                  Bitcoin Balance Management
+                </h3>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-zinc-400 text-sm mb-2">Amount (₿)</label>
+                    <input
+                      type="number"
+                      step="0.00000001"
+                      value={btcAmount}
+                      onChange={(e) => setBtcAmount(e.target.value)}
+                      placeholder="Enter amount..."
+                      className="w-full bg-zinc-700 border border-zinc-600 rounded-lg py-2 px-3 text-white placeholder-zinc-400 focus:outline-none focus:border-white"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <button
+                      onClick={() => handleBalanceOperation('deposit', 'BTC')}
+                      disabled={isLoading || !btcAmount}
+                      className="bg-green-900/20 border border-green-800 text-green-300 hover:bg-green-900/30 disabled:opacity-50 disabled:cursor-not-allowed py-2 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
+                    >
+                      <Plus className="w-4 h-4" />
+                      Deposit
+                    </button>
+                    <button
+                      onClick={() => handleBalanceOperation('withdraw', 'BTC')}
+                      disabled={isLoading || !btcAmount}
                       className="bg-red-900/20 border border-red-800 text-red-300 hover:bg-red-900/30 disabled:opacity-50 disabled:cursor-not-allowed py-2 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
                     >
                       <Minus className="w-4 h-4" />

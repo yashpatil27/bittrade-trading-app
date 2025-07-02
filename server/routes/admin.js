@@ -414,6 +414,177 @@ router.post('/users/:userId/withdraw-inr', async (req, res) => {
   }
 });
 
+// Deposit BTC to user account
+router.post('/users/:userId/deposit-btc', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { amount } = req.body;
+
+    if (!amount || amount <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Amount must be greater than 0'
+      });
+    }
+
+    // Check if user exists
+    const users = await query('SELECT id FROM users WHERE id = ?', [userId]);
+    if (users.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    const result = await transaction(async (connection) => {
+      // Get current balances
+      const [balanceRows] = await connection.execute(
+        'SELECT inr_balance, btc_balance FROM transactions WHERE user_id = ? ORDER BY id DESC LIMIT 1',
+        [userId]
+      );
+
+      if (balanceRows.length === 0) {
+        throw new Error('User has no transactions');
+      }
+
+      const currentBalances = balanceRows[0];
+      const btcAmountSatoshi = Math.round(amount * 100000000); // Convert BTC to satoshi
+      const newBtcBalance = currentBalances.btc_balance + btcAmountSatoshi;
+
+      // Get current BTC price for INR amount calculation
+      const rates = await priceService.getCalculatedRates();
+      const inrAmount = Math.round(amount * rates.sellRate); // Use sell rate for internal calculations
+
+      // Create DEPOSIT_BTC transaction
+      const [transactionResult] = await connection.execute(
+        'INSERT INTO transactions (user_id, type, inr_amount, btc_amount, btc_price, inr_balance, btc_balance) VALUES (?, ?, ?, ?, ?, ?, ?)',
+        [userId, 'DEPOSIT_BTC', inrAmount, btcAmountSatoshi, rates.sellRate, currentBalances.inr_balance, newBtcBalance]
+      );
+
+      return { 
+        transactionId: transactionResult.insertId, 
+        newBtcBalance, 
+        inrBalance: currentBalances.inr_balance,
+        inrAmount,
+        sellRate: rates.sellRate
+      };
+    });
+
+    // Clear user cache
+    await clearUserCache(userId);
+
+    res.json({
+      success: true,
+      message: 'BTC deposited successfully',
+      data: {
+        transaction_id: result.transactionId,
+        deposited_amount: amount,
+        inr_equivalent: result.inrAmount,
+        btc_price: result.sellRate,
+        new_balances: {
+          inr: result.inrBalance,
+          btc: result.newBtcBalance / 100000000
+        }
+      }
+    });
+
+  } catch (error) {
+    console.error('Deposit BTC error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error depositing BTC'
+    });
+  }
+});
+
+// Withdraw BTC from user account
+router.post('/users/:userId/withdraw-btc', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { amount } = req.body;
+
+    if (!amount || amount <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Amount must be greater than 0'
+      });
+    }
+
+    const result = await transaction(async (connection) => {
+      // Get current balances
+      const [balanceRows] = await connection.execute(
+        'SELECT inr_balance, btc_balance FROM transactions WHERE user_id = ? ORDER BY id DESC LIMIT 1',
+        [userId]
+      );
+
+      if (balanceRows.length === 0) {
+        throw new Error('User has no transactions');
+      }
+
+      const currentBalances = balanceRows[0];
+      const btcAmountSatoshi = Math.round(amount * 100000000); // Convert BTC to satoshi
+      
+      if (currentBalances.btc_balance < btcAmountSatoshi) {
+        throw new Error('Insufficient BTC balance');
+      }
+
+      const newBtcBalance = currentBalances.btc_balance - btcAmountSatoshi;
+
+      // Get current BTC price for INR amount calculation
+      const rates = await priceService.getCalculatedRates();
+      const inrAmount = Math.round(amount * rates.sellRate); // Use sell rate for internal calculations
+
+      // Create WITHDRAW_BTC transaction
+      const [transactionResult] = await connection.execute(
+        'INSERT INTO transactions (user_id, type, inr_amount, btc_amount, btc_price, inr_balance, btc_balance) VALUES (?, ?, ?, ?, ?, ?, ?)',
+        [userId, 'WITHDRAW_BTC', inrAmount, btcAmountSatoshi, rates.sellRate, currentBalances.inr_balance, newBtcBalance]
+      );
+
+      return { 
+        transactionId: transactionResult.insertId, 
+        newBtcBalance, 
+        inrBalance: currentBalances.inr_balance,
+        inrAmount,
+        sellRate: rates.sellRate
+      };
+    });
+
+    // Clear user cache
+    await clearUserCache(userId);
+
+    res.json({
+      success: true,
+      message: 'BTC withdrawn successfully',
+      data: {
+        transaction_id: result.transactionId,
+        withdrawn_amount: amount,
+        inr_equivalent: result.inrAmount,
+        btc_price: result.sellRate,
+        new_balances: {
+          inr: result.inrBalance,
+          btc: result.newBtcBalance / 100000000
+        }
+      }
+    });
+
+  } catch (error) {
+    console.error('Withdraw BTC error:', error);
+    
+    let statusCode = 500;
+    let message = 'Error withdrawing BTC';
+    
+    if (error.message === 'Insufficient BTC balance') {
+      statusCode = 400;
+      message = error.message;
+    }
+
+    res.status(statusCode).json({
+      success: false,
+      message
+    });
+  }
+});
+
 // Update system settings (buy/sell multipliers)
 router.patch('/settings', async (req, res) => {
   try {

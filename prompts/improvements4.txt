@@ -1,114 +1,15 @@
-₿itTrade UI Improvements & Enhancements
-========================================
+Admin Dashboard Suggestions
+The UserManagementModal Should be able to deposit/ withdraw bitcoin from a users account, by creating DEPOSIT_BTC and WITHDRAWAL_BTC transactions.
+6	2	"DEPOSIT_BTC"	8800	100000	8800000	1400	200000	"2025-07-02 03:13:09.339579" 
+The admin deposited 0.001 bitcoin to users account. 
+the btc_usd price was 100000, so the sell rate was 8800000, an the inr_amount field is populated with 0.001*8800000. 
+This is to make internal performance calculations. only the btc_balance is updated and not the inr_balance.
+the inr_amount field in the database is autopopulated based on the bitcoin_amount*btc_usd_price*sell_multiplier.
 
-## Design System Improvements
+- On the Admin Dashboard, on the Dashboard Tab, remove the Quick Actions Section.
 
-### 1. Monochromatic Dark Theme
-- Consistent dark color palette throughout the app
-- Primary background: #0f0f0f (very dark gray)
-- Secondary background: #1a1a1a (dark gray)
-- Card backgrounds: #262626 (medium dark gray)
-- Borders: #404040 (lighter gray)
-- Text: #ffffff (white) for primary text
-- Muted text: #a3a3a3 (light gray)
+I dont see any easy toggle icon to switch between trading dashboard and admin dashboard for the admin.
 
-### 2. Icon System Standardization
-- Exclusively use lucide-react icons throughout the app
-- All icons should be white (#ffffff) for consistency
-- Standard icon size: 20px for most UI elements
-- Larger icons (24px) for primary actions and navigation
-- Remove any non-lucide-react icons or emoji
-
-### 3. Bitcoin Symbol Consistency
-- Use ₿ symbol consistently for Bitcoin throughout the app
-- Replace all instances of "BTC" text with ₿ symbol
-- Maintain proper formatting: ₿0.00012345 (8 decimal places)
-- Use formatBitcoin utility function for consistent formatting
-
-## Component Improvements
-
-### 4. Trading Modal Enhancements
-- Add percentage quick-select buttons (25%, 50%, 75%, 100%)
-- Real-time calculation display as user types
-- Better visual feedback for buy/sell actions
-- Improved spacing and button layouts
-- Clear action buttons with proper hover states
-
-### 5. Transaction Cards (History Page)
-- Improved spacing between elements
-- Better visual hierarchy with proper text sizing
-- Consistent icon usage (lucide-react only)
-- User-friendly transaction type labels:
-  - "Initial Setup" for SETUP
-  - "INR Deposit" for DEPOSIT_INR
-  - "₿ Purchase" for BUY
-  - "₿ Sale" for SELL
-  - "INR Withdrawal" for WITHDRAW_INR
-  - "₿ Withdrawal" for WITHDRAW_BTC
-- Proper amount formatting with ₿ symbol
-
-### 6. Dashboard Cards (Home Page)
-- Clean, minimal card design
-- Consistent spacing and padding
-- Proper visual hierarchy
-- White lucide-react icons for all elements
-- Balance cards with clear typography
-
-## Mobile Accessibility
-
-### 7. Network Configuration
-- Replace localhost with actual IP address in API calls
-- Update REACT_APP_API_URL to use machine IP (192.168.x.x)
-- Ensure mobile devices on same network can access the app
-- Test on mobile devices for proper functionality
-
-## Technical Improvements
-
-### 8. Format Utilities
-- Enhanced formatBitcoin function for proper ₿ display
-- Consistent number formatting across components
-- Proper handling of decimal places (8 for Bitcoin, 2 for INR)
-- Error handling for invalid amounts
-
-### 9. Visual Polish
-- Smooth hover transitions on interactive elements
-- Proper focus states for accessibility
-- Consistent button styling across the app
-- Better visual feedback for user actions
-
-### 10. Responsive Design
-- Mobile-first approach maintained
-- Proper breakpoints for tablet and desktop
-- Touch-friendly button sizes on mobile
-- Optimized layout for different screen sizes
-
-## Color Palette Reference
-```
-Primary Background: #0f0f0f
-Secondary Background: #1a1a1a
-Card Background: #262626
-Border Color: #404040
-Primary Text: #ffffff
-Secondary Text: #a3a3a3
-Success Green: #22c55e
-Error Red: #ef4444
-Warning Orange: #f59e0b
-```
-
-## Implementation Status
-- ✅ Monochromatic theme applied
-- ✅ Lucide-react icons standardized
-- ✅ Bitcoin symbol consistency (₿)
-- ✅ Trading modal enhancements
-- ✅ Transaction card improvements
-- ✅ Mobile network configuration
-- ✅ Format utilities updated
-- ✅ Dashboard visual improvements
-- ✅ Responsive design maintained
-
-## Future Enhancements
-- Add animation transitions for better UX
-- Implement loading states for better feedback
-- Add sound effects for trading actions (optional)
-- Consider adding price alerts functionality
-- Implement dark/light theme toggle (optional)
+General App Suggestions
+Make the top bar and bottom nav bar have a black background, that would look better.
+The Transaction Details Modals are too big when it comes to buy and sell transactions, details are being cutoff.

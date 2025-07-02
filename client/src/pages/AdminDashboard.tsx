@@ -83,23 +83,7 @@ const AdminDashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* Quick Actions */}
-      <div className="card">
-        <h2 className="text-xl font-semibold mb-4">Quick Actions</h2>
-        <div className="space-y-3">
-          <button className="btn-primary w-full">
-            View All Users
-          </button>
-          <button className="btn-secondary w-full">
-            View All Transactions
-          </button>
-          <button className="btn-secondary w-full">
-            Update Settings
-          </button>
-        </div>
-      </div>
-
-      {/* System Health */}
+      
       <div className="card">
         <h2 className="text-xl font-semibold mb-4">System Health</h2>
         <div className="space-y-2">

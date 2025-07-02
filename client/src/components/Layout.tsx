@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { Home, History, LogOut, Settings, Users, BarChart3, Bitcoin } from 'lucide-react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Home, History, LogOut, Settings, Users, BarChart3, Bitcoin, UserCog } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { userAPI } from '../services/api';
 import { formatBitcoin } from '../utils/formatters';
@@ -13,6 +13,7 @@ interface LayoutProps {
 const Layout: React.FC<LayoutProps> = ({ children, isAdmin = false }) => {
   const { user, logout } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
   const [bitcoinBalance, setBitcoinBalance] = useState<number>(0);
   const [sellRate, setSellRate] = useState<number>(0);
   const [showPersistentBar, setShowPersistentBar] = useState(false);
@@ -69,7 +70,7 @@ const Layout: React.FC<LayoutProps> = ({ children, isAdmin = false }) => {
   return (
     <div className="min-h-screen bg-black">
       {/* Header */}
-      <header className="bg-zinc-900 border-b border-zinc-800 px-4 py-3">
+      <header className="bg-black border-b border-zinc-800 px-4 py-3">
         <div className="flex items-center justify-between max-w-md mx-auto">
           <h1 className="text-xl font-bold text-white">
             ₿itTrade {isAdmin && <span className="text-sm text-zinc-400">Admin</span>}
@@ -78,6 +79,15 @@ const Layout: React.FC<LayoutProps> = ({ children, isAdmin = false }) => {
             <span className="text-sm text-zinc-400">
               {user?.name}
             </span>
+            {user?.is_admin && (
+              <button
+                onClick={() => navigate(isAdmin ? '/' : '/admin')}
+                className="p-2 text-zinc-400 hover:text-white transition-colors"
+                title={isAdmin ? 'Switch to Trading Dashboard' : 'Switch to Admin Dashboard'}
+              >
+                <UserCog size={20} />
+              </button>
+            )}
             <button
               onClick={handleLogout}
               className="p-2 text-zinc-400 hover:text-white transition-colors"
@@ -113,7 +123,7 @@ const Layout: React.FC<LayoutProps> = ({ children, isAdmin = false }) => {
       </main>
 
       {/* Bottom Navigation */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-zinc-900 border-t border-zinc-800">
+      <nav className="fixed bottom-0 left-0 right-0 bg-black border-t border-zinc-800">
         <div className="flex max-w-md mx-auto">
           {navItems.map((item) => {
             const Icon = item.icon;
