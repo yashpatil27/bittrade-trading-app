@@ -107,3 +107,6 @@ uploads/
 *.pem
 *.key
 *.crt
+
+# AI prompts and development artifacts
+prompts/
