@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Home, History, LogOut, Settings, Users, BarChart3, Bitcoin, UserCog, PieChart } from 'lucide-react';
+import { Home, History, LogOut, Settings, Users, BarChart3, Bitcoin, UserCog, PieChart, User } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { userAPI } from '../services/api';
 import { formatBitcoin } from '../utils/formatters';
@@ -57,6 +57,7 @@ const Layout: React.FC<LayoutProps> = ({ children, isAdmin = false }) => {
     { name: 'Home', path: '/', icon: Home },
     { name: 'Portfolio', path: '/portfolio', icon: PieChart },
     { name: 'History', path: '/history', icon: History },
+    { name: 'Profile', path: '/profile', icon: User },
   ];
 
   const adminNavItems = [

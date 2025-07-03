@@ -9,6 +9,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<void>;
   register: (email: string, name: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
+  setUser: (user: User | null) => void;
   isAuthenticated: boolean;
   isAdmin: boolean;
 }
@@ -111,6 +112,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     login,
     register,
     logout,
+    setUser,
     isAuthenticated: !!token && !!user,
     isAdmin: !!(user?.is_admin === true || user?.is_admin === 1),
   };

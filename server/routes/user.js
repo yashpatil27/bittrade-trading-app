@@ -304,4 +304,126 @@ router.get('/portfolio', async (req, res) => {
   }
 });
 
+// Update user profile (name/email)
+router.patch('/profile', async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { name, email, currentPassword } = req.body;
+
+    // Validation
+    if (!currentPassword) {
+      return res.status(400).json({
+        success: false,
+        message: 'Current password is required'
+      });
+    }
+
+    if (!name && !email) {
+      return res.status(400).json({
+        success: false,
+        message: 'Name or email must be provided'
+      });
+    }
+
+    const result = await userService.updateUserProfile(userId, { name, email, currentPassword });
+
+    res.json({
+      success: true,
+      message: 'Profile updated successfully',
+      data: {
+        user: {
+          id: result.id,
+          name: result.name,
+          email: result.email,
+          is_admin: result.is_admin
+        }
+      }
+    });
+
+  } catch (error) {
+    console.error('Profile update error:', error);
+    
+    let statusCode = 500;
+    let message = 'Error updating profile';
+    
+    if (error.message === 'Invalid current password') {
+      statusCode = 401;
+      message = error.message;
+    } else if (error.message === 'Email already exists') {
+      statusCode = 409;
+      message = error.message;
+    }
+
+    res.status(statusCode).json({
+      success: false,
+      message
+    });
+  }
+});
+
+// Change password
+router.patch('/password', async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { currentPassword, newPassword } = req.body;
+
+    // Validation
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({
+        success: false,
+        message: 'Current password and new password are required'
+      });
+    }
+
+    if (newPassword.length < 6) {
+      return res.status(400).json({
+        success: false,
+        message: 'New password must be at least 6 characters long'
+      });
+    }
+
+    await userService.changeUserPassword(userId, currentPassword, newPassword);
+
+    res.json({
+      success: true,
+      message: 'Password changed successfully'
+    });
+
+  } catch (error) {
+    console.error('Password change error:', error);
+    
+    let statusCode = 500;
+    let message = 'Error changing password';
+    
+    if (error.message === 'Invalid current password') {
+      statusCode = 401;
+      message = error.message;
+    }
+
+    res.status(statusCode).json({
+      success: false,
+      message
+    });
+  }
+});
+
+// Export trading data
+router.get('/export-data', async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const csvData = await userService.exportUserData(userId);
+
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', 'attachment; filename="bittrade-data.csv"');
+    res.send(csvData);
+
+  } catch (error) {
+    console.error('Data export error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error exporting data'
+    });
+  }
+});
+
 module.exports = router;

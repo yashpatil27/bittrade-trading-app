@@ -90,6 +90,15 @@ export const userAPI = {
   
   portfolio: (): Promise<AxiosResponse<ApiResponse<any>>> =>
     api.get('/user/portfolio'),
+  
+  updateProfile: (data: { name?: string; email?: string; currentPassword: string }): Promise<AxiosResponse<ApiResponse<any>>> =>
+    api.patch('/user/profile', data),
+  
+  changePassword: (data: { currentPassword: string; newPassword: string }): Promise<AxiosResponse<ApiResponse<any>>> =>
+    api.patch('/user/password', data),
+  
+  exportData: (): Promise<AxiosResponse<string>> =>
+    api.get('/user/export-data', { responseType: 'text' }),
 };
 
 // Admin API

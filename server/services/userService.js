@@ -213,6 +213,160 @@ class UserService {
   formatTransactionsForDisplay(transactions) {
     return transactions.map(transaction => this.formatTransactionForDisplay(transaction));
   }
+
+  async updateUserProfile(userId, { name, email, currentPassword }) {
+    try {
+      return await transaction(async (connection) => {
+        // Get current user
+        const [userRows] = await connection.execute(
+          'SELECT id, email, name, password_hash, is_admin FROM users WHERE id = ?',
+          [userId]
+        );
+
+        if (userRows.length === 0) {
+          throw new Error('User not found');
+        }
+
+        const user = userRows[0];
+
+        // Verify current password
+        const bcrypt = require('bcryptjs');
+        const isPasswordValid = await bcrypt.compare(currentPassword, user.password_hash);
+        if (!isPasswordValid) {
+          throw new Error('Invalid current password');
+        }
+
+        // Prepare update data
+        const updateData = {};
+        const updateFields = [];
+        const updateValues = [];
+
+        if (name && name !== user.name) {
+          updateData.name = name;
+          updateFields.push('name = ?');
+          updateValues.push(name);
+        }
+
+        if (email && email !== user.email) {
+          // Check if email already exists
+          const [emailCheckRows] = await connection.execute(
+            'SELECT id FROM users WHERE email = ? AND id != ?',
+            [email.toLowerCase(), userId]
+          );
+
+          if (emailCheckRows.length > 0) {
+            throw new Error('Email already exists');
+          }
+
+          updateData.email = email.toLowerCase();
+          updateFields.push('email = ?');
+          updateValues.push(email.toLowerCase());
+        }
+
+        // Update user if there are changes
+        if (updateFields.length > 0) {
+          updateValues.push(userId);
+          await connection.execute(
+            `UPDATE users SET ${updateFields.join(', ')} WHERE id = ?`,
+            updateValues
+          );
+        }
+
+        return {
+          id: user.id,
+          name: updateData.name || user.name,
+          email: updateData.email || user.email,
+          is_admin: user.is_admin
+        };
+      });
+    } catch (error) {
+      console.error('Error updating user profile:', error);
+      throw error;
+    }
+  }
+
+  async changeUserPassword(userId, currentPassword, newPassword) {
+    try {
+      return await transaction(async (connection) => {
+        // Get current user
+        const [userRows] = await connection.execute(
+          'SELECT id, password_hash FROM users WHERE id = ?',
+          [userId]
+        );
+
+        if (userRows.length === 0) {
+          throw new Error('User not found');
+        }
+
+        const user = userRows[0];
+
+        // Verify current password
+        const bcrypt = require('bcryptjs');
+        const isPasswordValid = await bcrypt.compare(currentPassword, user.password_hash);
+        if (!isPasswordValid) {
+          throw new Error('Invalid current password');
+        }
+
+        // Hash new password
+        const saltRounds = 10;
+        const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
+
+        // Update password
+        await connection.execute(
+          'UPDATE users SET password_hash = ? WHERE id = ?',
+          [hashedPassword, userId]
+        );
+
+        return { success: true };
+      });
+    } catch (error) {
+      console.error('Error changing user password:', error);
+      throw error;
+    }
+  }
+
+  async exportUserData(userId) {
+    try {
+      // Get user info
+      const [userRows] = await query(
+        'SELECT email, name, created_at FROM users WHERE id = ?',
+        [userId]
+      );
+
+      if (userRows.length === 0) {
+        throw new Error('User not found');
+      }
+
+      const user = userRows[0];
+
+      // Get all transactions
+      const transactions = await query(
+        'SELECT * FROM transactions WHERE user_id = ? ORDER BY created_at ASC',
+        [userId]
+      );
+
+      // Format as CSV
+      const csvHeader = 'Date,Type,INR Amount,BTC Amount (Satoshis),BTC Price,INR Balance,BTC Balance (Satoshis)\n';
+      
+      const csvRows = transactions.map(tx => {
+        const date = new Date(tx.created_at).toISOString();
+        return `${date},${tx.type},${tx.inr_amount},${tx.btc_amount},${tx.btc_price},${tx.inr_balance},${tx.btc_balance}`;
+      }).join('\n');
+
+      const csvData = `# ₿itTrade Data Export\n`
+        + `# User: ${user?.name || 'Unknown'} (${user?.email || 'Unknown'})\n`
+        + `# Account Created: ${user?.created_at ? new Date(user.created_at).toISOString() : 'Unknown'}\n`
+        + `# Export Date: ${new Date().toISOString()}\n`
+        + `#\n`
+        + csvHeader
+        + csvRows;
+
+      return csvData;
+    } catch (error) {
+      console.error('Error exporting user data:', error);
+      throw error;
+    }
+  }
 }
 
 // Export singleton instance
