@@ -150,7 +150,7 @@ const AdminUsers: React.FC = () => {
                       <div>
                         <div className="flex items-center gap-2">
                           <p className="font-semibold text-white">{user.name}</p>
-                          {user.is_admin && (
+                          {!!(user.is_admin === true || user.is_admin === 1) && (
                             <span className="bg-zinc-700 text-white text-xs px-2 py-1 rounded-full">
                               Admin
                             </span>

@@ -252,7 +252,7 @@ const UserManagementModal: React.FC<UserManagementModalProps> = ({
                 <Trash2 className="w-4 h-4" />
                 Delete User
               </button>
-              {user.is_admin && (
+              {!!(user.is_admin === true || user.is_admin === 1) && (
                 <p className="text-zinc-500 text-xs text-center">Admin users cannot be deleted</p>
               )}
             </div>
