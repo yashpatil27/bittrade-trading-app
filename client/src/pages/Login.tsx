@@ -37,7 +37,7 @@ const Login: React.FC = () => {
         {/* Logo */}
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-white mb-2">₿itTrade</h1>
-          <p className="text-zinc-400 text-sm">Bitcoin Paper Trading</p>
+          <p className="text-zinc-400 text-sm">Stay Humble, Stack Sats</p>
         </div>
 
         {/* Login Form */}
@@ -99,20 +99,6 @@ const Login: React.FC = () => {
           </button>
         </form>
 
-        {/* Quick Login for Demo */}
-        <div className="mt-6 p-4 bg-zinc-900 rounded-lg border border-zinc-800">
-          <p className="text-zinc-300 text-sm mb-2">Demo Login:</p>
-          <button
-            onClick={() => {
-              setEmail('admin@bittrade.co.in');
-              setPassword('admin123');
-            }}
-            className="text-xs text-zinc-400 hover:text-white underline"
-            disabled={isLoading}
-          >
-            Admin: admin@bittrade.co.in / admin123
-          </button>
-        </div>
 
         {/* Register Link */}
         <div className="mt-6 text-center">
