@@ -310,22 +310,22 @@ const UserManagementModal: React.FC<UserManagementModalProps> = ({
           {/* User Info Tab */}
           {activeTab === 'info' && (
             <div className="space-y-4">
+              <div className="bg-zinc-800/50 rounded-lg p-4">
+                <p className="text-zinc-400 text-sm">Email</p>
+                <p className="text-white font-medium">{user.email}</p>
+              </div>
+              
               <div className="grid grid-cols-2 gap-4">
                 <div className="bg-zinc-800/50 rounded-lg p-4">
-                  <p className="text-zinc-400 text-sm">Email</p>
-                  <p className="text-white font-medium">{user.email}</p>
+                  <p className="text-zinc-400 text-sm">Member Since</p>
+                  <p className="text-white font-medium">
+                    {user.created_at ? new Date(user.created_at).toLocaleDateString() : 'N/A'}
+                  </p>
                 </div>
                 <div className="bg-zinc-800/50 rounded-lg p-4">
                   <p className="text-zinc-400 text-sm">Role</p>
                   <p className="text-white font-medium">{user.is_admin ? 'Admin' : 'User'}</p>
                 </div>
-              </div>
-              
-              <div className="bg-zinc-800/50 rounded-lg p-4">
-                <p className="text-zinc-400 text-sm">Member Since</p>
-                <p className="text-white font-medium">
-                  {user.created_at ? new Date(user.created_at).toLocaleDateString() : 'N/A'}
-                </p>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
