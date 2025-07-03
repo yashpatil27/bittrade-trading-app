@@ -76,7 +76,7 @@ const Layout: React.FC<LayoutProps> = ({ children, isAdmin = false }) => {
             ₿itTrade {isAdmin && <span className="text-sm text-zinc-400">Admin</span>}
           </h1>
           <div className="flex items-center gap-3">
-            {user?.is_admin === true && (
+            {(user?.is_admin === true || user?.is_admin === 1) && (
               <button
                 onClick={() => navigate(isAdmin ? '/' : '/admin')}
                 className="p-2 text-zinc-400 hover:text-white transition-colors"

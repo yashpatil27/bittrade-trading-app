@@ -246,7 +246,7 @@ const UserManagementModal: React.FC<UserManagementModalProps> = ({
 
               <button
                 onClick={handleDeleteUser}
-                disabled={isLoading || user.is_admin}
+                disabled={isLoading || !!(user.is_admin === true || user.is_admin === 1)}
                 className="w-full bg-red-900/20 border border-red-800 text-red-300 hover:bg-red-900/30 disabled:opacity-50 disabled:cursor-not-allowed py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
               >
                 <Trash2 className="w-4 h-4" />

@@ -112,7 +112,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     register,
     logout,
     isAuthenticated: !!token && !!user,
-    isAdmin: !!user?.is_admin,
+    isAdmin: !!(user?.is_admin === true || user?.is_admin === 1),
   };
 
   return (

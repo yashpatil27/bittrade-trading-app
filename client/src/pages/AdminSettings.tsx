@@ -72,8 +72,8 @@ const AdminSettings: React.FC = () => {
     const buyValue = parseFloat(buyMultiplier);
     const sellValue = parseFloat(sellMultiplier);
 
-    if (buyValue <= 0 || buyValue > 100 || sellValue <= 0 || sellValue > 100) {
-      setError('Multipliers must be between 0 and 100');
+    if (buyValue <= 0 || buyValue > 200 || sellValue <= 0 || sellValue > 200) {
+      setError('Exchange rates must be between 1 and 200 INR per USD');
       return;
     }
 
@@ -179,13 +179,13 @@ const AdminSettings: React.FC = () => {
       <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6">
         <div className="flex items-center gap-2 mb-6">
           <Percent className="w-5 h-5 text-white" />
-          <h2 className="text-lg font-semibold">Trading Multipliers</h2>
+          <h2 className="text-lg font-semibold">USD/INR Exchange Rates</h2>
         </div>
         
         <div className="space-y-6">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-zinc-400 text-sm mb-2">Buy Multiplier (%)</label>
+              <label className="block text-zinc-400 text-sm mb-2">Buy Rate (INR per USD)</label>
               <div className="relative">
                 <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-zinc-400" />
                 <input
@@ -199,11 +199,11 @@ const AdminSettings: React.FC = () => {
                   className="w-full bg-zinc-800 border border-zinc-700 rounded-lg py-3 pl-10 pr-4 text-white placeholder-zinc-400 focus:outline-none focus:border-white"
                 />
               </div>
-              <p className="text-zinc-500 text-xs mt-1">Users buy Bitcoin at this % of market price</p>
+              <p className="text-zinc-500 text-xs mt-1">Exchange rate when users buy Bitcoin (INR per USD)</p>
             </div>
             
             <div>
-              <label className="block text-zinc-400 text-sm mb-2">Sell Multiplier (%)</label>
+              <label className="block text-zinc-400 text-sm mb-2">Sell Rate (INR per USD)</label>
               <div className="relative">
                 <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-zinc-400" />
                 <input
@@ -217,7 +217,7 @@ const AdminSettings: React.FC = () => {
                   className="w-full bg-zinc-800 border border-zinc-700 rounded-lg py-3 pl-10 pr-4 text-white placeholder-zinc-400 focus:outline-none focus:border-white"
                 />
               </div>
-              <p className="text-zinc-500 text-xs mt-1">Users sell Bitcoin at this % of market price</p>
+              <p className="text-zinc-500 text-xs mt-1">Exchange rate when users sell Bitcoin (INR per USD)</p>
             </div>
           </div>
 
@@ -317,8 +317,9 @@ const AdminSettings: React.FC = () => {
       <div className="bg-zinc-800/50 rounded-lg p-4">
         <h3 className="text-white font-medium mb-2">Configuration Notes</h3>
         <div className="space-y-2 text-sm text-zinc-400">
-          <p>• Buy multiplier should be higher than sell multiplier to ensure platform profit</p>
-          <p>• Typical ranges: Buy 90-95%, Sell 85-90%</p>
+          <p>• Buy rate reflects P2P/cash market rates for USD purchases (INR per USD)</p>
+          <p>• Sell rate reflects P2P/cash market rates for USD sales (INR per USD)</p>
+          <p>• Buy rate is typically higher than sell rate due to market dynamics</p>
           <p>• Changes take effect immediately for new trades</p>
           <p>• System health is checked automatically every 30 seconds</p>
         </div>
