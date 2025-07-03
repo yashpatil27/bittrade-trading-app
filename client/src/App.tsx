@@ -6,6 +6,7 @@ import Layout from './components/Layout';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Home from './pages/Home';
+import Portfolio from './pages/Portfolio';
 import History from './pages/History';
 import AdminDashboard from './pages/AdminDashboard';
 import AdminUsers from './pages/AdminUsers';
@@ -27,6 +28,14 @@ function App() {
               <ProtectedRoute>
                 <Layout>
                   <Home />
+                </Layout>
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/portfolio" element={
+              <ProtectedRoute>
+                <Layout>
+                  <Portfolio />
                 </Layout>
               </ProtectedRoute>
             } />

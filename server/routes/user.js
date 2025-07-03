@@ -2,6 +2,7 @@ const express = require('express');
 const { verifyToken } = require('../middleware/auth');
 const userService = require('../services/userService');
 const priceService = require('../services/priceService');
+const portfolioService = require('../services/portfolioService');
 
 const router = express.Router();
 
@@ -279,6 +280,26 @@ router.get('/transactions', async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Error fetching transactions'
+    });
+  }
+});
+
+// Get portfolio metrics
+router.get('/portfolio', async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const portfolioData = await portfolioService.calculatePortfolioMetrics(userId);
+
+    res.json({
+      success: true,
+      data: portfolioData
+    });
+
+  } catch (error) {
+    console.error('Portfolio error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching portfolio data'
     });
   }
 });

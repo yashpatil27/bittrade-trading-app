@@ -87,6 +87,9 @@ export const userAPI = {
   
   getAllTransactions: (page = 1, limit = 20): Promise<AxiosResponse<ApiResponse<{ transactions: Transaction[], pagination: any }>>> =>
     api.get(`/user/transactions?page=${page}&limit=${limit}`),
+  
+  portfolio: (): Promise<AxiosResponse<ApiResponse<any>>> =>
+    api.get('/user/portfolio'),
 };
 
 // Admin API
