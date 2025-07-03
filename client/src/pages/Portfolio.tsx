@@ -266,43 +266,50 @@ const Portfolio: React.FC = () => {
         </div>
       </div>
 
-      {/* Trading Statistics */}
-      <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4">
-        <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-          <Sparkles className="w-5 h-5 text-white" />
-          Trading Statistics
-        </h3>
-        <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-3">
-            <div className="flex justify-between">
-              <span className="text-zinc-400 text-sm">Trading Days</span>
-              <span className="text-white font-medium">{tradingStats.tradingDays}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-zinc-400 text-sm">Total Trades</span>
-              <span className="text-white font-medium">{tradingStats.totalTrades}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-zinc-400 text-sm">This Month</span>
-              <span className="text-white font-medium">{tradingStats.tradesThisMonth}</span>
-            </div>
-          </div>
-          <div className="space-y-3">
-            <div className="flex justify-between">
-              <span className="text-zinc-400 text-sm">Avg Trade Size</span>
-              <span className="text-white font-medium">{formatCurrencyInr(tradingStats.averageTradeSize)}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-zinc-400 text-sm">Total Volume</span>
-              <span className="text-white font-medium">{formatCurrencyInr(tradingStats.totalVolume)}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-zinc-400 text-sm">Days in Profit</span>
-              <span className="text-white font-medium">
-                {tradingStats.daysInProfit === 0 ? 'Coming Soon' : tradingStats.daysInProfit}
-              </span>
-            </div>
-          </div>
+      {/* Trading Statistics Header */}
+      <div className="flex items-center gap-2 mb-4">
+        <Sparkles className="w-5 h-5 text-white" />
+        <h3 className="text-lg font-semibold">Trading Statistics</h3>
+      </div>
+
+      {/* Trading Statistics Cards */}
+      <div className="grid grid-cols-2 gap-4">
+        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 text-center">
+          <Activity className="w-6 h-6 text-white mx-auto mb-2" />
+          <p className="text-zinc-400 text-sm">Trading Days</p>
+          <p className="text-xl font-bold">{tradingStats.tradingDays}</p>
+        </div>
+
+        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 text-center">
+          <BarChart3 className="w-6 h-6 text-white mx-auto mb-2" />
+          <p className="text-zinc-400 text-sm">Total Trades</p>
+          <p className="text-xl font-bold">{tradingStats.totalTrades}</p>
+        </div>
+
+        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 text-center">
+          <Clock className="w-6 h-6 text-white mx-auto mb-2" />
+          <p className="text-zinc-400 text-sm">This Month</p>
+          <p className="text-xl font-bold">{tradingStats.tradesThisMonth}</p>
+        </div>
+
+        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 text-center">
+          <DollarSign className="w-6 h-6 text-white mx-auto mb-2" />
+          <p className="text-zinc-400 text-sm">Avg Trade Size</p>
+          <p className="text-lg font-bold">{formatCurrencyInr(tradingStats.averageTradeSize)}</p>
+        </div>
+
+        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 text-center">
+          <TrendingUp className="w-6 h-6 text-white mx-auto mb-2" />
+          <p className="text-zinc-400 text-sm">Total Volume</p>
+          <p className="text-lg font-bold">{formatCurrencyInr(tradingStats.totalVolume)}</p>
+        </div>
+
+        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 text-center">
+          <Trophy className="w-6 h-6 text-white mx-auto mb-2" />
+          <p className="text-zinc-400 text-sm">Days in Profit</p>
+          <p className="text-lg font-bold">
+            {tradingStats.daysInProfit === 0 ? 'Coming Soon' : tradingStats.daysInProfit}
+          </p>
         </div>
       </div>
 
