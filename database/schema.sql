@@ -11,6 +11,7 @@ CREATE TABLE users (
   email VARCHAR(100) UNIQUE NOT NULL,
   name VARCHAR(100) NOT NULL,
   password_hash VARCHAR(255) NOT NULL,
+  user_pin VARCHAR(4) NOT NULL DEFAULT '1234',
   is_admin BOOLEAN DEFAULT false,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -51,8 +52,8 @@ INSERT INTO settings (`key`, value) VALUES
 
 -- Create admin user (password: admin123)
 -- Password hash for 'admin123' using bcrypt
-INSERT INTO users (email, name, password_hash, is_admin) VALUES 
-('admin@bittrade.co.in', 'Admin', '$2a$10$8K9vYg8tQzGH1JXbU4qO.eMxH5yLQKJ2tT3wZqF7vRbE4aX8.cU2O', true);
+INSERT INTO users (email, name, password_hash, user_pin, is_admin) VALUES 
+('admin@bittrade.co.in', 'Admin', '$2a$10$8K9vYg8tQzGH1JXbU4qO.eMxH5yLQKJ2tT3wZqF7vRbE4aX8.cU2O', '1234', true);
 
 -- Create SETUP transaction for admin user
 INSERT INTO transactions (user_id, type, inr_amount, btc_amount, btc_price, inr_balance, btc_balance) VALUES 

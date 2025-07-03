@@ -15,12 +15,14 @@ import { userAPI } from '../services/api';
 import EditNameModal from '../components/EditNameModal';
 import EditEmailModal from '../components/EditEmailModal';
 import ChangePasswordModal from '../components/ChangePasswordModal';
+import ChangePinModal from '../components/ChangePinModal';
 
 const Profile: React.FC = () => {
   const { user } = useAuth();
   const [isEditNameOpen, setIsEditNameOpen] = useState(false);
   const [isEditEmailOpen, setIsEditEmailOpen] = useState(false);
   const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);
+  const [isChangePinOpen, setIsChangePinOpen] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
@@ -202,6 +204,26 @@ const Profile: React.FC = () => {
           <Edit3 className="w-4 h-4 text-zinc-400" />
         </button>
 
+        {/* Change PIN */}
+        <button
+          onClick={() => {
+            clearMessages();
+            setIsChangePinOpen(true);
+          }}
+          className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-4 flex items-center justify-between hover:bg-zinc-800 transition-colors"
+        >
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-zinc-800 rounded-lg">
+              <Shield className="w-4 h-4 text-white" />
+            </div>
+            <div className="text-left">
+              <p className="font-medium">Change PIN</p>
+              <p className="text-zinc-400 text-sm">Update your 4-digit security PIN</p>
+            </div>
+          </div>
+          <Edit3 className="w-4 h-4 text-zinc-400" />
+        </button>
+
         {/* Export Data */}
         <button
           onClick={handleExportData}
@@ -302,6 +324,15 @@ const Profile: React.FC = () => {
         onError={(error) => {
           setError(error);
           setIsChangePasswordOpen(false);
+        }}
+      />
+
+      <ChangePinModal
+        isOpen={isChangePinOpen}
+        onClose={() => setIsChangePinOpen(false)}
+        onSuccess={() => {
+          setMessage('✅ PIN changed successfully!');
+          setIsChangePinOpen(false);
         }}
       />
     </div>

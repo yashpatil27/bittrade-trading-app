@@ -14,8 +14,10 @@ import {
   TrendingUp
 } from 'lucide-react';
 import { AdminUser } from '../types';
-import { adminAPI } from '../services/api';
+import { adminAPI, userAPI } from '../services/api';
 import { formatBitcoin } from '../utils/formatters';
+import { useBalance } from '../contexts/BalanceContext';
+import PinConfirmationModal from './PinConfirmationModal';
 
 interface UserManagementModalProps {
   isOpen: boolean;
@@ -30,6 +32,7 @@ const UserManagementModal: React.FC<UserManagementModalProps> = ({
   user,
   onUserUpdated
 }) => {
+  const { refreshBalance } = useBalance();
   const [activeTab, setActiveTab] = useState<'info' | 'balances' | 'trade' | 'password'>('info');
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState('');
@@ -45,6 +48,12 @@ const UserManagementModal: React.FC<UserManagementModalProps> = ({
   // External trade form
   const [externalInrAmount, setExternalInrAmount] = useState('');
   const [externalBtcAmount, setExternalBtcAmount] = useState('');
+  
+  // PIN confirmation state
+  const [isPinModalOpen, setIsPinModalOpen] = useState(false);
+  const [pendingAction, setPendingAction] = useState<(() => Promise<void>) | null>(null);
+  const [pinModalTitle, setPinModalTitle] = useState('');
+  const [pinModalMessage, setPinModalMessage] = useState('');
 
   useEffect(() => {
     if (isOpen) {
@@ -58,6 +67,39 @@ const UserManagementModal: React.FC<UserManagementModalProps> = ({
       setError('');
     }
   }, [isOpen]);
+
+  // PIN confirmation methods
+  const requirePinConfirmation = (action: () => Promise<void>, title: string, message: string) => {
+    setPendingAction(() => action);
+    setPinModalTitle(title);
+    setPinModalMessage(message);
+    setIsPinModalOpen(true);
+  };
+
+  const handlePinConfirm = async (pin: string): Promise<boolean> => {
+    try {
+      // Verify PIN
+      const response = await userAPI.verifyPin(pin);
+      if (response.data.data?.valid && pendingAction) {
+        // PIN is correct, execute the pending action
+        await pendingAction();
+        setIsPinModalOpen(false);
+        setPendingAction(null);
+        return true;
+      } else {
+        // PIN is incorrect
+        return false;
+      }
+    } catch (error) {
+      console.error('PIN verification error:', error);
+      return false;
+    }
+  };
+
+  const handlePinModalClose = () => {
+    setIsPinModalOpen(false);
+    setPendingAction(null);
+  };
 
   if (!isOpen || !user) return null;
 
@@ -97,6 +139,9 @@ const UserManagementModal: React.FC<UserManagementModalProps> = ({
       }
       
       onUserUpdated();
+      
+      // Refresh balance for persistent top bar if this is the current user
+      refreshBalance();
     } catch (error: any) {
       setError(error.response?.data?.message || `Failed to ${operation} ${currency}`);
     } finally {
@@ -170,6 +215,9 @@ const UserManagementModal: React.FC<UserManagementModalProps> = ({
       setExternalInrAmount('');
       setExternalBtcAmount('');
       onUserUpdated();
+      
+      // Refresh balance for persistent top bar if this is the current user
+      refreshBalance();
     } catch (error: any) {
       setError(error.response?.data?.message || 'Failed to record external buy');
     } finally {
@@ -294,7 +342,13 @@ const UserManagementModal: React.FC<UserManagementModalProps> = ({
               </div>
 
               <button
-                onClick={handleDeleteUser}
+                onClick={() => {
+                  requirePinConfirmation(
+                    handleDeleteUser,
+                    'Confirm Delete User',
+                    `Are you sure you want to delete user "${user.name}"? This action cannot be undone.`
+                  );
+                }}
                 disabled={isLoading || !!(user.is_admin === true || user.is_admin === 1)}
                 className="w-full bg-red-900/20 border border-red-800 text-red-300 hover:bg-red-900/30 disabled:opacity-50 disabled:cursor-not-allowed py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
               >
@@ -374,7 +428,15 @@ const UserManagementModal: React.FC<UserManagementModalProps> = ({
                   {/* Action Buttons */}
                   <div className="grid grid-cols-2 gap-3">
                     <button
-                      onClick={() => handleBalanceOperation('deposit', balanceMode)}
+                      onClick={() => {
+                        const amount = balanceMode === 'INR' ? inrAmount : btcAmount;
+                        const currency = balanceMode;
+                        requirePinConfirmation(
+                          () => handleBalanceOperation('deposit', currency),
+                          'Confirm Deposit',
+                          `Deposit ${currency === 'INR' ? '₹' + parseFloat(amount).toLocaleString() : '₿' + amount} to ${user.name}?`
+                        );
+                      }}
                       disabled={isLoading || (balanceMode === 'INR' ? !inrAmount : !btcAmount)}
                       className="bg-green-900/20 border border-green-800 text-green-300 hover:bg-green-900/30 disabled:opacity-50 disabled:cursor-not-allowed py-2 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
                     >
@@ -382,7 +444,15 @@ const UserManagementModal: React.FC<UserManagementModalProps> = ({
                       Deposit
                     </button>
                     <button
-                      onClick={() => handleBalanceOperation('withdraw', balanceMode)}
+                      onClick={() => {
+                        const amount = balanceMode === 'INR' ? inrAmount : btcAmount;
+                        const currency = balanceMode;
+                        requirePinConfirmation(
+                          () => handleBalanceOperation('withdraw', currency),
+                          'Confirm Withdrawal',
+                          `Withdraw ${currency === 'INR' ? '₹' + parseFloat(amount).toLocaleString() : '₿' + amount} from ${user.name}?`
+                        );
+                      }}
                       disabled={isLoading || (balanceMode === 'INR' ? !inrAmount : !btcAmount)}
                       className="bg-red-900/20 border border-red-800 text-red-300 hover:bg-red-900/30 disabled:opacity-50 disabled:cursor-not-allowed py-2 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
                     >
@@ -463,7 +533,13 @@ const UserManagementModal: React.FC<UserManagementModalProps> = ({
                   )}
                   
                   <button
-                    onClick={handleExternalBuy}
+                    onClick={() => {
+                      requirePinConfirmation(
+                        handleExternalBuy,
+                        'Confirm External Buy',
+                        `Record external Bitcoin purchase: ₹${parseFloat(externalInrAmount).toLocaleString()} → ₿${externalBtcAmount} for ${user.name}?`
+                      );
+                    }}
                     disabled={isLoading || !externalInrAmount || !externalBtcAmount || parseFloat(externalInrAmount) <= 0 || parseFloat(externalBtcAmount) <= 0}
                     className="w-full bg-blue-900/20 border border-blue-800 text-blue-300 hover:bg-blue-900/30 disabled:opacity-50 disabled:cursor-not-allowed py-3 px-4 rounded-lg transition-colors font-medium flex items-center justify-center gap-2"
                   >
@@ -511,7 +587,13 @@ const UserManagementModal: React.FC<UserManagementModalProps> = ({
                     <p className="text-zinc-500 text-xs mt-1">Minimum 6 characters</p>
                   </div>
                   <button
-                    onClick={handlePasswordReset}
+                    onClick={() => {
+                      requirePinConfirmation(
+                        handlePasswordReset,
+                        'Confirm Password Reset',
+                        `Reset password for ${user.name}?`
+                      );
+                    }}
                     disabled={isLoading || !newPassword}
                     className="w-full bg-white text-black hover:bg-zinc-200 disabled:opacity-50 disabled:cursor-not-allowed py-2 px-4 rounded-lg transition-colors font-medium"
                   >
@@ -523,6 +605,16 @@ const UserManagementModal: React.FC<UserManagementModalProps> = ({
           )}
         </div>
       </div>
+      
+      {/* PIN Confirmation Modal */}
+      <PinConfirmationModal
+        isOpen={isPinModalOpen}
+        onClose={handlePinModalClose}
+        onConfirm={handlePinConfirm}
+        title={pinModalTitle}
+        message={pinModalMessage}
+        isLoading={isLoading}
+      />
     </div>
   );
 };

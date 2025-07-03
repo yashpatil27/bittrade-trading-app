@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { X, TrendingUp, TrendingDown, Calculator, Zap } from 'lucide-react';
 import { Prices } from '../types';
+import { userAPI } from '../services/api';
+import PinConfirmationModal from './PinConfirmationModal';
 
 interface TradingModalProps {
   isOpen: boolean;
@@ -23,6 +25,8 @@ const TradingModal: React.FC<TradingModalProps> = ({
 }) => {
   const [amount, setAmount] = useState('');
   const [estimation, setEstimation] = useState<number>(0);
+  const [isPinModalOpen, setIsPinModalOpen] = useState(false);
+  const [pendingAmount, setPendingAmount] = useState<number>(0);
 
   const isBuy = type === 'buy';
   const rate = isBuy ? prices?.buy_rate : prices?.sell_rate;
@@ -44,16 +48,39 @@ const TradingModal: React.FC<TradingModalProps> = ({
     }
   }, [amount, rate, isBuy]);
 
-  const handleTrade = async () => {
+  const handleTrade = () => {
     if (!amount || parseFloat(amount) <= 0) return;
     
+    // Store the amount and open PIN confirmation
+    setPendingAmount(parseFloat(amount));
+    setIsPinModalOpen(true);
+  };
+
+  const handlePinConfirm = async (pin: string): Promise<boolean> => {
     try {
-      await onTrade(parseFloat(amount));
-      setAmount('');
-      onClose();
+      // Verify PIN
+      const response = await userAPI.verifyPin(pin);
+      if (response.data.data?.valid) {
+        // PIN is correct, proceed with trade
+        await onTrade(pendingAmount);
+        setAmount('');
+        setPendingAmount(0);
+        setIsPinModalOpen(false);
+        onClose();
+        return true;
+      } else {
+        // PIN is incorrect
+        return false;
+      }
     } catch (error) {
-      // Error handling is done in parent component
+      console.error('PIN verification error:', error);
+      return false;
     }
+  };
+
+  const handlePinModalClose = () => {
+    setIsPinModalOpen(false);
+    setPendingAmount(0);
   };
 
   const getMaxAmount = () => {
@@ -211,6 +238,16 @@ const TradingModal: React.FC<TradingModalProps> = ({
           </button>
         </div>
       </div>
+      
+      {/* PIN Confirmation Modal */}
+      <PinConfirmationModal
+        isOpen={isPinModalOpen}
+        onClose={handlePinModalClose}
+        onConfirm={handlePinConfirm}
+        title={`Confirm ${isBuy ? 'Buy' : 'Sell'} Order`}
+        message={`Enter your PIN to confirm ${isBuy ? 'purchasing' : 'selling'} ${isBuy ? '₹' + pendingAmount.toLocaleString('en-IN') + ' worth of Bitcoin' : pendingAmount.toFixed(8) + ' BTC'}`}
+        isLoading={isLoading}
+      />
     </div>
   );
 };

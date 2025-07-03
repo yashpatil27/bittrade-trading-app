@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
+import { BalanceProvider } from './contexts/BalanceContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import Layout from './components/Layout';
 import Login from './pages/Login';
@@ -17,8 +18,9 @@ import AdminSettings from './pages/AdminSettings';
 function App() {
   return (
     <AuthProvider>
-      <Router>
-        <div className="min-h-screen bg-black text-white">
+      <BalanceProvider>
+        <Router>
+          <div className="min-h-screen bg-black text-white">
           <Routes>
             {/* Public routes */}
             <Route path="/login" element={<Login />} />
@@ -93,8 +95,9 @@ function App() {
             {/* Catch all route */}
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
-        </div>
-      </Router>
+          </div>
+        </Router>
+      </BalanceProvider>
     </AuthProvider>
   );
 }

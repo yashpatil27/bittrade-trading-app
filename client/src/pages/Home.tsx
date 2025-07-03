@@ -22,15 +22,16 @@ import { Balances, Prices, Transaction, DashboardData } from '../types';
 import TradingModal from '../components/TradingModal';
 import PriceUpdateTimer from '../components/PriceUpdateTimer';
 import TransactionDetailModal from '../components/TransactionDetailModal';
+import { useBalance } from '../contexts/BalanceContext';
 import { 
   getTransactionDisplayName, 
   getTransactionIcon, 
-  getTransactionColor, 
   formatTimeAgo,
   formatCurrency
 } from '../utils/formatters';
 
 const Home: React.FC = () => {
+  const { refreshBalance } = useBalance();
   const [balances, setBalances] = useState<Balances | null>(null);
   const [prices, setPrices] = useState<Prices | null>(null);
   const [recentTransactions, setRecentTransactions] = useState<Transaction[]>([]);
@@ -85,6 +86,9 @@ const Home: React.FC = () => {
       setBalances(balances);
       setPrices(prices);
       setRecentTransactions(recent_transactions);
+      
+      // Trigger balance refresh for persistent top bar
+      refreshBalance();
     } catch (error: any) {
       setError(error.response?.data?.message || `Failed to ${modalType} Bitcoin`);
     } finally {
@@ -100,6 +104,9 @@ const Home: React.FC = () => {
       setBalances(balances);
       setPrices(prices);
       setRecentTransactions(recent_transactions);
+      
+      // Trigger balance refresh for persistent top bar
+      refreshBalance();
     } catch (error) {
       console.error('Error refreshing data:', error);
     }

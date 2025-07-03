@@ -52,8 +52,8 @@ api.interceptors.response.use(
 
 // Auth API
 export const authAPI = {
-  register: (email: string, name: string, password: string): Promise<AxiosResponse<AuthResponse>> =>
-    api.post('/auth/register', { email, name, password }),
+  register: (email: string, name: string, password: string, pin: string): Promise<AxiosResponse<AuthResponse>> =>
+    api.post('/auth/register', { email, name, password, pin }),
   
   login: (email: string, password: string): Promise<AxiosResponse<AuthResponse>> =>
     api.post('/auth/login', { email, password }),
@@ -96,6 +96,12 @@ export const userAPI = {
   
   changePassword: (data: { currentPassword: string; newPassword: string }): Promise<AxiosResponse<ApiResponse<any>>> =>
     api.patch('/user/password', data),
+  
+  verifyPin: (pin: string): Promise<AxiosResponse<ApiResponse<{ valid: boolean }>>> =>
+    api.post('/user/verify-pin', { pin }),
+  
+  changePin: (data: { newPin: string; currentPassword: string }): Promise<AxiosResponse<ApiResponse<any>>> =>
+    api.patch('/user/pin', data),
   
   exportData: (): Promise<AxiosResponse<string>> =>
     api.get('/user/export-data', { responseType: 'text' }),

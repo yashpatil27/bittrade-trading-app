@@ -325,10 +325,72 @@ class UserService {
     }
   }
 
+  async verifyPin(userId, pin) {
+    try {
+      if (!pin || pin.length !== 4 || !/^\d{4}$/.test(pin)) {
+        throw new Error('PIN must be exactly 4 digits');
+      }
+
+      const userRows = await query(
+        'SELECT user_pin FROM users WHERE id = ?',
+        [userId]
+      );
+
+      if (userRows.length === 0) {
+        throw new Error('User not found');
+      }
+
+      return userRows[0].user_pin === pin;
+    } catch (error) {
+      console.error('Error verifying PIN:', error);
+      throw error;
+    }
+  }
+
+  async changeUserPin(userId, newPin, currentPassword) {
+    try {
+      if (!newPin || newPin.length !== 4 || !/^\d{4}$/.test(newPin)) {
+        throw new Error('PIN must be exactly 4 digits');
+      }
+
+      return await transaction(async (connection) => {
+        // Get current user
+        const [userRows] = await connection.execute(
+          'SELECT id, password_hash FROM users WHERE id = ?',
+          [userId]
+        );
+
+        if (userRows.length === 0) {
+          throw new Error('User not found');
+        }
+
+        const user = userRows[0];
+
+        // Verify current password
+        const bcrypt = require('bcryptjs');
+        const isPasswordValid = await bcrypt.compare(currentPassword, user.password_hash);
+        if (!isPasswordValid) {
+          throw new Error('Invalid current password');
+        }
+
+        // Update PIN
+        await connection.execute(
+          'UPDATE users SET user_pin = ? WHERE id = ?',
+          [newPin, userId]
+        );
+
+        return { success: true };
+      });
+    } catch (error) {
+      console.error('Error changing user PIN:', error);
+      throw error;
+    }
+  }
+
   async exportUserData(userId) {
     try {
       // Get user info
-      const [userRows] = await query(
+      const userRows = await query(
         'SELECT email, name, created_at FROM users WHERE id = ?',
         [userId]
       );

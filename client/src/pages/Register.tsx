@@ -1,15 +1,20 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Link, Navigate } from 'react-router-dom';
 import { Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import PinConfirmationModal from '../components/PinConfirmationModal';
 
 const Register: React.FC = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [pin, setPin] = useState(['', '', '', '']);
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [isPinModalOpen, setIsPinModalOpen] = useState(false);
+  const [registrationData, setRegistrationData] = useState<{email: string, name: string, password: string, pin: string} | null>(null);
+  const pinInputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   const { register, isAuthenticated } = useAuth();
 
@@ -18,17 +23,52 @@ const Register: React.FC = () => {
     return <Navigate to="/" replace />;
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    setIsLoading(true);
 
+    const pinString = pin.join('');
+    if (pinString.length !== 4) {
+      setError('PIN must be exactly 4 digits');
+      return;
+    }
+
+    // Prepare registration data and open PIN confirmation modal
+    setRegistrationData({ email, name, password, pin: pinString });
+    setIsPinModalOpen(true);
+  };
+
+  const handlePinConfirm = async (pin: string) => {
+    if (!registrationData || pin !== registrationData.pin) {
+      setError('PIN does not match. Please try again.');
+      return false;
+    }
+
+    // Complete registration
+    setIsLoading(true);
     try {
-      await register(email, name, password);
+      await register(registrationData.email, registrationData.name, registrationData.password, registrationData.pin);
+      return true;
     } catch (err: any) {
       setError(err.message || 'Registration failed');
+      return false;
     } finally {
       setIsLoading(false);
+      setIsPinModalOpen(false);
+      setRegistrationData(null);
+    }
+  };
+  
+  const handlePinChange = (index: number, value: string) => {
+    if (!/^[0-9]?$/.test(value)) return;
+
+    const newPin = [...pin];
+    newPin[index] = value;
+    setPin(newPin);
+
+    // Move to next input if digit entered
+    if (value && index < 3) {
+      pinInputRefs.current[index + 1]?.focus();
     }
   };
 
@@ -111,9 +151,39 @@ const Register: React.FC = () => {
             </p>
           </div>
 
+          <div>
+            <label className="block text-sm font-medium text-zinc-300 mb-3">
+              Security PIN (4 digits)
+            </label>
+            <div className="flex gap-3 justify-center mb-2">
+              {pin.map((digit, index) => (
+                <input
+                  key={index}
+                  ref={el => pinInputRefs.current[index] = el}
+                  type="password"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  value={digit}
+                  onChange={(e) => handlePinChange(index, e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Backspace' && !pin[index] && index > 0) {
+                      pinInputRefs.current[index - 1]?.focus();
+                    }
+                  }}
+                  className="w-12 h-12 text-center text-xl font-bold bg-zinc-900 border border-zinc-700 rounded-lg focus:outline-none focus:border-white transition-colors"
+                  maxLength={1}
+                  disabled={isLoading}
+                />
+              ))}
+            </div>
+            <p className="text-xs text-zinc-500 text-center">
+              Used to confirm trading actions
+            </p>
+          </div>
+
           <button
             type="submit"
-            disabled={isLoading || !email || !password || !name || password.length < 6}
+            disabled={isLoading || !email || !password || !name || pin.some(digit => digit === '') || password.length < 6}
             className="btn-primary w-full"
           >
             {isLoading ? 'Creating account...' : 'Create Account'}
@@ -130,6 +200,19 @@ const Register: React.FC = () => {
           </p>
         </div>
       </div>
+      
+      {/* PIN Confirmation Modal */}
+      <PinConfirmationModal
+        isOpen={isPinModalOpen}
+        onClose={() => {
+          setIsPinModalOpen(false);
+          setRegistrationData(null);
+        }}
+        onConfirm={handlePinConfirm}
+        title="Confirm Your PIN"
+        message="Please re-enter your PIN to complete registration"
+        isLoading={isLoading}
+      />
     </div>
   );
 };

@@ -9,13 +9,21 @@ const router = express.Router();
 // Register
 router.post('/register', async (req, res) => {
   try {
-    const { email, name, password } = req.body;
+    const { email, name, password, pin } = req.body;
 
     // Validation
-    if (!email || !name || !password) {
+    if (!email || !name || !password || !pin) {
       return res.status(400).json({
         success: false,
-        message: 'Email, name, and password are required'
+        message: 'Email, name, password, and PIN are required'
+      });
+    }
+
+    // PIN validation
+    if (pin.length !== 4 || !/^\d{4}$/.test(pin)) {
+      return res.status(400).json({
+        success: false,
+        message: 'PIN must be exactly 4 digits'
       });
     }
 
@@ -56,8 +64,8 @@ router.post('/register', async (req, res) => {
     const result = await transaction(async (connection) => {
       // Insert user
       const [userResult] = await connection.execute(
-        'INSERT INTO users (email, name, password_hash, is_admin) VALUES (?, ?, ?, ?)',
-        [email.toLowerCase(), name, hashedPassword, false]
+        'INSERT INTO users (email, name, password_hash, user_pin, is_admin) VALUES (?, ?, ?, ?, ?)',
+        [email.toLowerCase(), name, hashedPassword, pin, false]
       );
 
       const userId = userResult.insertId;

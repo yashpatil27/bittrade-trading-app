@@ -13,7 +13,8 @@ import {
   XCircle,
   AlertTriangle
 } from 'lucide-react';
-import { adminAPI } from '../services/api';
+import { adminAPI, userAPI } from '../services/api';
+import PinConfirmationModal from '../components/PinConfirmationModal';
 
 interface SystemHealth {
   database: 'connected' | 'error' | 'checking';
@@ -34,6 +35,10 @@ const AdminSettings: React.FC = () => {
     priceService: 'checking',
     backend: 'checking'
   });
+  
+  // PIN confirmation state
+  const [isPinModalOpen, setIsPinModalOpen] = useState(false);
+  const [pendingSettings, setPendingSettings] = useState<{ buy_multiplier: number; sell_multiplier: number } | null>(null);
 
   useEffect(() => {
     fetchCurrentSettings();
@@ -63,10 +68,10 @@ const AdminSettings: React.FC = () => {
     }, 1000);
   };
 
-  const handleUpdateSettings = async () => {
+  const validateAndPrepareSettings = () => {
     if (!buyMultiplier || !sellMultiplier) {
       setError('Please enter both buy and sell multipliers');
-      return;
+      return null;
     }
 
     const buyValue = parseFloat(buyMultiplier);
@@ -74,29 +79,65 @@ const AdminSettings: React.FC = () => {
 
     if (buyValue <= 0 || buyValue > 200 || sellValue <= 0 || sellValue > 200) {
       setError('Exchange rates must be between 1 and 200 INR per USD');
-      return;
+      return null;
     }
 
     if (sellValue >= buyValue) {
       setError('Sell multiplier must be lower than buy multiplier');
-      return;
+      return null;
     }
+
+    return { buy_multiplier: buyValue, sell_multiplier: sellValue };
+  };
+
+  const handleUpdateSettings = async () => {
+    const settings = validateAndPrepareSettings();
+    if (!settings) return;
+
+    setPendingSettings(settings);
+    setIsPinModalOpen(true);
+  };
+
+  const executeSettingsUpdate = async () => {
+    if (!pendingSettings) return;
 
     setIsLoading(true);
     setError('');
     setMessage('');
 
     try {
-      await adminAPI.updateSettings({
-        buy_multiplier: buyValue,
-        sell_multiplier: sellValue
-      });
+      await adminAPI.updateSettings(pendingSettings);
       setMessage('✅ Settings updated successfully!');
+      setPendingSettings(null);
     } catch (error: any) {
       setError(error.response?.data?.message || 'Failed to update settings');
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handlePinConfirm = async (pin: string): Promise<boolean> => {
+    try {
+      // Verify PIN
+      const response = await userAPI.verifyPin(pin);
+      if (response.data.data?.valid) {
+        // PIN is correct, execute the settings update
+        await executeSettingsUpdate();
+        setIsPinModalOpen(false);
+        return true;
+      } else {
+        // PIN is incorrect
+        return false;
+      }
+    } catch (error) {
+      console.error('PIN verification error:', error);
+      return false;
+    }
+  };
+
+  const handlePinModalClose = () => {
+    setIsPinModalOpen(false);
+    setPendingSettings(null);
   };
 
   const handleReset = () => {
@@ -324,6 +365,16 @@ const AdminSettings: React.FC = () => {
           <p>• System health is checked automatically every 30 seconds</p>
         </div>
       </div>
+      
+      {/* PIN Confirmation Modal */}
+      <PinConfirmationModal
+        isOpen={isPinModalOpen}
+        onClose={handlePinModalClose}
+        onConfirm={handlePinConfirm}
+        title="Confirm Rate Changes"
+        message={pendingSettings ? `Update USD/INR rates:\nBuy: ${pendingSettings.buy_multiplier}\nSell: ${pendingSettings.sell_multiplier}` : ''}
+        isLoading={isLoading}
+      />
     </div>
   );
 };

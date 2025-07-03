@@ -407,6 +407,80 @@ router.patch('/password', async (req, res) => {
   }
 });
 
+// Verify PIN
+router.post('/verify-pin', async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { pin } = req.body;
+
+    // Validation
+    if (!pin) {
+      return res.status(400).json({
+        success: false,
+        message: 'PIN is required'
+      });
+    }
+
+    const isValid = await userService.verifyPin(userId, pin);
+
+    res.json({
+      success: true,
+      data: {
+        valid: isValid
+      }
+    });
+
+  } catch (error) {
+    console.error('PIN verification error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error verifying PIN'
+    });
+  }
+});
+
+// Change PIN
+router.patch('/pin', async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { newPin, currentPassword } = req.body;
+
+    // Validation
+    if (!newPin || !currentPassword) {
+      return res.status(400).json({
+        success: false,
+        message: 'New PIN and current password are required'
+      });
+    }
+
+    await userService.changeUserPin(userId, newPin, currentPassword);
+
+    res.json({
+      success: true,
+      message: 'PIN changed successfully'
+    });
+
+  } catch (error) {
+    console.error('PIN change error:', error);
+    
+    let statusCode = 500;
+    let message = 'Error changing PIN';
+    
+    if (error.message === 'Invalid current password') {
+      statusCode = 401;
+      message = error.message;
+    } else if (error.message === 'PIN must be exactly 4 digits') {
+      statusCode = 400;
+      message = error.message;
+    }
+
+    res.status(statusCode).json({
+      success: false,
+      message
+    });
+  }
+});
+
 // Export trading data
 router.get('/export-data', async (req, res) => {
   try {
