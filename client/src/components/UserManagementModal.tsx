@@ -10,7 +10,8 @@ import {
   DollarSign,
   Bitcoin,
   Eye,
-  EyeOff
+  EyeOff,
+  TrendingUp
 } from 'lucide-react';
 import { AdminUser } from '../types';
 import { adminAPI } from '../services/api';
@@ -29,7 +30,7 @@ const UserManagementModal: React.FC<UserManagementModalProps> = ({
   user,
   onUserUpdated
 }) => {
-  const [activeTab, setActiveTab] = useState<'info' | 'balances' | 'password'>('info');
+  const [activeTab, setActiveTab] = useState<'info' | 'balances' | 'trade' | 'password'>('info');
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
@@ -40,12 +41,19 @@ const UserManagementModal: React.FC<UserManagementModalProps> = ({
   const [balanceMode, setBalanceMode] = useState<'INR' | 'BTC'>('INR');
   const [showPassword, setShowPassword] = useState(false);
   const [newPassword, setNewPassword] = useState('');
+  
+  // External trade form
+  const [externalInrAmount, setExternalInrAmount] = useState('');
+  const [externalBtcAmount, setExternalBtcAmount] = useState('');
 
   useEffect(() => {
     if (isOpen) {
       setActiveTab('info');
       setInrAmount('');
+      setBtcAmount('');
       setNewPassword('');
+      setExternalInrAmount('');
+      setExternalBtcAmount('');
       setMessage('');
       setError('');
     }
@@ -138,6 +146,37 @@ const UserManagementModal: React.FC<UserManagementModalProps> = ({
     }
   };
 
+  const handleExternalBuy = async () => {
+    if (!externalInrAmount || !externalBtcAmount || parseFloat(externalInrAmount) <= 0 || parseFloat(externalBtcAmount) <= 0) {
+      setError('Please enter valid INR and BTC amounts');
+      return;
+    }
+
+    setIsLoading(true);
+    setError('');
+    setMessage('');
+
+    try {
+      const inrAmount = parseInt(externalInrAmount);
+      const btcAmount = parseFloat(externalBtcAmount);
+      
+      if (!Number.isInteger(inrAmount)) {
+        setError('INR amount must be a whole number');
+        return;
+      }
+
+      await adminAPI.externalBuy(user.id, inrAmount, btcAmount);
+      setMessage(`✅ External buy recorded: ₹${inrAmount.toLocaleString()} → ₿${btcAmount}`);
+      setExternalInrAmount('');
+      setExternalBtcAmount('');
+      onUserUpdated();
+    } catch (error: any) {
+      setError(error.response?.data?.message || 'Failed to record external buy');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div className="bg-zinc-900 border border-zinc-700 rounded-xl w-full max-w-md max-h-[90vh] overflow-hidden">
@@ -181,6 +220,16 @@ const UserManagementModal: React.FC<UserManagementModalProps> = ({
             }`}
           >
             Balances
+          </button>
+          <button
+            onClick={() => setActiveTab('trade')}
+            className={`flex-1 py-3 px-4 text-sm font-medium transition-colors ${
+              activeTab === 'trade'
+                ? 'text-white border-b-2 border-white'
+                : 'text-zinc-400 hover:text-white'
+            }`}
+          >
+            Trade
           </button>
           <button
             onClick={() => setActiveTab('password')}
@@ -342,6 +391,92 @@ const UserManagementModal: React.FC<UserManagementModalProps> = ({
                     </button>
                   </div>
                 </div>
+              </div>
+            </div>
+          )}
+
+          {/* Trade Tab */}
+          {activeTab === 'trade' && (
+            <div className="space-y-4">
+              {/* Current Balances Display */}
+              <div className="bg-zinc-800/50 rounded-lg p-4">
+                <h3 className="text-white font-medium mb-3 flex items-center gap-2">
+                  <Wallet className="w-4 h-4" />
+                  Current User Balances
+                </h3>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="text-center">
+                    <p className="text-zinc-400 text-xs">INR Balance</p>
+                    <p className="text-white font-bold text-lg">₹{user.inr_balance.toLocaleString('en-IN')}</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-zinc-400 text-xs">₿ Balance</p>
+                    <p className="text-white font-bold text-lg">₿{formatBitcoin(user.btc_balance)}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* External Buy Form */}
+              <div className="bg-zinc-800/50 rounded-lg p-4">
+                <h3 className="text-white font-medium mb-4 flex items-center gap-2">
+                  <TrendingUp className="w-4 h-4" />
+                  Record External Buy
+                </h3>
+                <p className="text-zinc-400 text-sm mb-4">
+                  Record a Bitcoin purchase that happened outside the platform. This will create a deposit and buy transaction.
+                </p>
+                
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-zinc-400 text-sm mb-2">INR Amount (₹)</label>
+                      <input
+                        type="number"
+                        step="1"
+                        value={externalInrAmount}
+                        onChange={(e) => setExternalInrAmount(e.target.value)}
+                        placeholder="10000"
+                        className="w-full bg-zinc-700 border border-zinc-600 rounded-lg py-2 px-3 text-white placeholder-zinc-400 focus:outline-none focus:border-white"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-zinc-400 text-sm mb-2">Bitcoin Amount (₿)</label>
+                      <input
+                        type="number"
+                        step="0.00000001"
+                        value={externalBtcAmount}
+                        onChange={(e) => setExternalBtcAmount(e.target.value)}
+                        placeholder="0.001"
+                        className="w-full bg-zinc-700 border border-zinc-600 rounded-lg py-2 px-3 text-white placeholder-zinc-400 focus:outline-none focus:border-white"
+                      />
+                    </div>
+                  </div>
+                  
+                  {/* Calculated Rate Display */}
+                  {externalInrAmount && externalBtcAmount && parseFloat(externalInrAmount) > 0 && parseFloat(externalBtcAmount) > 0 && (
+                    <div className="bg-zinc-700/50 rounded-lg p-3">
+                      <p className="text-zinc-400 text-xs mb-1">Calculated Rate</p>
+                      <p className="text-white font-medium">
+                        ₹{(parseFloat(externalInrAmount) / parseFloat(externalBtcAmount)).toLocaleString('en-IN', { maximumFractionDigits: 2 })} per BTC
+                      </p>
+                    </div>
+                  )}
+                  
+                  <button
+                    onClick={handleExternalBuy}
+                    disabled={isLoading || !externalInrAmount || !externalBtcAmount || parseFloat(externalInrAmount) <= 0 || parseFloat(externalBtcAmount) <= 0}
+                    className="w-full bg-blue-900/20 border border-blue-800 text-blue-300 hover:bg-blue-900/30 disabled:opacity-50 disabled:cursor-not-allowed py-3 px-4 rounded-lg transition-colors font-medium flex items-center justify-center gap-2"
+                  >
+                    <TrendingUp className="w-4 h-4" />
+                    {isLoading ? 'Recording...' : 'Record External Buy'}
+                  </button>
+                </div>
+              </div>
+              
+              <div className="bg-zinc-700/30 rounded-lg p-3">
+                <p className="text-zinc-400 text-xs">
+                  <strong>Note:</strong> This creates two transactions: a deposit of the INR amount (timestamped a few seconds earlier) and a buy transaction for the Bitcoin amount at the calculated rate.
+                </p>
               </div>
             </div>
           )}

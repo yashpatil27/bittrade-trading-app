@@ -135,6 +135,9 @@ export const adminAPI = {
   
   getAllTransactions: (page = 1, limit = 50): Promise<AxiosResponse<ApiResponse<{ transactions: any[], pagination: any }>>> =>
     api.get(`/admin/transactions?page=${page}&limit=${limit}`),
+  
+  externalBuy: (userId: number, inrAmount: number, btcAmount: number): Promise<AxiosResponse<ApiResponse>> =>
+    api.post(`/admin/users/${userId}/external-buy`, { inrAmount, btcAmount }),
 };
 
 export default api;

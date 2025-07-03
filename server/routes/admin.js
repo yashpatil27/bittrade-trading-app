@@ -643,6 +643,111 @@ router.patch('/settings', async (req, res) => {
   }
 });
 
+// External buy transaction (creates DEPOSIT_INR and BUY transactions)
+router.post('/users/:userId/external-buy', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { inrAmount, btcAmount } = req.body;
+
+    if (!inrAmount || !btcAmount || inrAmount <= 0 || btcAmount <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Both INR and BTC amounts must be greater than 0'
+      });
+    }
+
+    if (!Number.isInteger(inrAmount)) {
+      return res.status(400).json({
+        success: false,
+        message: 'INR amount must be a whole number'
+      });
+    }
+
+    // Check if user exists
+    const users = await query('SELECT id FROM users WHERE id = ?', [userId]);
+    if (users.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    const result = await transaction(async (connection) => {
+      // Get current balances
+      const [balanceRows] = await connection.execute(
+        'SELECT inr_balance, btc_balance FROM transactions WHERE user_id = ? ORDER BY id DESC LIMIT 1',
+        [userId]
+      );
+
+      if (balanceRows.length === 0) {
+        throw new Error('User has no transactions');
+      }
+
+      const currentBalances = balanceRows[0];
+      
+      // Calculate BTC price from INR and BTC amounts
+      const btcPrice = inrAmount / btcAmount;
+      const btcAmountSatoshi = Math.round(btcAmount * 100000000); // Convert BTC to satoshi
+      
+      // Create deposit timestamp (a few seconds earlier)
+      const depositTime = new Date(Date.now() - 5000); // 5 seconds earlier
+      
+      // Create DEPOSIT_INR transaction first
+      const newInrBalanceAfterDeposit = currentBalances.inr_balance + inrAmount;
+      const [depositResult] = await connection.execute(
+        'INSERT INTO transactions (user_id, type, inr_amount, btc_amount, btc_price, inr_balance, btc_balance, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+        [userId, 'DEPOSIT_INR', inrAmount, 0, 0, newInrBalanceAfterDeposit, currentBalances.btc_balance, depositTime]
+      );
+      
+      // Create BUY transaction (current time)
+      const newInrBalanceAfterBuy = newInrBalanceAfterDeposit - inrAmount;
+      const newBtcBalanceAfterBuy = currentBalances.btc_balance + btcAmountSatoshi;
+      const [buyResult] = await connection.execute(
+        'INSERT INTO transactions (user_id, type, inr_amount, btc_amount, btc_price, inr_balance, btc_balance) VALUES (?, ?, ?, ?, ?, ?, ?)',
+        [userId, 'BUY', inrAmount, btcAmountSatoshi, btcPrice, newInrBalanceAfterBuy, newBtcBalanceAfterBuy]
+      );
+
+      return {
+        depositTransactionId: depositResult.insertId,
+        buyTransactionId: buyResult.insertId,
+        inrAmount,
+        btcAmount,
+        btcPrice,
+        finalBalances: {
+          inr: newInrBalanceAfterBuy,
+          btc: newBtcBalanceAfterBuy
+        }
+      };
+    });
+
+    // Clear user cache
+    await clearUserCache(userId);
+
+    res.json({
+      success: true,
+      message: 'External buy transaction created successfully',
+      data: {
+        deposit_transaction_id: result.depositTransactionId,
+        buy_transaction_id: result.buyTransactionId,
+        inr_amount: result.inrAmount,
+        btc_amount: result.btcAmount,
+        btc_price: result.btcPrice,
+        new_balances: {
+          inr: result.finalBalances.inr,
+          btc: result.finalBalances.btc / 100000000 // Convert to BTC
+        }
+      }
+    });
+
+  } catch (error) {
+    console.error('External buy error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error creating external buy transaction'
+    });
+  }
+});
+
 // Get all transactions across platform
 router.get('/transactions', async (req, res) => {
   try {
