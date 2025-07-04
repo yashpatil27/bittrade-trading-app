@@ -11,11 +11,16 @@ import {
   TrendingDown,
   Plus,
   Minus,
-  Circle
+  Circle,
+  X,
+  Calendar,
+  DollarSign,
+  RotateCcw
 } from 'lucide-react';
 import { userAPI } from '../services/api';
 import { Transaction } from '../types';
 import TransactionDetailModal from '../components/TransactionDetailModal';
+import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 import { 
   getTransactionDisplayName, 
   getTransactionIcon, 
@@ -24,13 +29,42 @@ import {
   formatCurrency
 } from '../utils/formatters';
 
+type TransactionType = 'ALL' | 'BUY' | 'SELL' | 'DEPOSIT_INR' | 'DEPOSIT_BTC' | 'WITHDRAW_INR' | 'WITHDRAW_BTC';
+type DateFilter = 'ALL' | 'TODAY' | 'WEEK' | 'MONTH' | 'CUSTOM';
+type SortOption = 'NEWEST' | 'OLDEST' | 'HIGHEST' | 'LOWEST';
+
+interface FilterState {
+  types: TransactionType[];
+  dateFilter: DateFilter;
+  customDateFrom: string;
+  customDateTo: string;
+  minAmount: string;
+  maxAmount: string;
+  sortBy: SortOption;
+}
+
 const History: React.FC = () => {
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [allTransactions, setAllTransactions] = useState<Transaction[]>([]);
+  const [filteredTransactions, setFilteredTransactions] = useState<Transaction[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(false);
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [activeFiltersCount, setActiveFiltersCount] = useState(0);
+  
+  const [filters, setFilters] = useState<FilterState>({
+    types: ['ALL'],
+    dateFilter: 'ALL',
+    customDateFrom: '',
+    customDateTo: '',
+    minAmount: '',
+    maxAmount: '',
+    sortBy: 'NEWEST'
+  });
+
+  useBodyScrollLock(isFilterOpen);
 
   useEffect(() => {
     const fetchTransactions = async () => {
@@ -40,9 +74,9 @@ const History: React.FC = () => {
         const { transactions: newTransactions, pagination } = response.data.data!;
         
         if (page === 1) {
-          setTransactions(newTransactions);
+          setAllTransactions(newTransactions);
         } else {
-          setTransactions(prev => [...prev, ...newTransactions]);
+          setAllTransactions(prev => [...prev, ...newTransactions]);
         }
         
         setHasMore(pagination.has_more);
@@ -55,6 +89,90 @@ const History: React.FC = () => {
 
     fetchTransactions();
   }, [page]);
+
+  // Apply filters whenever transactions or filters change
+  useEffect(() => {
+    applyFilters();
+  }, [allTransactions, filters]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const applyFilters = () => {
+    let filtered = [...allTransactions];
+    let activeCount = 0;
+
+    // Filter by transaction type
+    if (!filters.types.includes('ALL')) {
+      filtered = filtered.filter(t => filters.types.includes(t.type as TransactionType));
+      activeCount++;
+    }
+
+    // Filter by date
+    if (filters.dateFilter !== 'ALL') {
+      const now = new Date();
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      
+      switch (filters.dateFilter) {
+        case 'TODAY':
+          filtered = filtered.filter(t => new Date(t.created_at) >= today);
+          activeCount++;
+          break;
+        case 'WEEK':
+          const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+          filtered = filtered.filter(t => new Date(t.created_at) >= weekAgo);
+          activeCount++;
+          break;
+        case 'MONTH':
+          const monthAgo = new Date(today.getFullYear(), today.getMonth() - 1, today.getDate());
+          filtered = filtered.filter(t => new Date(t.created_at) >= monthAgo);
+          activeCount++;
+          break;
+        case 'CUSTOM':
+          if (filters.customDateFrom && filters.customDateTo) {
+            const fromDate = new Date(filters.customDateFrom);
+            const toDate = new Date(filters.customDateTo + 'T23:59:59');
+            filtered = filtered.filter(t => {
+              const tDate = new Date(t.created_at);
+              return tDate >= fromDate && tDate <= toDate;
+            });
+            activeCount++;
+          }
+          break;
+      }
+    }
+
+    // Filter by amount range
+    if (filters.minAmount || filters.maxAmount) {
+      filtered = filtered.filter(t => {
+        const amount = t.type.includes('INR') ? t.inr_amount : t.btc_amount;
+        const min = filters.minAmount ? parseFloat(filters.minAmount) : 0;
+        const max = filters.maxAmount ? parseFloat(filters.maxAmount) : Infinity;
+        return amount >= min && amount <= max;
+      });
+      activeCount++;
+    }
+
+    // Sort transactions
+    filtered.sort((a, b) => {
+      switch (filters.sortBy) {
+        case 'NEWEST':
+          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+        case 'OLDEST':
+          return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+        case 'HIGHEST':
+          const aAmount = a.type.includes('INR') ? a.inr_amount : a.btc_amount;
+          const bAmount = b.type.includes('INR') ? b.inr_amount : b.btc_amount;
+          return bAmount - aAmount;
+        case 'LOWEST':
+          const aAmountLow = a.type.includes('INR') ? a.inr_amount : a.btc_amount;
+          const bAmountLow = b.type.includes('INR') ? b.inr_amount : b.btc_amount;
+          return aAmountLow - bAmountLow;
+        default:
+          return 0;
+      }
+    });
+
+    setFilteredTransactions(filtered);
+    setActiveFiltersCount(activeCount);
+  };
 
   const handleTransactionClick = (transaction: Transaction) => {
     setSelectedTransaction(transaction);
@@ -79,6 +197,43 @@ const History: React.FC = () => {
     return null;
   };
 
+  const handleFilterChange = (newFilters: Partial<FilterState>) => {
+    setFilters(prev => ({ ...prev, ...newFilters }));
+  };
+
+  const resetFilters = () => {
+    setFilters({
+      types: ['ALL'],
+      dateFilter: 'ALL',
+      customDateFrom: '',
+      customDateTo: '',
+      minAmount: '',
+      maxAmount: '',
+      sortBy: 'NEWEST'
+    });
+  };
+
+  const toggleTransactionType = (type: TransactionType) => {
+    setFilters(prev => {
+      if (type === 'ALL') {
+        return { ...prev, types: ['ALL'] };
+      }
+      
+      let newTypes = prev.types.filter(t => t !== 'ALL');
+      
+      if (newTypes.includes(type)) {
+        newTypes = newTypes.filter(t => t !== type);
+        if (newTypes.length === 0) {
+          newTypes = ['ALL'];
+        }
+      } else {
+        newTypes.push(type);
+      }
+      
+      return { ...prev, types: newTypes };
+    });
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -90,8 +245,16 @@ const History: React.FC = () => {
           </h1>
           <p className="text-zinc-400 text-sm mt-1">Track all your trading activity</p>
         </div>
-        <button className="p-2 hover:bg-zinc-800 rounded-lg transition-colors">
+        <button 
+          onClick={() => setIsFilterOpen(true)}
+          className="relative p-2 hover:bg-zinc-800 rounded-lg transition-colors"
+        >
           <Filter className="w-5 h-5" />
+          {activeFiltersCount > 0 && (
+            <div className="absolute -top-1 -right-1 w-5 h-5 bg-white text-black text-xs font-bold rounded-full flex items-center justify-center">
+              {activeFiltersCount}
+            </div>
+          )}
         </button>
       </div>
 
@@ -100,15 +263,13 @@ const History: React.FC = () => {
         <div className="bg-gradient-to-br from-zinc-900 to-zinc-800 border border-zinc-700 rounded-xl p-4 text-center">
           <Activity className="w-8 h-8 text-zinc-400 mx-auto mb-2" />
           <p className="text-zinc-400 text-sm">Total Transactions</p>
-          <p className="text-2xl font-bold">{transactions.length}</p>
+          <p className="text-2xl font-bold">{allTransactions.length}</p>
         </div>
         <div className="bg-gradient-to-br from-zinc-900 to-zinc-800 border border-zinc-700 rounded-xl p-4 text-center">
           <Activity className="w-8 h-8 text-white mx-auto mb-2" />
-          <p className="text-zinc-400 text-sm">This Month</p>
+          <p className="text-zinc-400 text-sm">Filtered Results</p>
           <p className="text-2xl font-bold">
-            {transactions.filter(t => 
-              new Date(t.created_at).getMonth() === new Date().getMonth()
-            ).length}
+            {filteredTransactions.length}
           </p>
         </div>
       </div>
@@ -120,9 +281,9 @@ const History: React.FC = () => {
         </div>
         
         <div className="p-4">
-          {transactions.length > 0 ? (
+          {filteredTransactions.length > 0 ? (
             <div className="space-y-3">
-              {transactions.map((transaction) => (
+              {filteredTransactions.map((transaction) => (
                 <div 
                   key={transaction.id} 
                   onClick={() => handleTransactionClick(transaction)}
@@ -199,6 +360,208 @@ const History: React.FC = () => {
           )}
         </div>
       </div>
+
+      {/* Filter Modal */}
+      {isFilterOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          {/* Backdrop */}
+          <div 
+            className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+            onClick={() => setIsFilterOpen(false)}
+          />
+          
+          {/* Modal */}
+          <div className="relative bg-zinc-900 rounded-2xl border border-zinc-800 w-full max-w-md max-h-[80vh] overflow-hidden">
+            {/* Header */}
+            <div className="flex items-center justify-between p-4 border-b border-zinc-800">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-zinc-800 rounded-lg">
+                  <Filter className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold">Filter Transactions</h2>
+                  <p className="text-sm text-zinc-400">Customize your transaction view</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setIsFilterOpen(false)}
+                className="p-2 hover:bg-zinc-800 rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="p-4 space-y-4 overflow-y-auto max-h-[calc(80vh-100px)]">
+              {/* Reset Button */}
+              <div className="flex justify-end">
+                <button
+                  onClick={resetFilters}
+                  className="text-zinc-400 hover:text-white text-sm flex items-center gap-1 transition-colors"
+                >
+                  <RotateCcw className="w-3 h-3" />
+                  Reset Filters
+                </button>
+              </div>
+              
+              {/* Transaction Types */}
+              <div>
+                <h3 className="text-sm font-medium mb-2 flex items-center gap-2">
+                  <Activity className="w-4 h-4" />
+                  Transaction Types
+                </h3>
+                <div className="grid grid-cols-2 gap-2">
+                  {[
+                    { key: 'ALL', label: 'All Types', icon: Circle },
+                    { key: 'BUY', label: 'Buy', icon: TrendingUp },
+                    { key: 'SELL', label: 'Sell', icon: TrendingDown },
+                    { key: 'DEPOSIT_INR', label: 'Deposit INR', icon: Plus },
+                    { key: 'DEPOSIT_BTC', label: 'Deposit BTC', icon: Plus },
+                    { key: 'WITHDRAW_INR', label: 'Withdraw INR', icon: Minus },
+                    { key: 'WITHDRAW_BTC', label: 'Withdraw BTC', icon: Minus }
+                  ].map(({ key, label, icon: Icon }) => (
+                    <button
+                      key={key}
+                      onClick={() => toggleTransactionType(key as TransactionType)}
+                      className={`p-2 rounded-lg border transition-all text-xs flex items-center gap-1 ${
+                        filters.types.includes(key as TransactionType)
+                          ? 'bg-white text-black border-white'
+                          : 'bg-zinc-800 text-zinc-300 border-zinc-700 hover:border-zinc-600'
+                      }`}
+                    >
+                      <Icon className="w-3 h-3" />
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Date Filter */}
+              <div>
+                <h3 className="text-sm font-medium mb-2 flex items-center gap-2">
+                  <Calendar className="w-4 h-4" />
+                  Date Range
+                </h3>
+                <div className="grid grid-cols-2 gap-2 mb-3">
+                  {[
+                    { key: 'ALL', label: 'All Time' },
+                    { key: 'TODAY', label: 'Today' },
+                    { key: 'WEEK', label: 'This Week' },
+                    { key: 'MONTH', label: 'This Month' }
+                  ].map(({ key, label }) => (
+                    <button
+                      key={key}
+                      onClick={() => handleFilterChange({ dateFilter: key as DateFilter })}
+                      className={`p-2 rounded-lg border transition-all text-xs ${
+                        filters.dateFilter === key
+                          ? 'bg-white text-black border-white'
+                          : 'bg-zinc-800 text-zinc-300 border-zinc-700 hover:border-zinc-600'
+                      }`}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+                
+                {/* Custom Date Range */}
+                <button
+                  onClick={() => handleFilterChange({ dateFilter: 'CUSTOM' })}
+                  className={`w-full p-2 rounded-lg border transition-all text-xs mb-3 ${
+                    filters.dateFilter === 'CUSTOM'
+                      ? 'bg-white text-black border-white'
+                      : 'bg-zinc-800 text-zinc-300 border-zinc-700 hover:border-zinc-600'
+                  }`}
+                >
+                  Custom Range
+                </button>
+                
+                {filters.dateFilter === 'CUSTOM' && (
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="block text-xs text-zinc-400 mb-1">From</label>
+                      <input
+                        type="date"
+                        value={filters.customDateFrom}
+                        onChange={(e) => handleFilterChange({ customDateFrom: e.target.value })}
+                        className="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2 text-white text-xs focus:outline-none focus:border-white"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs text-zinc-400 mb-1">To</label>
+                      <input
+                        type="date"
+                        value={filters.customDateTo}
+                        onChange={(e) => handleFilterChange({ customDateTo: e.target.value })}
+                        className="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2 text-white text-xs focus:outline-none focus:border-white"
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Amount Range */}
+              <div>
+                <h3 className="text-sm font-medium mb-2 flex items-center gap-2">
+                  <DollarSign className="w-4 h-4" />
+                  Amount Range
+                </h3>
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="block text-xs text-zinc-400 mb-1">Minimum</label>
+                    <input
+                      type="number"
+                      inputMode="decimal"
+                      pattern="[0-9]*[.]?[0-9]*"
+                      value={filters.minAmount}
+                      onChange={(e) => handleFilterChange({ minAmount: e.target.value })}
+                      placeholder="0"
+                      className="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2 text-white text-xs focus:outline-none focus:border-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-zinc-400 mb-1">Maximum</label>
+                    <input
+                      type="number"
+                      inputMode="decimal"
+                      pattern="[0-9]*[.]?[0-9]*"
+                      value={filters.maxAmount}
+                      onChange={(e) => handleFilterChange({ maxAmount: e.target.value })}
+                      placeholder="No limit"
+                      className="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2 text-white text-xs focus:outline-none focus:border-white"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Sort Options */}
+              <div>
+                <h3 className="text-sm font-medium mb-2">Sort By</h3>
+                <div className="grid grid-cols-2 gap-2">
+                  {[
+                    { key: 'NEWEST', label: 'Newest First' },
+                    { key: 'OLDEST', label: 'Oldest First' },
+                    { key: 'HIGHEST', label: 'Highest Amount' },
+                    { key: 'LOWEST', label: 'Lowest Amount' }
+                  ].map(({ key, label }) => (
+                    <button
+                      key={key}
+                      onClick={() => handleFilterChange({ sortBy: key as SortOption })}
+                      className={`p-2 rounded-lg border transition-all text-xs ${
+                        filters.sortBy === key
+                          ? 'bg-white text-black border-white'
+                          : 'bg-zinc-800 text-zinc-300 border-zinc-700 hover:border-zinc-600'
+                      }`}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      )}
 
       {/* Transaction Detail Modal */}
       <TransactionDetailModal
