@@ -111,3 +111,30 @@ uploads/
 # AI prompts and development artifacts
 prompts/
 DEPLOYMENT.md
+
+# Application-specific logs
+*.log
+client.log
+server.log
+
+# Deployment scripts (server-specific)
+deploy.sh
+rollback.sh
+
+# PM2 logs and process files
+.pm2/
+ecosystem.config.js.backup
+
+# SSL certificates and keys
+*.pem
+*.key
+*.crt
+*.csr
+
+# Local database files
+*.sqlite3
+*.db
+
+# Environment-specific configs
+config/production.json
+config/local.json
