@@ -155,11 +155,13 @@ const TradingModal: React.FC<TradingModalProps> = ({
           <div className="relative">
             <input
               type="number"
+              inputMode={isBuy ? "numeric" : "decimal"}
+              pattern={isBuy ? "[0-9]*" : "[0-9]*[.]?[0-9]*"}
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
               className="input-field w-full"
               placeholder={isBuy ? "1000" : "0.001"}
-              step={isBuy ? "100" : "0.00000001"}
+              step={isBuy ? "1" : "0.00000001"}
               min="0"
               max={getMaxAmount()}
             />

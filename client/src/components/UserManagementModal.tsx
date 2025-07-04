@@ -420,6 +420,8 @@ const UserManagementModal: React.FC<UserManagementModalProps> = ({
                     </label>
                     <input
                       type="number"
+                      inputMode={balanceMode === 'INR' ? 'numeric' : 'decimal'}
+                      pattern={balanceMode === 'INR' ? '[0-9]*' : '[0-9]*[.]?[0-9]*'}
                       step={balanceMode === 'BTC' ? '0.00000001' : '1'}
                       value={balanceMode === 'INR' ? inrAmount : btcAmount}
                       onChange={(e) => balanceMode === 'INR' ? setInrAmount(e.target.value) : setBtcAmount(e.target.value)}
@@ -505,6 +507,8 @@ const UserManagementModal: React.FC<UserManagementModalProps> = ({
                       <label className="block text-zinc-400 text-sm mb-2">INR Amount (₹)</label>
                       <input
                         type="number"
+                        inputMode="numeric"
+                        pattern="[0-9]*"
                         step="1"
                         value={externalInrAmount}
                         onChange={(e) => setExternalInrAmount(e.target.value)}
@@ -516,6 +520,8 @@ const UserManagementModal: React.FC<UserManagementModalProps> = ({
                       <label className="block text-zinc-400 text-sm mb-2">Bitcoin Amount (₿)</label>
                       <input
                         type="number"
+                        inputMode="decimal"
+                        pattern="[0-9]*[.]?[0-9]*"
                         step="0.00000001"
                         value={externalBtcAmount}
                         onChange={(e) => setExternalBtcAmount(e.target.value)}

@@ -114,6 +114,8 @@ const ChangePinModal: React.FC<ChangePinModalProps> = ({
             </label>
             <input
               type="password"
+              inputMode="numeric"
+              pattern="[0-9]*"
               value={newPin}
               onChange={(e) => setNewPin(e.target.value.replace(/\D/g, '').slice(0, 4))}
               className="input-field w-full"
@@ -130,6 +132,8 @@ const ChangePinModal: React.FC<ChangePinModalProps> = ({
             </label>
             <input
               type="password"
+              inputMode="numeric"
+              pattern="[0-9]*"
               value={confirmPin}
               onChange={(e) => setConfirmPin(e.target.value.replace(/\D/g, '').slice(0, 4))}
               className="input-field w-full"

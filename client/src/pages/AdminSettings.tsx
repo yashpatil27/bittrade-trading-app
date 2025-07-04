@@ -231,6 +231,8 @@ const AdminSettings: React.FC = () => {
                 <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-zinc-400" />
                 <input
                   type="number"
+                  inputMode="decimal"
+                  pattern="[0-9]*[.]?[0-9]*"
                   value={buyMultiplier}
                   onChange={(e) => setBuyMultiplier(e.target.value)}
                   placeholder="91"
@@ -249,6 +251,8 @@ const AdminSettings: React.FC = () => {
                 <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-zinc-400" />
                 <input
                   type="number"
+                  inputMode="decimal"
+                  pattern="[0-9]*[.]?[0-9]*"
                   value={sellMultiplier}
                   onChange={(e) => setSellMultiplier(e.target.value)}
                   placeholder="88"
