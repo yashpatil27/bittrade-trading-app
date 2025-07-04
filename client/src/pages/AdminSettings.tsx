@@ -226,7 +226,7 @@ const AdminSettings: React.FC = () => {
         <div className="space-y-6">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-zinc-400 text-sm mb-2">Buy Rate (INR per USD)</label>
+              <label className="block text-zinc-400 text-sm mb-2">Buy Rate</label>
               <div className="relative">
                 <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-zinc-400" />
                 <input
@@ -246,7 +246,7 @@ const AdminSettings: React.FC = () => {
             </div>
             
             <div>
-              <label className="block text-zinc-400 text-sm mb-2">Sell Rate (INR per USD)</label>
+              <label className="block text-zinc-400 text-sm mb-2">Sell Rate</label>
               <div className="relative">
                 <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-zinc-400" />
                 <input
