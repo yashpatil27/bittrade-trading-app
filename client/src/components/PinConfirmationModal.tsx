@@ -96,7 +96,7 @@ useEffect(() => {
   if (!isOpen) return null;
 
   return (
-    <div className="modal-backdrop-fix bg-black/80 backdrop-blur-sm flex items-center justify-center p-4" onClick={onClose}>
+    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={onClose}>
       {/* Modal */}
       <div className="bg-zinc-900 rounded-2xl border border-zinc-800 p-6 w-full max-w-sm shadow-2xl" onClick={(e) => e.stopPropagation()}>
         {/* Header */}
