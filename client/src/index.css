@@ -58,4 +58,14 @@
       transform: translateX(5px);
     }
   }
+  
+  /* Modal backdrop fix for when body has position: fixed */
+  .modal-backdrop-fix {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    z-index: 50 !important;
+  }
 }
