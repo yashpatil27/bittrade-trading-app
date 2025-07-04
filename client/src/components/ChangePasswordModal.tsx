@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, Key, Eye, EyeOff } from 'lucide-react';
 import { userAPI } from '../services/api';
+import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 
 interface ChangePasswordModalProps {
   isOpen: boolean;
@@ -22,6 +23,8 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+
+  useBodyScrollLock(isOpen);
 
   useEffect(() => {
     if (isOpen) {

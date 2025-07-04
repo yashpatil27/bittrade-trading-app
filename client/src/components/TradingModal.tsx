@@ -3,6 +3,7 @@ import { X, TrendingUp, TrendingDown, Calculator, Zap } from 'lucide-react';
 import { Prices } from '../types';
 import { userAPI } from '../services/api';
 import PinConfirmationModal from './PinConfirmationModal';
+import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 
 interface TradingModalProps {
   isOpen: boolean;
@@ -31,6 +32,8 @@ const TradingModal: React.FC<TradingModalProps> = ({
   const isBuy = type === 'buy';
   const rate = isBuy ? prices?.buy_rate : prices?.sell_rate;
   const availableBalance = isBuy ? userBalance.inr : userBalance.btc;
+
+  useBodyScrollLock(isOpen);
 
   useEffect(() => {
     if (amount && rate) {

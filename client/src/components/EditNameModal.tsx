@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, User, Eye, EyeOff } from 'lucide-react';
 import { userAPI } from '../services/api';
+import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 import { useAuth } from '../contexts/AuthContext';
 
 interface EditNameModalProps {
@@ -23,6 +24,8 @@ const EditNameModal: React.FC<EditNameModalProps> = ({
   const [currentPassword, setCurrentPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+
+  useBodyScrollLock(isOpen);
 
   useEffect(() => {
     if (isOpen) {

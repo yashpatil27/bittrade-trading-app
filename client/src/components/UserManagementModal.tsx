@@ -18,6 +18,7 @@ import { adminAPI, userAPI } from '../services/api';
 import { formatBitcoin } from '../utils/formatters';
 import { useBalance } from '../contexts/BalanceContext';
 import PinConfirmationModal from './PinConfirmationModal';
+import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 
 interface UserManagementModalProps {
   isOpen: boolean;
@@ -54,6 +55,8 @@ const UserManagementModal: React.FC<UserManagementModalProps> = ({
   const [pendingAction, setPendingAction] = useState<(() => Promise<void>) | null>(null);
   const [pinModalTitle, setPinModalTitle] = useState('');
   const [pinModalMessage, setPinModalMessage] = useState('');
+
+  useBodyScrollLock(isOpen);
 
   useEffect(() => {
     if (isOpen) {

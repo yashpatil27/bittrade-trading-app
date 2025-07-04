@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { Transaction } from '../types';
 import { getTransactionDisplayName, getTransactionIcon, formatBitcoin } from '../utils/formatters';
+import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 
 interface TransactionDetailModalProps {
   isOpen: boolean;
@@ -29,6 +30,8 @@ const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
   onClose,
   transaction
 }) => {
+  useBodyScrollLock(isOpen);
+  
   if (!isOpen || !transaction) return null;
 
   const getIconComponent = (iconName: string) => {

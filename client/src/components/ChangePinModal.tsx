@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { X, Shield, AlertCircle, Eye, EyeOff } from 'lucide-react';
 import { userAPI } from '../services/api';
+import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 
 interface ChangePinModalProps {
   isOpen: boolean;
@@ -19,6 +20,8 @@ const ChangePinModal: React.FC<ChangePinModalProps> = ({
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+
+  useBodyScrollLock(isOpen);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

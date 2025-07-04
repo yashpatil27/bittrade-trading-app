@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { X, Shield, AlertCircle } from 'lucide-react';
+import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 
 interface PinConfirmationModalProps {
   isOpen: boolean;
@@ -23,7 +24,7 @@ const PinConfirmationModal: React.FC<PinConfirmationModalProps> = ({
   const [error, setError] = useState('');
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
-  useEffect(() => {
+useEffect(() => {
     if (isOpen) {
       setPin(['', '', '', '']);
       setError('');
@@ -34,6 +35,8 @@ const PinConfirmationModal: React.FC<PinConfirmationModalProps> = ({
       }, 100);
     }
   }, [isOpen]);
+
+  useBodyScrollLock(isOpen);
 
   useEffect(() => {
     // Auto-confirm when all 4 digits are entered
@@ -128,15 +131,17 @@ const PinConfirmationModal: React.FC<PinConfirmationModalProps> = ({
           </label>
           <div className={`flex gap-3 justify-center ${isShaking ? 'animate-pulse' : ''}`}>
             {pin.map((digit, index) => (
-              <input
+                <input
                 key={index}
                 ref={el => inputRefs.current[index] = el}
-                type="password"
+                type="tel"
                 inputMode="numeric"
                 pattern="[0-9]*"
+                autoComplete="one-time-code"
                 value={digit}
                 onChange={(e) => handleInputChange(index, e.target.value)}
                 onKeyDown={(e) => handleKeyDown(index, e)}
+                onFocus={(e) => e.target.select()}
                 className={`w-12 h-12 text-center text-xl font-bold bg-zinc-800 border-2 rounded-lg transition-all duration-200 ${
                   digit ? 'border-white' : 'border-zinc-600'
                 } focus:border-white focus:outline-none ${
