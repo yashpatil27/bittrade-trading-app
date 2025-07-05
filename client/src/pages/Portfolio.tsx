@@ -356,7 +356,7 @@ const Portfolio: React.FC = () => {
 
             {/* Right side - BTC Dominance with Vertical Visual */}
             <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4">
-              <div className="flex items-center gap-2 mb-3">
+              <div className="flex items-center gap-2 mb-1.5">
                 <Bitcoin className="w-4 h-4 text-zinc-400" />
                 <span className="text-zinc-400 text-sm">Bitcoin Dominance</span>
               </div>
@@ -364,7 +364,7 @@ const Portfolio: React.FC = () => {
                 <div className="flex flex-col items-center">
                   {bitcoinData.btc_dominance_pct && (
                     <div className="relative mb-3">
-                      <svg width="80" height="80" className="transform -rotate-90">
+                      <svg width="80" height="80" className="transform rotate-90 scale-x-[-1]">
                         {/* Background circle */}
                         <circle
                           cx="40"
