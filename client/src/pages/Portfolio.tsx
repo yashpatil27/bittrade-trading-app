@@ -332,48 +332,59 @@ const Portfolio: React.FC = () => {
             <h3 className="text-lg font-semibold">Bitcoin Market Overview</h3>
           </div>
 
-          <div className="grid grid-cols-2 gap-4 mb-6">
-            {/* Market Cap */}
-            <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4">
-              <div className="flex items-center gap-2 mb-2">
-                <BarChart3 className="w-4 h-4 text-zinc-400" />
-                <span className="text-zinc-400 text-sm">Market Cap</span>
+          <div className="grid grid-cols-3 gap-4 mb-6">
+            {/* Left side - Market data cards */}
+            <div className="col-span-2 grid grid-cols-2 gap-4">
+              {/* Market Cap */}
+              <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <BarChart3 className="w-4 h-4 text-zinc-400" />
+                  <span className="text-zinc-400 text-sm">Market Cap</span>
+                </div>
+                <p className="text-lg font-bold">{formatLargeNumber(bitcoinData.market_cap_usd)}</p>
               </div>
-              <p className="text-lg font-bold">{formatLargeNumber(bitcoinData.market_cap_usd)}</p>
+
+              {/* 24h Volume */}
+              <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <Activity className="w-4 h-4 text-zinc-400" />
+                  <span className="text-zinc-400 text-sm">24h Volume</span>
+                </div>
+                <p className="text-lg font-bold">{formatLargeNumber(bitcoinData.volume_24h_usd)}</p>
+              </div>
             </div>
 
-            {/* 24h Volume */}
+            {/* Right side - BTC Dominance with Vertical Visual */}
             <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4">
-              <div className="flex items-center gap-2 mb-2">
-                <Activity className="w-4 h-4 text-zinc-400" />
-                <span className="text-zinc-400 text-sm">24h Volume</span>
+              <div className="flex items-center gap-2 mb-3">
+                <Bitcoin className="w-4 h-4 text-zinc-400" />
+                <span className="text-zinc-400 text-sm">Bitcoin Dominance</span>
               </div>
-              <p className="text-lg font-bold">{formatLargeNumber(bitcoinData.volume_24h_usd)}</p>
-            </div>
-          </div>
-
-          {/* BTC Dominance with Visual */}
-          <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 mb-6">
-            <div className="flex items-center gap-2 mb-3">
-              <Bitcoin className="w-4 h-4 text-zinc-400" />
-              <span className="text-zinc-400 text-sm">Bitcoin Dominance</span>
-            </div>
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-lg font-bold">
-                {bitcoinData.btc_dominance_pct ? `${bitcoinData.btc_dominance_pct.toFixed(1)}%` : 'N/A'}
-              </span>
-              <span className="text-zinc-500 text-xs">
-                vs Other Crypto
-              </span>
-            </div>
-            {bitcoinData.btc_dominance_pct && (
-              <div className="w-full bg-zinc-800 rounded-full h-2">
-                <div 
-                  className="bg-white h-2 rounded-full transition-all duration-300"
-                  style={{ width: `${bitcoinData.btc_dominance_pct}%` }}
-                />
+              <div className="flex items-center justify-center h-full">
+                <div className="flex flex-col items-center">
+                  <span className="text-lg font-bold mb-3">
+                    {bitcoinData.btc_dominance_pct ? `${bitcoinData.btc_dominance_pct.toFixed(1)}%` : 'N/A'}
+                  </span>
+                  {bitcoinData.btc_dominance_pct && (
+                    <div className="relative">
+                      <div className="h-20 w-4 bg-zinc-800 rounded-full">
+                        <div 
+                          className="bg-white w-4 rounded-full transition-all duration-300"
+                          style={{ height: `${bitcoinData.btc_dominance_pct}%` }}
+                        />
+                      </div>
+                      <div className="flex justify-between text-xs text-zinc-600 mt-2 w-16 -ml-6">
+                        <span>0%</span>
+                        <span>100%</span>
+                      </div>
+                    </div>
+                  )}
+                  <span className="text-zinc-500 text-xs mt-2 text-center">
+                    vs Other Crypto
+                  </span>
+                </div>
               </div>
-            )}
+            </div>
           </div>
 
         </>

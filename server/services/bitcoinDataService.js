@@ -14,26 +14,39 @@ class BitcoinDataService {
   // Fetch comprehensive Bitcoin data from CoinGecko
   async fetchBitcoinData() {
     try {
-      const response = await axios.get(
-        `${process.env.COINGECKO_API_URL}/coins/bitcoin`,
-        {
-          params: {
-            localization: false,
-            tickers: false,
-            market_data: true,
-            community_data: false,
-            developer_data: false,
-            sparkline: false
-          },
-          timeout: 15000,
-          headers: {
-            'User-Agent': 'BitTrade-App/1.0'
+      // Fetch both Bitcoin data and global market data for dominance
+      const [bitcoinResponse, globalResponse] = await Promise.all([
+        axios.get(
+          `${process.env.COINGECKO_API_URL}/coins/bitcoin`,
+          {
+            params: {
+              localization: false,
+              tickers: false,
+              market_data: true,
+              community_data: false,
+              developer_data: false,
+              sparkline: false
+            },
+            timeout: 15000,
+            headers: {
+              'User-Agent': 'BitTrade-App/1.0'
+            }
           }
-        }
-      );
+        ),
+        axios.get(
+          `${process.env.COINGECKO_API_URL}/global`,
+          {
+            timeout: 15000,
+            headers: {
+              'User-Agent': 'BitTrade-App/1.0'
+            }
+          }
+        )
+      ]);
 
-      const data = response.data;
+      const data = bitcoinResponse.data;
       const marketData = data.market_data;
+      const globalData = globalResponse.data.data;
 
       if (!marketData || !marketData.current_price || !marketData.current_price.usd) {
         throw new Error('Invalid response format from CoinGecko API');
@@ -50,7 +63,7 @@ class BitcoinDataService {
         volume_24h_usd: marketData.total_volume ? marketData.total_volume.usd : null,
         high_24h_usd: marketData.high_24h ? Math.round(marketData.high_24h.usd) : null,
         low_24h_usd: marketData.low_24h ? Math.round(marketData.low_24h.usd) : null,
-        btc_dominance_pct: marketData.market_cap_rank === 1 ? null : null, // We'll get this from global data if needed
+        btc_dominance_pct: globalData && globalData.market_cap_percentage && globalData.market_cap_percentage.btc ? globalData.market_cap_percentage.btc : null,
 
         // Price changes (all timeframes)
         price_change_1h_pct: marketData.price_change_percentage_1h_in_currency ? marketData.price_change_percentage_1h_in_currency.usd : null,
