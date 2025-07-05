@@ -22,8 +22,7 @@ const AdminUsers: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedUser, setSelectedUser] = useState<AdminUser | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [page, setPage] = useState(1);
-  const [hasMore, setHasMore] = useState(false);
+  // Pagination variables removed as they're not currently used
 
   useEffect(() => {
     fetchUsers();
@@ -33,9 +32,8 @@ const AdminUsers: React.FC = () => {
     try {
       setIsLoading(true);
       const response = await adminAPI.getUsers(1, 50); // Get more users initially
-      const { users: fetchedUsers, pagination } = response.data.data!;
+      const { users: fetchedUsers } = response.data.data!;
       setUsers(fetchedUsers);
-      setHasMore(pagination.has_more);
     } catch (error) {
       console.error('Error fetching users:', error);
     } finally {

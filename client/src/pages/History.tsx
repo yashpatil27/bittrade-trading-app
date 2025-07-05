@@ -24,7 +24,6 @@ import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 import { 
   getTransactionDisplayName, 
   getTransactionIcon, 
-  getTransactionColor, 
   formatTimeAgo,
   formatCurrency
 } from '../utils/formatters';
@@ -188,14 +187,6 @@ const History: React.FC = () => {
     return '';
   };
 
-  const formatSecondaryAmount = (transaction: Transaction) => {
-    if (transaction.type === 'BUY' || transaction.type === 'SELL') {
-      if (transaction.type.includes('INR') || transaction.type === 'BUY' || transaction.type === 'SELL') {
-        return formatCurrency(transaction.btc_amount, 'BTC');
-      }
-    }
-    return null;
-  };
 
   const handleFilterChange = (newFilters: Partial<FilterState>) => {
     setFilters(prev => ({ ...prev, ...newFilters }));

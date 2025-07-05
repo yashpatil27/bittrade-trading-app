@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { 
   Activity, 
   Filter, 
@@ -34,11 +34,7 @@ const AdminTransactions: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState<string>('ALL');
 
-  useEffect(() => {
-    fetchTransactions();
-  }, [page]);
-
-  const fetchTransactions = async () => {
+  const fetchTransactions = useCallback(async () => {
     try {
       setIsLoading(true);
       const response = await adminAPI.getAllTransactions(page, 50);
@@ -56,7 +52,11 @@ const AdminTransactions: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [page]);
+
+  useEffect(() => {
+    fetchTransactions();
+  }, [fetchTransactions]);
 
   const handleTransactionClick = (transaction: Transaction) => {
     setSelectedTransaction(transaction);
@@ -72,19 +72,6 @@ const AdminTransactions: React.FC = () => {
     return '';
   };
 
-  const getIconComponent = (iconName: string) => {
-    const iconProps = { className: "w-4 h-4 text-white" };
-    switch (iconName) {
-      case 'User': return <User {...iconProps} />;
-      case 'ArrowUp': return <ArrowUp {...iconProps} />;
-      case 'TrendingUp': return <TrendingUp {...iconProps} />;
-      case 'TrendingDown': return <TrendingDown {...iconProps} />;
-      case 'ArrowDown': return <ArrowDown {...iconProps} />;
-      case 'Plus': return <Plus {...iconProps} />;
-      case 'Minus': return <Minus {...iconProps} />;
-      default: return <Circle {...iconProps} />;
-    }
-  };
 
   const filteredTransactions = transactions.filter(transaction => {
     const matchesSearch = transaction.id.toString().includes(searchTerm) || 

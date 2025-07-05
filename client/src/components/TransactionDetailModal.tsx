@@ -8,12 +8,7 @@ import {
   TrendingDown,
   Plus,
   Minus,
-  Circle,
-  Calendar,
-  Hash,
-  Wallet,
-  DollarSign,
-  Bitcoin
+  Circle
 } from 'lucide-react';
 import { Transaction } from '../types';
 import { getTransactionDisplayName, getTransactionIcon, formatBitcoin } from '../utils/formatters';

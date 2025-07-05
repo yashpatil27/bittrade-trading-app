@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Home, History, LogOut, Settings, Users, BarChart3, Bitcoin, UserCog, PieChart, User } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
@@ -20,7 +20,7 @@ const Layout: React.FC<LayoutProps> = ({ children, isAdmin = false }) => {
   const [sellRate, setSellRate] = useState<number>(0);
   const [showPersistentBar, setShowPersistentBar] = useState(false);
 
-  const fetchBalance = async () => {
+  const fetchBalance = useCallback(async () => {
     if (!isAdmin) {
       try {
         const response = await userAPI.getDashboard();
@@ -33,7 +33,7 @@ const Layout: React.FC<LayoutProps> = ({ children, isAdmin = false }) => {
         console.error('Error fetching balance:', error);
       }
     }
-  };
+  }, [isAdmin]);
 
   useEffect(() => {
     fetchBalance();
@@ -45,7 +45,7 @@ const Layout: React.FC<LayoutProps> = ({ children, isAdmin = false }) => {
 
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
-  }, [isAdmin, balanceVersion]);
+  }, [isAdmin, balanceVersion, fetchBalance]);
 
   const handleLogout = async () => {
     try {
