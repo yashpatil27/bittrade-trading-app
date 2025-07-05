@@ -1,6 +1,6 @@
 const { query, transaction } = require('../config/database');
 const { setCache, getCache, clearUserCache } = require('../config/redis');
-const priceService = require('./priceService');
+const bitcoinDataService = require('./bitcoinDataService');
 
 class UserService {
   async getUserBalances(userId) {
@@ -98,7 +98,7 @@ class UserService {
         }
 
         // Get current rates
-        const rates = await priceService.getCalculatedRates();
+        const rates = await bitcoinDataService.getCalculatedRates();
         const btcAmount = Math.floor((inrAmount / rates.buyRate) * 100000000); // Convert to satoshis
 
         if (btcAmount <= 0) {
@@ -156,7 +156,7 @@ class UserService {
         }
 
         // Get current rates
-        const rates = await priceService.getCalculatedRates();
+        const rates = await bitcoinDataService.getCalculatedRates();
         const inrAmount = Math.floor((btcAmount / 100000000) * rates.sellRate); // Convert from satoshis
 
         if (inrAmount <= 0) {

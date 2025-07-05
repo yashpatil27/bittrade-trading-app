@@ -13,7 +13,7 @@ const adminRoutes = require('./routes/admin');
 // Import services
 const { createPool } = require('./config/database');
 const { createRedisClient } = require('./config/redis');
-const priceService = require('./services/priceService');
+const bitcoinDataService = require('./services/bitcoinDataService');
 
 // Load environment variables
 dotenv.config();
@@ -37,9 +37,9 @@ const initializeServices = async () => {
       console.warn('⚠ Redis connection failed - continuing without caching:', error.message);
     }
     
-    // Start price updates
-    priceService.startPriceUpdates();
-    console.log('✓ Price service started');
+    // Start Bitcoin data updates
+    bitcoinDataService.startDataUpdates();
+    console.log('✓ Bitcoin data service started');
     
     console.log('All services initialized successfully');
   } catch (error) {
@@ -87,7 +87,7 @@ app.get('/health', (req, res) => {
     timestamp: new Date().toISOString(),
     services: {
       database: 'connected',
-      price_service: priceService.isRunning ? 'running' : 'stopped'
+      bitcoin_data_service: bitcoinDataService.isRunning ? 'running' : 'stopped'
     }
   });
 });
@@ -114,13 +114,13 @@ const PORT = process.env.PORT || 5000;
 // Graceful shutdown
 process.on('SIGINT', () => {
   console.log('\nReceived SIGINT. Graceful shutdown...');
-  priceService.stopPriceUpdates();
+  bitcoinDataService.stopDataUpdates();
   process.exit(0);
 });
 
 process.on('SIGTERM', () => {
   console.log('\nReceived SIGTERM. Graceful shutdown...');
-  priceService.stopPriceUpdates();
+  bitcoinDataService.stopDataUpdates();
   process.exit(0);
 });
 

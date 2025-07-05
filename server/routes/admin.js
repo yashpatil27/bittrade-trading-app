@@ -3,7 +3,7 @@ const bcrypt = require('bcryptjs');
 const { verifyToken, requireAdmin } = require('../middleware/auth');
 const { query, transaction } = require('../config/database');
 const { clearUserCache } = require('../config/redis');
-const priceService = require('../services/priceService');
+const bitcoinDataService = require('../services/bitcoinDataService');
 
 const router = express.Router();
 
@@ -32,7 +32,7 @@ router.get('/dashboard', async (req, res) => {
     ]);
 
     // Get current prices
-    const rates = await priceService.getCalculatedRates();
+    const rates = await bitcoinDataService.getCalculatedRates();
 
     res.json({
       success: true,
@@ -452,7 +452,7 @@ router.post('/users/:userId/deposit-btc', async (req, res) => {
       const newBtcBalance = currentBalances.btc_balance + btcAmountSatoshi;
 
       // Get current BTC price for INR amount calculation
-      const rates = await priceService.getCalculatedRates();
+      const rates = await bitcoinDataService.getCalculatedRates();
       const inrAmount = Math.round(amount * rates.sellRate); // Use sell rate for internal calculations
 
       // Create DEPOSIT_BTC transaction
@@ -531,7 +531,7 @@ router.post('/users/:userId/withdraw-btc', async (req, res) => {
       const newBtcBalance = currentBalances.btc_balance - btcAmountSatoshi;
 
       // Get current BTC price for INR amount calculation
-      const rates = await priceService.getCalculatedRates();
+      const rates = await bitcoinDataService.getCalculatedRates();
       const inrAmount = Math.round(amount * rates.sellRate); // Use sell rate for internal calculations
 
       // Create WITHDRAW_BTC transaction

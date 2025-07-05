@@ -1,5 +1,5 @@
 const { query } = require('../config/database');
-const priceService = require('./priceService');
+const bitcoinDataService = require('./bitcoinDataService');
 
 class PortfolioService {
   async calculatePortfolioMetrics(userId) {
@@ -8,7 +8,7 @@ class PortfolioService {
       const currentBalances = await this.getCurrentBalances(userId);
       
       // Get current sell rate for portfolio valuation
-      const rates = await priceService.getCalculatedRates();
+      const rates = await bitcoinDataService.getCalculatedRates();
       
       // Calculate all portfolio metrics
       const totalPortfolioValue = await this.calculateTotalPortfolioValue(currentBalances, rates.sellRate);
