@@ -332,9 +332,9 @@ const Portfolio: React.FC = () => {
             <h3 className="text-lg font-semibold">Bitcoin Market Overview</h3>
           </div>
 
-          <div className="grid grid-cols-3 gap-4 mb-6">
-            {/* Left side - Market data cards */}
-            <div className="col-span-2 grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-4 mb-6">
+            {/* Left side - Market data cards stacked vertically */}
+            <div className="space-y-4">
               {/* Market Cap */}
               <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4">
                 <div className="flex items-center gap-2 mb-2">
