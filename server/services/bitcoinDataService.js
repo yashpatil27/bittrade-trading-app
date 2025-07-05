@@ -40,16 +40,16 @@ class BitcoinDataService {
       }
 
       return {
-        // Price data
-        btc_usd_price: marketData.current_price.usd,
-        price_change_24h: marketData.price_change_24h || null,
+        // Price data (rounded to integers for cleaner display)
+        btc_usd_price: Math.round(marketData.current_price.usd),
+        price_change_24h: marketData.price_change_24h ? Math.round(marketData.price_change_24h) : null,
         price_change_24h_pct: marketData.price_change_percentage_24h || null,
 
         // Market data
         market_cap_usd: marketData.market_cap ? marketData.market_cap.usd : null,
         volume_24h_usd: marketData.total_volume ? marketData.total_volume.usd : null,
-        high_24h_usd: marketData.high_24h ? marketData.high_24h.usd : null,
-        low_24h_usd: marketData.low_24h ? marketData.low_24h.usd : null,
+        high_24h_usd: marketData.high_24h ? Math.round(marketData.high_24h.usd) : null,
+        low_24h_usd: marketData.low_24h ? Math.round(marketData.low_24h.usd) : null,
         btc_dominance_pct: marketData.market_cap_rank === 1 ? null : null, // We'll get this from global data if needed
 
         // Price changes (all timeframes)
@@ -60,11 +60,11 @@ class BitcoinDataService {
         price_change_200d_pct: marketData.price_change_percentage_200d || null,
         price_change_1y_pct: marketData.price_change_percentage_1y || null,
 
-        // All-time records
-        ath_usd: marketData.ath ? marketData.ath.usd : null,
+        // All-time records (rounded to integers)
+        ath_usd: marketData.ath ? Math.round(marketData.ath.usd) : null,
         ath_date: marketData.ath_date ? marketData.ath_date.usd.split('T')[0] : null,
         ath_change_pct: marketData.ath_change_percentage ? marketData.ath_change_percentage.usd : null,
-        atl_usd: marketData.atl ? marketData.atl.usd : null,
+        atl_usd: marketData.atl ? Math.round(marketData.atl.usd) : null,
         atl_date: marketData.atl_date ? marketData.atl_date.usd.split('T')[0] : null,
         atl_change_pct: marketData.atl_change_percentage ? marketData.atl_change_percentage.usd : null
       };
@@ -123,8 +123,12 @@ class BitcoinDataService {
         {
           params: {
             vs_currency: 'usd',
-            days: days,
-            interval: timeframe === '1h' ? 'hourly' : 'daily'
+            days: days
+            // Note: CoinGecko automatically determines intervals:
+            // - 1 day: 5-minute intervals
+            // - 2-90 days: hourly intervals
+            // - 90+ days: daily intervals
+            // Explicit interval param requires Enterprise plan
           },
           timeout: 15000,
           headers: {
@@ -340,8 +344,8 @@ class BitcoinDataService {
         }
       });
 
-      const buyRate = data.btc_usd_price * buyMultiplier;
-      const sellRate = data.btc_usd_price * sellMultiplier;
+      const buyRate = Math.round(data.btc_usd_price * buyMultiplier);
+      const sellRate = Math.round(data.btc_usd_price * sellMultiplier);
 
       return {
         btcUsdPrice: data.btc_usd_price,
@@ -393,11 +397,32 @@ class BitcoinDataService {
 
       const chartRows = await query(queryStr, params);
       
-      // Parse JSON price data
-      return chartRows.map(row => ({
-        ...row,
-        price_data: JSON.parse(row.price_data)
-      }));
+      // Parse JSON price data with error handling
+      return chartRows.map(row => {
+        try {
+          // Check if price_data is already an object/array
+          if (typeof row.price_data === 'object') {
+            return {
+              ...row,
+              price_data: row.price_data
+            };
+          }
+          // If it's a string, try to parse it
+          return {
+            ...row,
+            price_data: JSON.parse(row.price_data)
+          };
+        } catch (parseError) {
+          console.error(`Error parsing price_data for timeframe ${row.timeframe}:`, parseError.message);
+          console.error('Raw price_data type:', typeof row.price_data);
+          console.error('Raw price_data (first 200 chars):', JSON.stringify(row.price_data).substring(0, 200));
+          // Return row with empty array if JSON parsing fails
+          return {
+            ...row,
+            price_data: []
+          };
+        }
+      }).filter(row => row.price_data && Array.isArray(row.price_data) && row.price_data.length > 0); // Filter out rows with no valid data
     } catch (error) {
       console.error('Error getting chart data:', error.message);
       throw error;

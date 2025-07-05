@@ -3,8 +3,7 @@
 
 USE bittrade;
 
--- Insert a current Bitcoin price (around $100,000 USD)
-INSERT INTO prices (btc_usd_price) VALUES (100000);
+-- Bitcoin price data will be automatically populated by the bitcoinDataService
 
 -- Create the admin account
 -- Password: admin123

@@ -9,6 +9,7 @@ const path = require('path');
 const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/user');
 const adminRoutes = require('./routes/admin');
+const publicRoutes = require('./routes/public');
 
 // Import services
 const { createPool } = require('./config/database');
@@ -69,6 +70,7 @@ app.use('/api/', limiter);
 app.use('/api/auth', authRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/public', publicRoutes);
 
 // Serve static files from React app in production
 if (process.env.NODE_ENV === 'production') {

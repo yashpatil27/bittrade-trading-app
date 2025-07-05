@@ -20,6 +20,7 @@ import { Balances, Prices, Transaction, DashboardData } from '../types';
 import TradingModal from '../components/TradingModal';
 import PriceUpdateTimer from '../components/PriceUpdateTimer';
 import TransactionDetailModal from '../components/TransactionDetailModal';
+import BitcoinChart from '../components/BitcoinChart';
 import { useBalance } from '../contexts/BalanceContext';
 import { 
   getTransactionDisplayName, 
@@ -210,6 +211,9 @@ const Home: React.FC = () => {
             </div>
           </div>
         </div>
+
+        {/* Bitcoin Price Chart */}
+        <BitcoinChart />
 
         {/* Trading Action Buttons */}
         <div className="grid grid-cols-2 gap-4">

@@ -139,10 +139,25 @@ router.get('/bitcoin/charts', async (req, res) => {
     const { timeframe } = req.query;
     const chartData = await bitcoinDataService.getChartData(timeframe);
 
-    res.json({
-      success: true,
-      data: chartData
-    });
+    // If requesting specific timeframe, return single object
+    if (timeframe && chartData.length > 0) {
+      res.json({
+        success: true,
+        data: chartData[0]
+      });
+    } else if (timeframe) {
+      // If no data found for specific timeframe, return null
+      res.json({
+        success: true,
+        data: null
+      });
+    } else {
+      // If no timeframe specified, return all chart data
+      res.json({
+        success: true,
+        data: chartData
+      });
+    }
 
   } catch (error) {
     console.error('Chart data error:', error);
