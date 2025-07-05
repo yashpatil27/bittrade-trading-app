@@ -14,7 +14,12 @@ import {
   ArrowUp,
   ArrowDown,
   Trophy,
-  Clock
+  Clock,
+  Globe,
+  Crown,
+  Calendar,
+  Brain,
+  Gauge
 } from 'lucide-react';
 import { userAPI } from '../services/api';
 import { formatCurrency } from '../utils/formatters';
@@ -50,8 +55,24 @@ interface PortfolioData {
   };
 }
 
+interface BitcoinMarketData {
+  market_cap_usd: number;
+  volume_24h_usd: number;
+  btc_dominance_pct: number;
+  ath_usd: number;
+  ath_date: string;
+  ath_change_pct: number;
+}
+
+interface SentimentData {
+  fear_greed_value: number;
+  fear_greed_classification: string;
+}
+
 const Portfolio: React.FC = () => {
   const [portfolioData, setPortfolioData] = useState<PortfolioData | null>(null);
+  const [bitcoinData, setBitcoinData] = useState<BitcoinMarketData | null>(null);
+  const [sentimentData, setSentimentData] = useState<SentimentData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -62,8 +83,17 @@ const Portfolio: React.FC = () => {
   const fetchPortfolioData = async () => {
     try {
       setIsLoading(true);
-      const response = await userAPI.portfolio();
-      setPortfolioData(response.data.data);
+      
+      // Fetch all data in parallel
+      const [portfolioResponse, bitcoinResponse, sentimentResponse] = await Promise.all([
+        userAPI.portfolio(),
+        userAPI.getBitcoinData(),
+        userAPI.getBitcoinSentiment()
+      ]);
+      
+      setPortfolioData(portfolioResponse.data.data);
+      setBitcoinData(bitcoinResponse.data.data);
+      setSentimentData(sentimentResponse.data.data);
     } catch (error) {
       console.error('Error fetching portfolio data:', error);
       setError('Failed to load portfolio data');
@@ -79,6 +109,34 @@ const Portfolio: React.FC = () => {
 
   const formatCurrencyInr = (value: number) => {
     return `₹${Math.round(value).toLocaleString('en-IN')}`;
+  };
+
+  const formatLargeNumber = (value: number) => {
+    if (value >= 1e12) {
+      return `$${(value / 1e12).toFixed(2)}T`;
+    } else if (value >= 1e9) {
+      return `$${(value / 1e9).toFixed(2)}B`;
+    } else if (value >= 1e6) {
+      return `$${(value / 1e6).toFixed(2)}M`;
+    } else {
+      return `$${value.toLocaleString()}`;
+    }
+  };
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { 
+      year: 'numeric', 
+      month: 'short', 
+      day: 'numeric' 
+    });
+  };
+
+  const getSentimentColor = (classification: string) => {
+    const lower = classification.toLowerCase();
+    if (lower.includes('fear')) return 'text-red-400';
+    if (lower.includes('greed')) return 'text-green-400';
+    return 'text-yellow-400';
   };
 
   if (isLoading) {
@@ -265,6 +323,135 @@ const Portfolio: React.FC = () => {
           </p>
         </div>
       </div>
+
+      {/* Bitcoin Market Overview */}
+      {bitcoinData && (
+        <>
+          <div className="flex items-center gap-2 mb-4">
+            <Globe className="w-5 h-5 text-white" />
+            <h3 className="text-lg font-semibold">Bitcoin Market Overview</h3>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4 mb-6">
+            {/* Market Cap */}
+            <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <BarChart3 className="w-4 h-4 text-zinc-400" />
+                <span className="text-zinc-400 text-sm">Market Cap</span>
+              </div>
+              <p className="text-lg font-bold">{formatLargeNumber(bitcoinData.market_cap_usd)}</p>
+            </div>
+
+            {/* 24h Volume */}
+            <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <Activity className="w-4 h-4 text-zinc-400" />
+                <span className="text-zinc-400 text-sm">24h Volume</span>
+              </div>
+              <p className="text-lg font-bold">{formatLargeNumber(bitcoinData.volume_24h_usd)}</p>
+            </div>
+          </div>
+
+          {/* BTC Dominance with Visual */}
+          <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 mb-6">
+            <div className="flex items-center gap-2 mb-3">
+              <Bitcoin className="w-4 h-4 text-zinc-400" />
+              <span className="text-zinc-400 text-sm">Bitcoin Dominance</span>
+            </div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-lg font-bold">
+                {bitcoinData.btc_dominance_pct ? `${bitcoinData.btc_dominance_pct.toFixed(1)}%` : 'N/A'}
+              </span>
+              <span className="text-zinc-500 text-xs">
+                vs Other Crypto
+              </span>
+            </div>
+            {bitcoinData.btc_dominance_pct && (
+              <div className="w-full bg-zinc-800 rounded-full h-2">
+                <div 
+                  className="bg-white h-2 rounded-full transition-all duration-300"
+                  style={{ width: `${bitcoinData.btc_dominance_pct}%` }}
+                />
+              </div>
+            )}
+          </div>
+
+        </>
+      )}
+
+      {/* All-Time High Section */}
+      {bitcoinData && (
+        <>
+          <div className="flex items-center gap-2 mb-4">
+            <Crown className="w-5 h-5 text-white" />
+            <h3 className="text-lg font-semibold">All-Time High</h3>
+          </div>
+
+          <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 mb-6">
+            <div className="grid grid-cols-3 gap-4">
+              <div>
+                <p className="text-zinc-500 text-xs mb-1">Price</p>
+                <p className="text-base font-bold">${bitcoinData.ath_usd.toLocaleString()}</p>
+              </div>
+              <div>
+                <p className="text-zinc-500 text-xs mb-1">Date</p>
+                <p className="text-base font-bold">{formatDate(bitcoinData.ath_date)}</p>
+              </div>
+              <div>
+                <p className="text-zinc-500 text-xs mb-1">From ATH</p>
+                <p className={`text-base font-bold ${bitcoinData.ath_change_pct >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                  {formatPercentage(bitcoinData.ath_change_pct)}
+                </p>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* Market Sentiment with Visual Gauge */}
+      {sentimentData && (
+        <>
+          <div className="flex items-center gap-2 mb-4">
+            <Brain className="w-5 h-5 text-white" />
+            <h3 className="text-lg font-semibold">Market Sentiment</h3>
+          </div>
+
+          <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 mb-6">
+          
+          <div>
+            {/* Fear & Greed Gauge with Centered Classification */}
+            <div>
+              <p className="text-zinc-500 text-xs mb-2">Fear & Greed Index</p>
+              <div className="relative">
+                <div className="text-lg font-bold mb-2">{sentimentData.fear_greed_value}/100</div>
+                <div className="w-full bg-zinc-800 rounded-full h-8 mb-1 relative">
+                  <div 
+                    className={`h-8 rounded-full transition-all duration-300 ${
+                      sentimentData.fear_greed_value <= 25 ? 'bg-red-500' :
+                      sentimentData.fear_greed_value <= 45 ? 'bg-orange-500' :
+                      sentimentData.fear_greed_value <= 55 ? 'bg-yellow-500' :
+                      sentimentData.fear_greed_value <= 75 ? 'bg-green-500' :
+                      'bg-green-600'
+                    }`}
+                    style={{ width: `${sentimentData.fear_greed_value}%` }}
+                  />
+                  {/* Centered Classification Text */}
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <span className={`text-sm font-bold ${getSentimentColor(sentimentData.fear_greed_classification)}`}>
+                      {sentimentData.fear_greed_classification}
+                    </span>
+                  </div>
+                </div>
+                <div className="flex justify-between text-xs text-zinc-600">
+                  <span>Fear</span>
+                  <span>Greed</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          </div>
+        </>
+      )}
 
       {/* Trading Statistics Header */}
       <div className="flex items-center gap-2 mb-4">

@@ -105,6 +105,12 @@ export const userAPI = {
   
   exportData: (): Promise<AxiosResponse<string>> =>
     api.get('/user/export-data', { responseType: 'text' }),
+  
+  getBitcoinData: (): Promise<AxiosResponse<ApiResponse<any>>> =>
+    api.get('/user/bitcoin/data'),
+  
+  getBitcoinSentiment: (): Promise<AxiosResponse<ApiResponse<any>>> =>
+    api.get('/user/bitcoin/sentiment'),
 };
 
 // Admin API
