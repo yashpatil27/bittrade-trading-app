@@ -367,21 +367,14 @@ const Portfolio: React.FC = () => {
                   </span>
                   {bitcoinData.btc_dominance_pct && (
                     <div className="relative">
-                      <div className="h-20 w-4 bg-zinc-800 rounded-full">
+                      <div className="h-20 w-4 bg-zinc-800 rounded-full flex items-end">
                         <div 
                           className="bg-white w-4 rounded-full transition-all duration-300"
                           style={{ height: `${bitcoinData.btc_dominance_pct}%` }}
                         />
                       </div>
-                      <div className="flex justify-between text-xs text-zinc-600 mt-2 w-16 -ml-6">
-                        <span>0%</span>
-                        <span>100%</span>
-                      </div>
                     </div>
                   )}
-                  <span className="text-zinc-500 text-xs mt-2 text-center">
-                    vs Other Crypto
-                  </span>
                 </div>
               </div>
             </div>
