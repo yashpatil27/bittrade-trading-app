@@ -418,15 +418,15 @@ const Portfolio: React.FC = () => {
 
           <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 mb-6">
           
-          <div>
-            {/* Fear & Greed Gauge with Centered Classification */}
+          <div className="grid grid-cols-2 gap-6">
+            {/* Fear & Greed Gauge */}
             <div>
               <p className="text-zinc-500 text-xs mb-2">Fear & Greed Index</p>
               <div className="relative">
                 <div className="text-lg font-bold mb-2">{sentimentData.fear_greed_value}/100</div>
-                <div className="w-full bg-zinc-800 rounded-full h-8 mb-1 relative">
+                <div className="w-full bg-zinc-800 rounded-full h-2 mb-1">
                   <div 
-                    className={`h-8 rounded-full transition-all duration-300 ${
+                    className={`h-2 rounded-full transition-all duration-300 ${
                       sentimentData.fear_greed_value <= 25 ? 'bg-red-500' :
                       sentimentData.fear_greed_value <= 45 ? 'bg-orange-500' :
                       sentimentData.fear_greed_value <= 55 ? 'bg-yellow-500' :
@@ -435,18 +435,20 @@ const Portfolio: React.FC = () => {
                     }`}
                     style={{ width: `${sentimentData.fear_greed_value}%` }}
                   />
-                  {/* Centered Classification Text */}
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <span className={`text-sm font-bold ${getSentimentColor(sentimentData.fear_greed_classification)}`}>
-                      {sentimentData.fear_greed_classification}
-                    </span>
-                  </div>
                 </div>
                 <div className="flex justify-between text-xs text-zinc-600">
                   <span>Fear</span>
                   <span>Greed</span>
                 </div>
               </div>
+            </div>
+            
+            {/* Classification */}
+            <div className="flex flex-col items-center justify-center h-full">
+              <p className="text-zinc-500 text-xs mb-2">Classification</p>
+              <p className={`text-lg font-bold ${getSentimentColor(sentimentData.fear_greed_classification)}`}>
+                {sentimentData.fear_greed_classification}
+              </p>
             </div>
           </div>
           </div>
