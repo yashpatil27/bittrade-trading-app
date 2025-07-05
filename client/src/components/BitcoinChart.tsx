@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip } from 'recharts';
-import { TrendingUp, Activity, Loader2 } from 'lucide-react';
+import { LineChart as LineChartIcon, Activity, Loader2 } from 'lucide-react';
 import axios from 'axios';
 
 interface ChartDataPoint {
@@ -138,15 +138,15 @@ const BitcoinChart: React.FC = () => {
   return (
     <div className="bg-zinc-800/50 border border-zinc-700 rounded-xl overflow-hidden">
       {/* Header */}
-      <div className="p-4 border-b border-zinc-700">
-        <div className="flex items-center justify-between mb-4">
+      <div className="p-3 border-b border-zinc-700">
+        <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
-            <div className="p-2 bg-zinc-700 rounded-lg">
-              <TrendingUp className="w-5 h-5 text-white" />
+            <div className="p-1.5 bg-zinc-700 rounded-lg">
+              <LineChartIcon className="w-4 h-4 text-white" />
             </div>
             <div>
-              <h3 className="text-lg font-semibold text-white">Price Chart</h3>
-              <p className="text-zinc-400 text-sm">
+              <h3 className="text-base font-semibold text-white">Price Chart</h3>
+              <p className="text-zinc-400 text-xs">
                 {timeframeTabs.find(tab => tab.key === activeTab)?.name} trend
               </p>
             </div>
@@ -155,11 +155,11 @@ const BitcoinChart: React.FC = () => {
           {/* Price Change Indicator */}
           {currentBtcPrice && (
             <div className="text-right">
-              <p className="text-white font-bold text-lg">
+              <p className="text-white font-bold text-base">
                 ${currentBtcPrice.toLocaleString('en-US')}
               </p>
               {chartData.length > 0 && getChangePercentage() !== null && (
-                <p className={`text-sm font-medium ${getChangeColor()}`}>
+                <p className={`text-xs font-medium ${getChangeColor()}`}>
                   {getChangePercentage()! > 0 ? '+' : ''}
                   {getChangePercentage()!.toFixed(2)}%
                 </p>

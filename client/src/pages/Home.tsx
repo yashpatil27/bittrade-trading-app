@@ -186,9 +186,6 @@ const Home: React.FC = () => {
           </div>
         </div>
 
-        {/* Bitcoin Price Chart */}
-        <BitcoinChart />
-
         {/* Bitcoin Price Card with Trading Actions */}
         <div className="bg-zinc-800/50 border border-zinc-700 rounded-xl p-4">
           <div className="flex items-center justify-between mb-3">
@@ -233,6 +230,9 @@ const Home: React.FC = () => {
             </button>
           </div>
         </div>
+
+        {/* Bitcoin Price Chart */}
+        <BitcoinChart />
 
         {/* Recent Activity */}
         <div className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden">
