@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip } from 'recharts';
+import { AreaChart, Area, XAxis, YAxis, ResponsiveContainer, Tooltip } from 'recharts';
 import { LineChart as LineChartIcon, Activity, Loader2 } from 'lucide-react';
 import axios from 'axios';
 
@@ -195,7 +195,14 @@ const BitcoinChart: React.FC = () => {
             </div>
           ) : chartData.length > 0 ? (
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={chartData} margin={{ top: 5, right: 5, left: 5, bottom: 5 }}>
+              <AreaChart data={chartData} margin={{ top: 5, right: 5, left: 5, bottom: 5 }}>
+                <defs>
+                  <linearGradient id="priceGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#ffffff" stopOpacity={0.3} />
+                    <stop offset="50%" stopColor="#ffffff" stopOpacity={0.1} />
+                    <stop offset="100%" stopColor="#ffffff" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
                 <XAxis 
                   dataKey="date" 
                   axisLine={false}
@@ -208,11 +215,12 @@ const BitcoinChart: React.FC = () => {
                   domain={['dataMin - 1000', 'dataMax + 1000']}
                 />
                 <Tooltip content={<CustomTooltip />} />
-                <Line
+                <Area
                   type="monotone"
                   dataKey="price"
                   stroke="#ffffff"
                   strokeWidth={2.5}
+                  fill="url(#priceGradient)"
                   dot={false}
                   activeDot={{
                     r: 4,
@@ -221,7 +229,7 @@ const BitcoinChart: React.FC = () => {
                     strokeWidth: 2
                   }}
                 />
-              </LineChart>
+              </AreaChart>
             </ResponsiveContainer>
           ) : (
             <div className="h-full flex items-center justify-center">
