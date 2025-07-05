@@ -189,7 +189,7 @@ const Home: React.FC = () => {
         {/* Bitcoin Price Chart */}
         <BitcoinChart />
 
-        {/* Bitcoin Price Card */}
+        {/* Bitcoin Price Card with Trading Actions */}
         <div className="bg-zinc-800/50 border border-zinc-700 rounded-xl p-4">
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-lg font-semibold flex items-center gap-2">
@@ -199,39 +199,39 @@ const Home: React.FC = () => {
             <PriceUpdateTimer className="text-zinc-400" />
           </div>
           
-          <div className="grid grid-cols-3 gap-4">
-            <div className="text-center">
-              <p className="text-zinc-400 text-xs">USD Price</p>
-              <p className="font-bold">${(prices?.btc_usd ?? 0).toLocaleString('en-US')}</p>
-            </div>
+          <div className="grid grid-cols-3 gap-4 mb-4">
             <div className="text-center">
               <p className="text-zinc-400 text-xs">Buy Rate</p>
               <p className="font-bold text-white">₹{(prices?.buy_rate ?? 0).toLocaleString('en-IN')}</p>
+            </div>
+            <div className="text-center">
+              <p className="text-zinc-400 text-xs">USD Price</p>
+              <p className="font-bold">${(prices?.btc_usd ?? 0).toLocaleString('en-US')}</p>
             </div>
             <div className="text-center">
               <p className="text-zinc-400 text-xs">Sell Rate</p>
               <p className="font-bold text-white">₹{(prices?.sell_rate ?? 0).toLocaleString('en-IN')}</p>
             </div>
           </div>
-        </div>
-
-        {/* Trading Action Buttons */}
-        <div className="grid grid-cols-2 gap-4">
-          <button
-            onClick={() => openTradingModal('buy')}
-            className="bg-white text-black hover:bg-zinc-200 font-medium py-4 px-6 rounded-xl transition-all duration-200 flex items-center justify-center gap-3 shadow-lg"
-          >
-            <TrendingUp className="w-5 h-5" />
-            <span>Buy Bitcoin</span>
-          </button>
           
-          <button
-            onClick={() => openTradingModal('sell')}
-            className="bg-zinc-700 text-white hover:bg-zinc-600 font-medium py-4 px-6 rounded-xl transition-all duration-200 flex items-center justify-center gap-3 shadow-lg"
-          >
-            <TrendingDown className="w-5 h-5" />
-            <span>Sell Bitcoin</span>
-          </button>
+          {/* Trading Action Buttons */}
+          <div className="grid grid-cols-2 gap-3">
+            <button
+              onClick={() => openTradingModal('buy')}
+              className="bg-white text-black hover:bg-zinc-200 font-medium py-2.5 px-4 rounded-lg transition-all duration-200 flex items-center justify-center gap-2 text-sm"
+            >
+              <TrendingUp className="w-4 h-4" />
+              <span>Buy</span>
+            </button>
+            
+            <button
+              onClick={() => openTradingModal('sell')}
+              className="bg-zinc-700 text-white hover:bg-zinc-600 font-medium py-2.5 px-4 rounded-lg transition-all duration-200 flex items-center justify-center gap-2 text-sm"
+            >
+              <TrendingDown className="w-4 h-4" />
+              <span>Sell</span>
+            </button>
+          </div>
         </div>
 
         {/* Recent Activity */}
