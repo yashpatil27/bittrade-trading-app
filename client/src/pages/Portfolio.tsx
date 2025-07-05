@@ -362,11 +362,8 @@ const Portfolio: React.FC = () => {
               </div>
               <div className="flex items-center justify-center h-full">
                 <div className="flex flex-col items-center">
-                  <span className="text-lg font-bold mb-3">
-                    {bitcoinData.btc_dominance_pct ? `${bitcoinData.btc_dominance_pct.toFixed(1)}%` : 'N/A'}
-                  </span>
                   {bitcoinData.btc_dominance_pct && (
-                    <div className="relative">
+                    <div className="relative mb-3">
                       <div className="h-20 w-4 bg-zinc-800 rounded-full flex items-end">
                         <div 
                           className="bg-white w-4 rounded-full transition-all duration-300"
@@ -375,6 +372,9 @@ const Portfolio: React.FC = () => {
                       </div>
                     </div>
                   )}
+                  <span className="text-lg font-bold">
+                    {bitcoinData.btc_dominance_pct ? `${bitcoinData.btc_dominance_pct.toFixed(1)}%` : 'N/A'}
+                  </span>
                 </div>
               </div>
             </div>
