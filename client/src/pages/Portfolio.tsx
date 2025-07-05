@@ -17,9 +17,7 @@ import {
   Clock,
   Globe,
   Crown,
-  Calendar,
-  Brain,
-  Gauge
+  Brain
 } from 'lucide-react';
 import { userAPI } from '../services/api';
 import { formatCurrency } from '../utils/formatters';
