@@ -364,12 +364,29 @@ const Portfolio: React.FC = () => {
                 <div className="flex flex-col items-center">
                   {bitcoinData.btc_dominance_pct && (
                     <div className="relative mb-3">
-                      <div className="h-20 w-4 bg-zinc-800 rounded-full flex items-end">
-                        <div 
-                          className="bg-white w-4 rounded-full transition-all duration-300"
-                          style={{ height: `${bitcoinData.btc_dominance_pct}%` }}
+                      <svg width="80" height="80" className="transform -rotate-90">
+                        {/* Background circle */}
+                        <circle
+                          cx="40"
+                          cy="40"
+                          r="30"
+                          fill="none"
+                          stroke="#27272a"
+                          strokeWidth="8"
                         />
-                      </div>
+                        {/* Bitcoin dominance arc */}
+                        <circle
+                          cx="40"
+                          cy="40"
+                          r="30"
+                          fill="none"
+                          stroke="#ffffff"
+                          strokeWidth="8"
+                          strokeLinecap="round"
+                          strokeDasharray={`${(bitcoinData.btc_dominance_pct / 100) * 188.5} 188.5`}
+                          className="transition-all duration-500 ease-in-out"
+                        />
+                      </svg>
                     </div>
                   )}
                   <span className="text-lg font-bold">
