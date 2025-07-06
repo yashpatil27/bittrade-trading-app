@@ -40,7 +40,11 @@ const Layout: React.FC<LayoutProps> = ({ children, isAdmin = false }) => {
 
     // Scroll detection
     const handleScroll = () => {
-      setShowPersistentBar(window.scrollY > 100);
+      const header = document.querySelector('header');
+      if (header) {
+        const headerHeight = header.offsetHeight;
+        setShowPersistentBar(window.scrollY >= headerHeight);
+      }
     };
 
     window.addEventListener('scroll', handleScroll);
@@ -100,8 +104,10 @@ const Layout: React.FC<LayoutProps> = ({ children, isAdmin = false }) => {
       </header>
 
       {/* Persistent Bitcoin Balance Bar */}
-      {!isAdmin && showPersistentBar && (
-        <div className="fixed top-0 left-0 right-0 bg-black/95 backdrop-blur-sm border-b border-zinc-700 px-4 py-2 z-40">
+      {!isAdmin && (
+        <div className={`fixed top-0 left-0 right-0 bg-black/95 backdrop-blur-sm border-b border-zinc-700 px-4 py-2 z-40 transition-transform duration-300 ease-in-out ${
+          showPersistentBar ? 'translate-y-0' : '-translate-y-full'
+        }`}>
           <div className="flex items-center justify-center max-w-md mx-auto">
             <div className="flex items-center gap-2">
               <Bitcoin className="w-4 h-4 text-white" />
