@@ -353,14 +353,16 @@ const Portfolio: React.FC = () => {
             </div>
 
             {/* Right side - BTC Dominance */}
-            <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4">
-              <div className="flex items-center gap-2 mb-2">
+            <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 flex flex-col">
+              <div className="flex items-center justify-center gap-2 mb-2">
                 <Bitcoin className="w-4 h-4 text-zinc-400" />
                 <span className="text-zinc-400 text-sm">Bitcoin Dominance</span>
               </div>
-              <p className="text-lg font-bold">
-                {bitcoinData.btc_dominance_pct ? `${bitcoinData.btc_dominance_pct.toFixed(1)}%` : 'N/A'}
-              </p>
+              <div className="flex-1 flex items-center justify-center">
+                <p className="text-2xl font-bold">
+                  {bitcoinData.btc_dominance_pct && typeof bitcoinData.btc_dominance_pct === 'number' ? `${bitcoinData.btc_dominance_pct.toFixed(1)}%` : 'N/A'}
+                </p>
+              </div>
             </div>
           </div>
 
