@@ -74,7 +74,7 @@ const Layout: React.FC<LayoutProps> = ({ children, isAdmin = false }) => {
   return (
     <div className="min-h-screen bg-black">
       {/* Header */}
-      <header className="bg-black border-b border-zinc-800 px-4 py-3">
+      <header className="bg-black border-b border-zinc-800 px-4 py-1">
         <div className="flex items-center justify-between max-w-md mx-auto">
           <h1 className="text-xl font-bold text-white">
             ₿itTrade {isAdmin && <span className="text-sm text-zinc-400">Admin</span>}
