@@ -352,46 +352,15 @@ const Portfolio: React.FC = () => {
               </div>
             </div>
 
-            {/* Right side - BTC Dominance with Vertical Visual */}
+            {/* Right side - BTC Dominance */}
             <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4">
-              <div className="flex items-center gap-2 mb-1.5">
+              <div className="flex items-center gap-2 mb-2">
                 <Bitcoin className="w-4 h-4 text-zinc-400" />
                 <span className="text-zinc-400 text-sm">Bitcoin Dominance</span>
               </div>
-              <div className="flex items-center justify-center h-full">
-                <div className="flex flex-col items-center">
-                  {bitcoinData.btc_dominance_pct && (
-                    <div className="relative mb-3">
-                      <svg width="80" height="80" className="transform rotate-90 scale-x-[-1]">
-                        {/* Background circle */}
-                        <circle
-                          cx="40"
-                          cy="40"
-                          r="30"
-                          fill="none"
-                          stroke="#27272a"
-                          strokeWidth="8"
-                        />
-                        {/* Bitcoin dominance arc */}
-                        <circle
-                          cx="40"
-                          cy="40"
-                          r="30"
-                          fill="none"
-                          stroke="#ffffff"
-                          strokeWidth="8"
-                          strokeLinecap="round"
-                          strokeDasharray={`${(bitcoinData.btc_dominance_pct / 100) * 188.5} 188.5`}
-                          className="transition-all duration-500 ease-in-out"
-                        />
-                      </svg>
-                    </div>
-                  )}
-                  <span className="text-lg font-bold">
-                    {bitcoinData.btc_dominance_pct ? `${bitcoinData.btc_dominance_pct.toFixed(1)}%` : 'N/A'}
-                  </span>
-                </div>
-              </div>
+              <p className="text-lg font-bold">
+                {bitcoinData.btc_dominance_pct ? `${bitcoinData.btc_dominance_pct.toFixed(1)}%` : 'N/A'}
+              </p>
             </div>
           </div>
 

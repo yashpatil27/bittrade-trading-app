@@ -63,7 +63,31 @@ cp .env.example .env
 # Update DB_PASSWORD with your MySQL password
 ```
 
-4. **Start the application:**
+4. **Create React public directory (if missing):**
+```bash
+# If client/public directory is missing, create it:
+mkdir -p client/public
+
+# Create basic index.html:
+cat > client/public/index.html << 'EOF'
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#000000" />
+    <meta name="description" content="BitTrade - Modern Bitcoin Trading Platform" />
+    <title>BitTrade</title>
+  </head>
+  <body>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div id="root"></div>
+  </body>
+</html>
+EOF
+```
+
+5. **Start the application:**
 ```bash
 # Development mode (runs both frontend and backend)
 npm run dev
@@ -73,7 +97,7 @@ npm run server  # Backend only
 npm run client  # Frontend only
 ```
 
-5. **Access the application:**
+6. **Access the application:**
 - Frontend: http://localhost:3000
 - Backend API: http://localhost:5000
 - Health Check: http://localhost:5000/health
