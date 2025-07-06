@@ -121,7 +121,6 @@ class BitcoinDataService {
     try {
       // Map our timeframes to CoinGecko days parameter
       const daysMap = {
-        '1h': 1,
         '1d': 1,
         '7d': 7,
         '30d': 30,
@@ -263,25 +262,36 @@ class BitcoinDataService {
       console.log(`Fetching chart data for ${timeframe}...`);
       const chartData = await this.fetchChartData(timeframe);
       
-      // Upsert chart data
+      // Insert new chart data (always create new record)
       await query(
         `INSERT INTO bitcoin_chart_data (timeframe, price_data, data_points_count, date_from, date_to)
-         VALUES (?, ?, ?, ?, ?)
-         ON DUPLICATE KEY UPDATE 
-         price_data = VALUES(price_data),
-         data_points_count = VALUES(data_points_count),
-         date_from = VALUES(date_from),
-         date_to = VALUES(date_to),
-         last_updated = CURRENT_TIMESTAMP`,
+         VALUES (?, ?, ?, ?, ?)`,
         [chartData.timeframe, chartData.price_data, chartData.data_points_count, chartData.date_from, chartData.date_to]
       );
 
-      console.log(`Chart data updated for ${timeframe}: ${chartData.data_points_count} data points`);
+      // Keep only the latest 2 records per timeframe for fallback
+      await query(
+        `DELETE FROM bitcoin_chart_data 
+         WHERE timeframe = ? 
+         AND id NOT IN (
+           SELECT id FROM (
+             SELECT id FROM bitcoin_chart_data 
+             WHERE timeframe = ? 
+             ORDER BY last_updated DESC 
+             LIMIT 2
+           ) as t
+         )`,
+        [timeframe, timeframe]
+      );
+
+      console.log(`Chart data updated for ${timeframe}: ${chartData.data_points_count} data points (keeping 2 records for fallback)`);
       
       return chartData;
     } catch (error) {
       console.error(`Error updating chart data for ${timeframe}:`, error.message);
-      throw error;
+      // Don't throw error to prevent stopping other timeframe updates
+      console.log(`Retaining existing chart data for ${timeframe} as fallback`);
+      return null;
     }
   }
 
@@ -398,20 +408,30 @@ class BitcoinDataService {
   // Get chart data
   async getChartData(timeframe = null) {
     try {
-      let queryStr = 'SELECT * FROM bitcoin_chart_data';
-      let params = [];
+      let queryStr, params = [];
 
       if (timeframe) {
-        queryStr += ' WHERE timeframe = ?';
+        // For specific timeframe, get the latest valid record (with fallback to older records)
+        queryStr = `SELECT * FROM bitcoin_chart_data 
+                    WHERE timeframe = ? 
+                    ORDER BY last_updated DESC 
+                    LIMIT 2`;
         params.push(timeframe);
+      } else {
+        // For all timeframes, get the latest record for each timeframe
+        queryStr = `SELECT t1.* FROM bitcoin_chart_data t1
+                    INNER JOIN (
+                      SELECT timeframe, MAX(last_updated) as max_updated
+                      FROM bitcoin_chart_data
+                      GROUP BY timeframe
+                    ) t2 ON t1.timeframe = t2.timeframe AND t1.last_updated = t2.max_updated
+                    ORDER BY t1.timeframe`;
       }
-
-      queryStr += ' ORDER BY timeframe';
 
       const chartRows = await query(queryStr, params);
       
       // Parse JSON price data with error handling
-      return chartRows.map(row => {
+      const processedRows = chartRows.map(row => {
         try {
           // Check if price_data is already an object/array
           if (typeof row.price_data === 'object') {
@@ -435,7 +455,14 @@ class BitcoinDataService {
             price_data: []
           };
         }
-      }).filter(row => row.price_data && Array.isArray(row.price_data) && row.price_data.length > 0); // Filter out rows with no valid data
+      }).filter(row => row.price_data && Array.isArray(row.price_data) && row.price_data.length > 0);
+
+      // If requesting specific timeframe, return the first valid record (latest)
+      if (timeframe) {
+        return processedRows.length > 0 ? [processedRows[0]] : [];
+      }
+      
+      return processedRows;
     } catch (error) {
       console.error('Error getting chart data:', error.message);
       throw error;
@@ -485,11 +512,11 @@ class BitcoinDataService {
     });
 
     // Schedule chart data updates
-    const chartTimeframes = ['1h', '1d', '7d', '30d', '90d', '365d'];
+    const chartTimeframes = ['1d', '7d', '30d', '90d', '365d'];
     
     chartTimeframes.forEach(timeframe => {
       // Short-term charts: update hourly
-      if (['1h', '1d'].includes(timeframe)) {
+      if (['1d'].includes(timeframe)) {
         const job = cron.schedule('0 * * * *', async () => {
           if (this.isRunning) {
             try {
@@ -528,7 +555,7 @@ class BitcoinDataService {
     console.log('Bitcoin data updates scheduled:');
     console.log('- Bitcoin data: every 2 minutes');
     console.log('- Sentiment data: daily at 00:05');
-    console.log('- Chart data: hourly (1h, 1d) and daily (7d, 30d, 90d, 365d)');
+    console.log('- Chart data: hourly (1d) and daily (7d, 30d, 90d, 365d)');
   }
 
   // Stop all data update services

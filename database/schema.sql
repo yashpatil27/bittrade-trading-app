@@ -91,19 +91,18 @@ CREATE TABLE bitcoin_sentiment (
 );
 
 -- Bitcoin chart data (historical price data for charts)
+-- Stores 2 records per timeframe for fallback resilience
 CREATE TABLE bitcoin_chart_data (
   id INT PRIMARY KEY AUTO_INCREMENT,
   
-  timeframe ENUM('1h', '1d', '7d', '30d', '90d', '365d') NOT NULL,
+  timeframe ENUM('1d', '7d', '30d', '90d', '365d') NOT NULL,
   price_data JSON NOT NULL,                    -- Only store [[timestamp, price], ...]
   data_points_count INT UNSIGNED NOT NULL,
   
   -- Metadata
   date_from TIMESTAMP NOT NULL,
   date_to TIMESTAMP NOT NULL,
-  last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  
-  UNIQUE KEY unique_timeframe (timeframe)
+  last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
 -- Insert default settings
@@ -126,5 +125,7 @@ CREATE INDEX idx_bitcoin_data_created_at ON bitcoin_data(created_at);
 -- Bitcoin sentiment indexes
 CREATE INDEX idx_bitcoin_sentiment_data_date ON bitcoin_sentiment(data_date);
 
--- Bitcoin chart data indexes
+-- Bitcoin chart data indexes (optimized for 2 records per timeframe)
 CREATE INDEX idx_bitcoin_chart_data_timeframe ON bitcoin_chart_data(timeframe);
+CREATE INDEX idx_bitcoin_chart_data_timeframe_updated ON bitcoin_chart_data(timeframe, last_updated DESC);
+CREATE INDEX idx_bitcoin_chart_data_last_updated ON bitcoin_chart_data(last_updated DESC);
