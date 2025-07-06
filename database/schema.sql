@@ -43,32 +43,32 @@ CREATE TABLE bitcoin_data (
   id INT PRIMARY KEY AUTO_INCREMENT,
   
   -- Price Data (Updated every 30 seconds)
-  btc_usd_price DECIMAL(15,8) NOT NULL,           -- Main price (high precision)
-  price_change_24h DECIMAL(15,8) NULL,            -- 24h change amount
-  price_change_24h_pct DECIMAL(8,4) NULL,         -- 24h change %
+  btc_usd_price INT NOT NULL,                     -- Main price (whole numbers)
+  price_change_24h INT DEFAULT NULL,              -- 24h change amount
+  price_change_24h_pct DECIMAL(8,2) DEFAULT NULL, -- 24h change %
   
   -- Market Data (Updated every 30 seconds, but less critical)
   market_cap_usd BIGINT UNSIGNED NULL,
   volume_24h_usd BIGINT UNSIGNED NULL,
-  high_24h_usd DECIMAL(15,8) NULL,
-  low_24h_usd DECIMAL(15,8) NULL,
-  btc_dominance_pct DECIMAL(5,2) NULL,
+  high_24h_usd INT DEFAULT NULL,
+  low_24h_usd INT DEFAULT NULL,
+  btc_dominance_pct DECIMAL(5,2) DEFAULT NULL,
   
   -- Price Changes (All Timeframes)
-  price_change_1h_pct DECIMAL(8,4) NULL,
-  price_change_7d_pct DECIMAL(8,4) NULL,
-  price_change_30d_pct DECIMAL(8,4) NULL,
-  price_change_60d_pct DECIMAL(8,4) NULL,
-  price_change_200d_pct DECIMAL(8,4) NULL,
-  price_change_1y_pct DECIMAL(8,4) NULL,
+  price_change_1h_pct DECIMAL(8,2) DEFAULT NULL,
+  price_change_7d_pct DECIMAL(8,2) DEFAULT NULL,
+  price_change_30d_pct DECIMAL(8,2) DEFAULT NULL,
+  price_change_60d_pct DECIMAL(8,2) DEFAULT NULL,
+  price_change_200d_pct DECIMAL(8,2) DEFAULT NULL,
+  price_change_1y_pct DECIMAL(8,2) DEFAULT NULL,
   
   -- All-Time Records
-  ath_usd DECIMAL(15,8) NULL,
+  ath_usd INT DEFAULT NULL,
   ath_date DATE NULL,
-  ath_change_pct DECIMAL(8,4) NULL,
-  atl_usd DECIMAL(15,8) NULL,
+  ath_change_pct DECIMAL(8,2) DEFAULT NULL,
+  atl_usd INT DEFAULT NULL,
   atl_date DATE NULL,
-  atl_change_pct DECIMAL(8,4) NULL,
+  atl_change_pct DECIMAL(8,2) DEFAULT NULL,
   
   -- Timestamps
   last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
