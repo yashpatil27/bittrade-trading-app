@@ -276,9 +276,9 @@ class UserService {
           [newAvailableInr, newReservedInr, userId]
         );
 
-        // Create limit buy operation
+        // Create limit buy operation with 24-hour expiration
         const [result] = await connection.execute(
-          'INSERT INTO operations (user_id, type, status, inr_amount, btc_amount, limit_price) VALUES (?, ?, ?, ?, ?, ?)',
+          'INSERT INTO operations (user_id, type, status, inr_amount, btc_amount, limit_price, expires_at) VALUES (?, ?, ?, ?, ?, ?, DATE_ADD(NOW(), INTERVAL 24 HOUR))',
           [userId, 'LIMIT_BUY', 'PENDING', inrAmount, estimatedBtc, targetPrice]
         );
 
@@ -352,9 +352,9 @@ class UserService {
           [newAvailableBtc, newReservedBtc, userId]
         );
 
-        // Create limit sell operation
+        // Create limit sell operation with 24-hour expiration
         const [result] = await connection.execute(
-          'INSERT INTO operations (user_id, type, status, inr_amount, btc_amount, limit_price) VALUES (?, ?, ?, ?, ?, ?)',
+          'INSERT INTO operations (user_id, type, status, inr_amount, btc_amount, limit_price, expires_at) VALUES (?, ?, ?, ?, ?, ?, DATE_ADD(NOW(), INTERVAL 24 HOUR))',
           [userId, 'LIMIT_SELL', 'PENDING', estimatedInr, btcAmount, targetPrice]
         );
 

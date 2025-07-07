@@ -91,11 +91,11 @@ class LimitOrderExecutionService {
 
   // Process individual order
   async processOrder(order, currentBuyPrice, currentSellPrice) {
-    // Check if order has expired (optional: 24 hours)
-    const orderAge = Date.now() - new Date(order.created_at).getTime();
-    const maxOrderAge = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+    // Check if order has expired using expires_at field
+    const now = new Date();
+    const expiresAt = order.expires_at ? new Date(order.expires_at) : null;
     
-    if (orderAge > maxOrderAge) {
+    if (expiresAt && now > expiresAt) {
       await this.cancelExpiredOrder(order);
       return { executed: false, expired: true };
     }
@@ -238,8 +238,8 @@ class LimitOrderExecutionService {
 
       // Update operation status
       await connection.execute(
-        'UPDATE operations SET status = ?, cancelled_at = NOW() WHERE id = ?',
-        ['CANCELLED', order.id]
+        'UPDATE operations SET status = ?, cancelled_at = NOW(), cancellation_reason = ? WHERE id = ?',
+        ['EXPIRED', order.id, 'Order expired after 24 hours']
       );
 
       // Clear user cache
