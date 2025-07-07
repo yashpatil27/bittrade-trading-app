@@ -8,8 +8,7 @@ import {
   X, 
   AlertTriangle,
   CheckCircle,
-  Pause,
-  Play
+  Pause
 } from 'lucide-react';
 import { userAPI } from '../services/api';
 import { DcaPlan } from '../types';
@@ -26,6 +25,8 @@ export interface DcaPlansSectionRef {
 const DcaPlansSection = forwardRef<DcaPlansSectionRef, DcaPlansSectionProps>(({ onUpdate }, ref) => {
   const [dcaPlans, setDcaPlans] = useState<DcaPlan[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedPlan, setSelectedPlan] = useState<DcaPlan | null>(null);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [cancellingPlan, setCancellingPlan] = useState<number | null>(null);
   const [pausingPlan, setPausingPlan] = useState<number | null>(null);
   const [resumingPlan, setResumingPlan] = useState<number | null>(null);
@@ -58,6 +59,8 @@ const DcaPlansSection = forwardRef<DcaPlansSectionRef, DcaPlansSectionProps>(({ 
       await userAPI.cancelDcaPlan(planId);
       await fetchDcaPlans();
       onUpdate?.();
+      setShowDetailsModal(false);
+      setSelectedPlan(null);
     } catch (error: any) {
       setError(error.response?.data?.message || 'Failed to cancel DCA plan');
     } finally {
@@ -71,6 +74,8 @@ const DcaPlansSection = forwardRef<DcaPlansSectionRef, DcaPlansSectionProps>(({ 
       await userAPI.pauseDcaPlan(planId);
       await fetchDcaPlans();
       onUpdate?.();
+      setShowDetailsModal(false);
+      setSelectedPlan(null);
     } catch (error: any) {
       setError(error.response?.data?.message || 'Failed to pause DCA plan');
     } finally {
@@ -84,6 +89,8 @@ const DcaPlansSection = forwardRef<DcaPlansSectionRef, DcaPlansSectionProps>(({ 
       await userAPI.resumeDcaPlan(planId);
       await fetchDcaPlans();
       onUpdate?.();
+      setShowDetailsModal(false);
+      setSelectedPlan(null);
     } catch (error: any) {
       setError(error.response?.data?.message || 'Failed to resume DCA plan');
     } finally {
@@ -187,7 +194,8 @@ const DcaPlansSection = forwardRef<DcaPlansSectionRef, DcaPlansSectionProps>(({ 
             {dcaPlans.map((plan) => (
               <div 
                 key={plan.id} 
-                className="bg-zinc-800/50 rounded-lg p-4 hover:bg-zinc-800 transition-colors"
+                className="bg-zinc-800/50 rounded-lg p-4 hover:bg-zinc-800 transition-colors cursor-pointer"
+                onClick={() => { setSelectedPlan(plan); setShowDetailsModal(true); }}
               >
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
@@ -214,64 +222,8 @@ const DcaPlansSection = forwardRef<DcaPlansSectionRef, DcaPlansSectionProps>(({ 
                     </div>
                   </div>
                   
-                  <div className="flex items-center gap-2">
-                    {plan.status === 'ACTIVE' && (
-                      <>
-                        <button
-                          onClick={() => handlePausePlan(plan.id)}
-                          disabled={pausingPlan === plan.id}
-                          className="p-1.5 hover:bg-zinc-700 rounded-lg transition-colors text-zinc-400 hover:text-yellow-400 disabled:opacity-50"
-                          title="Pause DCA Plan"
-                        >
-                          {pausingPlan === plan.id ? (
-                            <div className="animate-spin w-3 h-3 border border-zinc-500 border-t-yellow-400 rounded-full"></div>
-                          ) : (
-                            <Pause className="w-3 h-3" />
-                          )}
-                        </button>
-                        <button
-                          onClick={() => handleCancelPlan(plan.id)}
-                          disabled={cancellingPlan === plan.id}
-                          className="p-1.5 hover:bg-zinc-700 rounded-lg transition-colors text-zinc-400 hover:text-red-400 disabled:opacity-50"
-                          title="Delete DCA Plan"
-                        >
-                          {cancellingPlan === plan.id ? (
-                            <div className="animate-spin w-3 h-3 border border-zinc-500 border-t-red-400 rounded-full"></div>
-                          ) : (
-                            <X className="w-3 h-3" />
-                          )}
-                        </button>
-                      </>
-                    )}
-                    
-                    {plan.status === 'PAUSED' && (
-                      <>
-                        <button
-                          onClick={() => handleResumePlan(plan.id)}
-                          disabled={resumingPlan === plan.id}
-                          className="p-1.5 hover:bg-zinc-700 rounded-lg transition-colors text-zinc-400 hover:text-green-400 disabled:opacity-50"
-                          title="Resume DCA Plan"
-                        >
-                          {resumingPlan === plan.id ? (
-                            <div className="animate-spin w-3 h-3 border border-zinc-500 border-t-green-400 rounded-full"></div>
-                          ) : (
-                            <Play className="w-3 h-3" />
-                          )}
-                        </button>
-                        <button
-                          onClick={() => handleCancelPlan(plan.id)}
-                          disabled={cancellingPlan === plan.id}
-                          className="p-1.5 hover:bg-zinc-700 rounded-lg transition-colors text-zinc-400 hover:text-red-400 disabled:opacity-50"
-                          title="Delete DCA Plan"
-                        >
-                          {cancellingPlan === plan.id ? (
-                            <div className="animate-spin w-3 h-3 border border-zinc-500 border-t-red-400 rounded-full"></div>
-                          ) : (
-                            <X className="w-3 h-3" />
-                          )}
-                        </button>
-                      </>
-                    )}
+                  <div className="text-zinc-400 text-xs">
+                    Tap to manage
                   </div>
                 </div>
 
@@ -328,6 +280,59 @@ const DcaPlansSection = forwardRef<DcaPlansSectionRef, DcaPlansSectionProps>(({ 
           </div>
         )}
       </div>
+      
+      {/* Modal for managing selected DCA plan */}
+      {showDetailsModal && selectedPlan && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-70 z-50">
+          <div className="bg-zinc-900 border border-zinc-800 rounded-lg shadow-lg p-6 max-w-md mx-4">
+            <h2 className="text-xl font-semibold mb-4 text-white">DCA Plan Details</h2>
+            <div className="space-y-3 text-sm">
+              <p><strong className="text-zinc-400">Type:</strong> <span className="text-white">{selectedPlan!.plan_type === 'DCA_BUY' ? 'DCA Buy' : 'DCA Sell'}</span></p>
+              <p><strong className="text-zinc-400">Frequency:</strong> <span className="text-white">{selectedPlan!.frequency}</span></p>
+              <p><strong className="text-zinc-400">Status:</strong> <span className={`${getStatusColor(selectedPlan!.status).split(' ')[0]} font-medium`}>{selectedPlan!.status}</span></p>
+              <p><strong className="text-zinc-400">Amount per Execution:</strong> <span className="text-white">
+                {selectedPlan!.plan_type === 'DCA_BUY' 
+                  ? `₹${selectedPlan!.amount_per_execution.toLocaleString('en-IN')}`
+                  : formatCurrency(selectedPlan!.amount_per_execution, 'BTC')
+                }</span></p>
+            </div>
+            
+            <div className="flex flex-col gap-3 mt-6">
+              {selectedPlan!.status === 'ACTIVE' && (
+                <button 
+                  onClick={() => handlePausePlan(selectedPlan!.id)} 
+                  disabled={pausingPlan === selectedPlan!.id} 
+                  className="w-full py-3 px-4 bg-yellow-600 hover:bg-yellow-700 disabled:opacity-50 text-white font-medium rounded-lg transition-colors"
+                >
+                  {pausingPlan === selectedPlan!.id ? 'Pausing...' : 'Pause Plan'}
+                </button>
+              )}
+              {selectedPlan!.status === 'PAUSED' && (
+                <button 
+                  onClick={() => handleResumePlan(selectedPlan!.id)} 
+                  disabled={resumingPlan === selectedPlan!.id} 
+                  className="w-full py-3 px-4 bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white font-medium rounded-lg transition-colors"
+                >
+                  {resumingPlan === selectedPlan!.id ? 'Resuming...' : 'Resume Plan'}
+                </button>
+              )}
+              <button 
+                onClick={() => handleCancelPlan(selectedPlan!.id)} 
+                disabled={cancellingPlan === selectedPlan!.id} 
+                className="w-full py-3 px-4 bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white font-medium rounded-lg transition-colors"
+              >
+                {cancellingPlan === selectedPlan!.id ? 'Deleting...' : 'Delete Plan'}
+              </button>
+              <button 
+                onClick={() => setShowDetailsModal(false)} 
+                className="w-full py-3 px-4 bg-zinc-700 hover:bg-zinc-600 text-white font-medium rounded-lg transition-colors"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 });
