@@ -876,7 +876,7 @@ router.get('/dca-plans', async (req, res) => {
   }
 });
 
-// Cancel DCA plan
+// Delete DCA plan
 router.delete('/dca-plans/:planId', async (req, res) => {
   try {
     const userId = req.user.id;
@@ -897,15 +897,16 @@ router.delete('/dca-plans/:planId', async (req, res) => {
 
     const plan = plans[0];
 
-    // Cancel the plan
+    // Delete the plan (this will also handle any foreign key constraints)
+    // Note: Operations table has parent_id with ON DELETE SET NULL, so they'll be preserved
     await query(
-      'UPDATE active_plans SET status = ?, completed_at = NOW() WHERE id = ?',
-      ['CANCELLED', planId]
+      'DELETE FROM active_plans WHERE id = ?',
+      [planId]
     );
 
     res.json({
       success: true,
-      message: 'DCA plan cancelled successfully',
+      message: 'DCA plan deleted successfully',
       data: {
         plan_id: planId,
         plan_type: plan.plan_type,
@@ -914,10 +915,10 @@ router.delete('/dca-plans/:planId', async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Cancel DCA plan error:', error);
+    console.error('Delete DCA plan error:', error);
     res.status(500).json({
       success: false,
-      message: 'Error cancelling DCA plan'
+      message: 'Error deleting DCA plan'
     });
   }
 });
