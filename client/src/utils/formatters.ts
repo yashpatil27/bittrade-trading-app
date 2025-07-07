@@ -97,3 +97,20 @@ export const formatPercentage = (value: number): string => {
   const sign = value >= 0 ? '+' : '';
   return `${sign}${value.toFixed(2)}%`;
 };
+
+export const formatCurrencyInr = (amount: number): string => {
+  return `₹${amount.toLocaleString('en-IN')}`;
+};
+
+export const formatBitcoinDisplay = (amount: number): string => {
+  if (amount === 0) return '₿0';
+  
+  // For display purposes, show appropriate precision
+  if (amount >= 1) {
+    return `₿${amount.toFixed(4)}`; // 4 decimal places for amounts >= 1 BTC
+  } else if (amount >= 0.001) {
+    return `₿${amount.toFixed(6)}`; // 6 decimal places for amounts >= 0.001 BTC
+  } else {
+    return `₿${formatBitcoin(amount)}`; // Use existing formatter for small amounts
+  }
+};

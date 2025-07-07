@@ -12,6 +12,7 @@ import {
   AlertCircle,
   CheckCircle
 } from 'lucide-react';
+import { formatCurrencyInr, formatBitcoin } from '../utils/formatters';
 
 const AdminDashboard: React.FC = () => {
   const [data, setData] = useState<AdminDashboardData | null>(null);
@@ -45,10 +46,6 @@ const AdminDashboard: React.FC = () => {
 
   useEffect(() => {
     fetchAllData();
-    
-    // Refresh data every 30 seconds
-    const interval = setInterval(fetchAllData, 30000);
-    return () => clearInterval(interval);
   }, []);
 
   const getServiceStatusIcon = (status: string) => {
@@ -141,14 +138,14 @@ const AdminDashboard: React.FC = () => {
             <DollarSign className="w-5 h-5 text-yellow-400" />
           </div>
           <p className="text-zinc-400 text-sm">Total INR</p>
-          <p className="text-xl font-bold">₹{(data?.stats.total_inr_on_platform || 0).toLocaleString('en-IN')}</p>
+          <p className="text-xl font-bold">{formatCurrencyInr(data?.stats.total_inr_on_platform || 0)}</p>
         </div>
         <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 text-center">
           <div className="flex items-center justify-center mb-2">
             <Bitcoin className="w-5 h-5 text-orange-400" />
           </div>
           <p className="text-zinc-400 text-sm">Total BTC</p>
-          <p className="text-xl font-bold">{(data?.stats.total_btc_on_platform || 0).toFixed(8)}</p>
+          <p className="text-xl font-bold">₿{formatBitcoin(data?.stats.total_btc_on_platform || 0)}</p>
         </div>
       </div>
 

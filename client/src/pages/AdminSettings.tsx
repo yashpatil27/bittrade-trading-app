@@ -11,17 +11,13 @@ import {
   RotateCcw,
   CheckCircle,
   XCircle,
-  AlertTriangle
+  AlertTriangle,
+  Target,
+  Repeat,
+  Clock
 } from 'lucide-react';
 import { adminAPI, userAPI } from '../services/api';
 import PinConfirmationModal from '../components/PinConfirmationModal';
-
-interface SystemHealth {
-  database: 'connected' | 'error' | 'checking';
-  redis: 'active' | 'error' | 'checking';
-  priceService: 'running' | 'error' | 'checking';
-  backend: 'healthy' | 'error' | 'checking';
-}
 
 const AdminSettings: React.FC = () => {
   const [buyMultiplier, setBuyMultiplier] = useState('');
@@ -29,12 +25,8 @@ const AdminSettings: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
-  const [systemHealth, setSystemHealth] = useState<SystemHealth>({
-    database: 'checking',
-    redis: 'checking',
-    priceService: 'checking',
-    backend: 'checking'
-  });
+  const [systemHealth, setSystemHealth] = useState<any>(null);
+  const [isHealthLoading, setIsHealthLoading] = useState(false);
   
   // PIN confirmation state
   const [isPinModalOpen, setIsPinModalOpen] = useState(false);
@@ -57,15 +49,16 @@ const AdminSettings: React.FC = () => {
   };
 
   const checkSystemHealth = async () => {
-    // Simulate health checks
-    setTimeout(() => {
-      setSystemHealth({
-        database: 'connected',
-        redis: 'active',
-        priceService: 'running',
-        backend: 'healthy'
-      });
-    }, 1000);
+    try {
+      setIsHealthLoading(true);
+      const response = await adminAPI.getSystemHealth();
+      setSystemHealth(response.data);
+    } catch (error) {
+      console.error('Error fetching system health:', error);
+      setSystemHealth(null);
+    } finally {
+      setIsHealthLoading(false);
+    }
   };
 
   const validateAndPrepareSettings = () => {
@@ -148,12 +141,14 @@ const AdminSettings: React.FC = () => {
   };
 
   const getHealthIcon = (status: string) => {
-    switch (status) {
+    switch (status?.toLowerCase()) {
       case 'connected':
       case 'active':
       case 'running':
       case 'healthy':
         return <CheckCircle className="w-5 h-5 text-green-400" />;
+      case 'stopped':
+      case 'disconnected':
       case 'error':
         return <XCircle className="w-5 h-5 text-red-400" />;
       case 'checking':
@@ -163,24 +158,19 @@ const AdminSettings: React.FC = () => {
   };
 
   const getHealthText = (status: string) => {
-    switch (status) {
-      case 'connected': return 'Connected';
-      case 'active': return 'Active';
-      case 'running': return 'Running';
-      case 'healthy': return 'Healthy';
-      case 'error': return 'Error';
-      case 'checking':
-      default: return 'Checking...';
-    }
+    if (!status) return 'Unknown';
+    return status.charAt(0).toUpperCase() + status.slice(1);
   };
 
   const getHealthColor = (status: string) => {
-    switch (status) {
+    switch (status?.toLowerCase()) {
       case 'connected':
       case 'active':
       case 'running':
       case 'healthy':
         return 'text-green-400';
+      case 'stopped':
+      case 'disconnected':
       case 'error':
         return 'text-red-400';
       case 'checking':
@@ -288,74 +278,104 @@ const AdminSettings: React.FC = () => {
 
       {/* System Health */}
       <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6">
-        <div className="flex items-center gap-2 mb-6">
-          <Activity className="w-5 h-5 text-white" />
-          <h2 className="text-lg font-semibold">System Health Monitor</h2>
-        </div>
-        
-        <div className="grid grid-cols-2 gap-4">
-          <div className="bg-zinc-800/50 rounded-lg p-4">
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center gap-2">
-                <Database className="w-4 h-4 text-zinc-400" />
-                <span className="text-white font-medium">Database</span>
-              </div>
-              {getHealthIcon(systemHealth.database)}
-            </div>
-            <p className={`text-sm ${getHealthColor(systemHealth.database)}`}>
-              {getHealthText(systemHealth.database)}
-            </p>
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-2">
+            <Activity className="w-5 h-5 text-white" />
+            <h2 className="text-lg font-semibold">System Health Monitor</h2>
           </div>
-
-          <div className="bg-zinc-800/50 rounded-lg p-4">
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center gap-2">
-                <Wifi className="w-4 h-4 text-zinc-400" />
-                <span className="text-white font-medium">Redis Cache</span>
-              </div>
-              {getHealthIcon(systemHealth.redis)}
-            </div>
-            <p className={`text-sm ${getHealthColor(systemHealth.redis)}`}>
-              {getHealthText(systemHealth.redis)}
-            </p>
-          </div>
-
-          <div className="bg-zinc-800/50 rounded-lg p-4">
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center gap-2">
-                <Server className="w-4 h-4 text-zinc-400" />
-                <span className="text-white font-medium">Price Service</span>
-              </div>
-              {getHealthIcon(systemHealth.priceService)}
-            </div>
-            <p className={`text-sm ${getHealthColor(systemHealth.priceService)}`}>
-              {getHealthText(systemHealth.priceService)}
-            </p>
-          </div>
-
-          <div className="bg-zinc-800/50 rounded-lg p-4">
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center gap-2">
-                <Activity className="w-4 h-4 text-zinc-400" />
-                <span className="text-white font-medium">Backend API</span>
-              </div>
-              {getHealthIcon(systemHealth.backend)}
-            </div>
-            <p className={`text-sm ${getHealthColor(systemHealth.backend)}`}>
-              {getHealthText(systemHealth.backend)}
-            </p>
-          </div>
-        </div>
-
-        <div className="mt-6">
           <button
             onClick={checkSystemHealth}
-            className="w-full bg-zinc-800 hover:bg-zinc-700 text-white py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
+            disabled={isHealthLoading}
+            className="bg-zinc-800 hover:bg-zinc-700 disabled:opacity-50 text-white py-2 px-3 rounded-lg transition-colors flex items-center gap-2 text-sm"
           >
-            <Activity className="w-4 h-4" />
-            Refresh Health Check
+            <Activity className={`w-4 h-4 ${isHealthLoading ? 'animate-spin' : ''}`} />
+            {isHealthLoading ? 'Checking...' : 'Refresh'}
           </button>
         </div>
+        
+        {systemHealth ? (
+          <>
+            <div className="grid grid-cols-2 gap-4 mb-6">
+              <div className="bg-zinc-800/50 rounded-lg p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <Database className="w-4 h-4 text-zinc-400" />
+                    <span className="text-white font-medium">Database</span>
+                  </div>
+                  {getHealthIcon('connected')}
+                </div>
+                <p className={`text-sm ${getHealthColor('connected')}`}>
+                  Connected
+                </p>
+              </div>
+
+              <div className="bg-zinc-800/50 rounded-lg p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <Server className="w-4 h-4 text-zinc-400" />
+                    <span className="text-white font-medium">Bitcoin Data Service</span>
+                  </div>
+                  {getHealthIcon(systemHealth?.services?.bitcoin_data_service || 'unknown')}
+                </div>
+                <p className={`text-sm ${getHealthColor(systemHealth?.services?.bitcoin_data_service || 'unknown')}`}>
+                  {getHealthText(systemHealth?.services?.bitcoin_data_service || 'Unknown')}
+                </p>
+              </div>
+
+              <div className="bg-zinc-800/50 rounded-lg p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <Target className="w-4 h-4 text-zinc-400" />
+                    <span className="text-white font-medium">Limit Order Service</span>
+                  </div>
+                  {getHealthIcon(systemHealth?.services?.limit_order_execution || 'unknown')}
+                </div>
+                <p className={`text-sm ${getHealthColor(systemHealth?.services?.limit_order_execution || 'unknown')}`}>
+                  {getHealthText(systemHealth?.services?.limit_order_execution || 'Unknown')}
+                </p>
+              </div>
+
+              <div className="bg-zinc-800/50 rounded-lg p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <Repeat className="w-4 h-4 text-zinc-400" />
+                    <span className="text-white font-medium">DCA Execution Service</span>
+                  </div>
+                  {getHealthIcon(systemHealth?.services?.dca_execution || 'unknown')}
+                </div>
+                <p className={`text-sm ${getHealthColor(systemHealth?.services?.dca_execution || 'unknown')}`}>
+                  {getHealthText(systemHealth?.services?.dca_execution || 'Unknown')}
+                </p>
+              </div>
+            </div>
+            
+            {systemHealth?.timestamp && (
+              <div className="bg-zinc-800/30 rounded-lg p-3">
+                <div className="flex items-center justify-between text-sm">
+                  <div className="flex items-center gap-2">
+                    <Clock className="w-4 h-4 text-zinc-400" />
+                    <span className="text-zinc-400">Last Updated</span>
+                  </div>
+                  <span className="text-white font-medium">
+                    {new Date(systemHealth.timestamp).toLocaleTimeString()}
+                  </span>
+                </div>
+              </div>
+            )}
+          </>
+        ) : (
+          <div className="text-center py-8">
+            <AlertTriangle className="w-12 h-12 text-yellow-400 mx-auto mb-4" />
+            <p className="text-zinc-400 mb-4">Unable to fetch system health data</p>
+            <button
+              onClick={checkSystemHealth}
+              className="bg-zinc-800 hover:bg-zinc-700 text-white py-2 px-4 rounded-lg transition-colors flex items-center gap-2 mx-auto"
+            >
+              <Activity className="w-4 h-4" />
+              Try Again
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Configuration Info */}

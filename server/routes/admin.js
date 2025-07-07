@@ -15,24 +15,16 @@ router.use(requireAdmin);
 // Get admin dashboard stats
 router.get('/dashboard', async (req, res) => {
   try {
-    // Get platform statistics
+    // Get platform statistics (including admin users)
     const [userCount, totalTrades, platformBalances] = await Promise.all([
-      query('SELECT COUNT(*) as count FROM users WHERE is_admin = false'),
-      query('SELECT COUNT(*) as count FROM operations WHERE type IN (?, ?, ?, ?) AND status = ?', ['MARKET_BUY', 'MARKET_SELL', 'LIMIT_BUY', 'LIMIT_SELL', 'EXECUTED']),
+      query('SELECT COUNT(*) as count FROM users'),
+      query('SELECT COUNT(*) as count FROM operations WHERE type IN (?, ?, ?, ?, ?, ?) AND status = ?', ['MARKET_BUY', 'MARKET_SELL', 'LIMIT_BUY', 'LIMIT_SELL', 'DCA_BUY', 'DCA_SELL', 'EXECUTED']),
       query(`
         SELECT 
-          COALESCE(SUM(CASE WHEN movement_type = 'CREDIT_INR' THEN amount WHEN movement_type = 'DEBIT_INR' THEN -amount ELSE 0 END), 0) as total_inr,
-          COALESCE(SUM(CASE WHEN movement_type = 'CREDIT_BTC' THEN amount WHEN movement_type = 'DEBIT_BTC' THEN -amount ELSE 0 END), 0) as total_btc
-        FROM balance_movements
-        GROUP BY user_id
-      `).then(results => {
-        const totals = results.reduce((acc, row) => {
-          acc.total_inr += row.total_inr || 0;
-          acc.total_btc += row.total_btc || 0;
-          return acc;
-        }, { total_inr: 0, total_btc: 0 });
-        return [totals];
-      })
+          COALESCE(SUM(available_inr), 0) as total_inr,
+          COALESCE(SUM(available_btc), 0) as total_btc
+        FROM users
+      `)
     ]);
 
     // Get current prices
@@ -75,25 +67,11 @@ router.get('/users', async (req, res) => {
 
     const users = await query(`
       SELECT 
-        u.id, u.email, u.name, u.is_admin, u.created_at,
-        COALESCE(inr_balance.total, 0) as inr_balance,
-        COALESCE(btc_balance.total, 0) as btc_balance
-      FROM users u
-      LEFT JOIN (
-        SELECT user_id, 
-          SUM(CASE WHEN movement_type = 'CREDIT_INR' THEN amount WHEN movement_type = 'DEBIT_INR' THEN -amount ELSE 0 END) as total
-        FROM balance_movements 
-        WHERE movement_type IN ('CREDIT_INR', 'DEBIT_INR')
-        GROUP BY user_id
-      ) inr_balance ON u.id = inr_balance.user_id
-      LEFT JOIN (
-        SELECT user_id, 
-          SUM(CASE WHEN movement_type = 'CREDIT_BTC' THEN amount WHEN movement_type = 'DEBIT_BTC' THEN -amount ELSE 0 END) as total
-        FROM balance_movements 
-        WHERE movement_type IN ('CREDIT_BTC', 'DEBIT_BTC')
-        GROUP BY user_id
-      ) btc_balance ON u.id = btc_balance.user_id
-      ORDER BY u.created_at DESC
+        id, email, name, is_admin, created_at,
+        COALESCE(available_inr, 0) as inr_balance,
+        COALESCE(available_btc, 0) as btc_balance
+      FROM users
+      ORDER BY created_at DESC
       LIMIT ${limit} OFFSET ${offset}
     `);
 
@@ -152,19 +130,19 @@ router.post('/users', async (req, res) => {
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Create user and setup transaction
+    // Create user with default balances
     const result = await transaction(async (connection) => {
       const [userResult] = await connection.execute(
-        'INSERT INTO users (email, name, password_hash, is_admin) VALUES (?, ?, ?, ?)',
-        [email.toLowerCase(), name, hashedPassword, is_admin]
+        'INSERT INTO users (email, name, password_hash, is_admin, available_inr, available_btc, reserved_inr, reserved_btc) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+        [email.toLowerCase(), name, hashedPassword, is_admin, 0, 0, 0, 0]
       );
 
       const userId = userResult.insertId;
 
-      // Create SETUP transaction
+      // Create SETUP operation for tracking
       await connection.execute(
-        'INSERT INTO transactions (user_id, type, inr_amount, btc_amount, btc_price, inr_balance, btc_balance) VALUES (?, ?, ?, ?, ?, ?, ?)',
-        [userId, 'SETUP', 0, 0, 0, 0, 0]
+        'INSERT INTO operations (user_id, type, status, inr_amount, btc_amount, execution_price, executed_at) VALUES (?, ?, ?, ?, ?, ?, ?)',
+        [userId, 'SETUP', 'EXECUTED', 0, 0, 0, new Date()]
       );
 
       return { userId };
@@ -294,8 +272,8 @@ router.post('/users/:userId/deposit-inr', async (req, res) => {
       });
     }
 
-    // Check if user exists
-    const users = await query('SELECT id FROM users WHERE id = ?', [userId]);
+    // Check if user exists and get current balances
+    const users = await query('SELECT id, available_inr, available_btc FROM users WHERE id = ?', [userId]);
     if (users.length === 0) {
       return res.status(404).json({
         success: false,
@@ -304,26 +282,26 @@ router.post('/users/:userId/deposit-inr', async (req, res) => {
     }
 
     const result = await transaction(async (connection) => {
-      // Get current balances
-      const [balanceRows] = await connection.execute(
-        'SELECT inr_balance, btc_balance FROM transactions WHERE user_id = ? ORDER BY id DESC LIMIT 1',
-        [userId]
+      const currentUser = users[0];
+      const newInrBalance = currentUser.available_inr + amount;
+
+      // Create DEPOSIT_INR operation
+      const [operationResult] = await connection.execute(
+        'INSERT INTO operations (user_id, type, status, inr_amount, btc_amount, execution_price, executed_at) VALUES (?, ?, ?, ?, ?, ?, ?)',
+        [userId, 'DEPOSIT_INR', 'EXECUTED', amount, 0, 0, new Date()]
       );
 
-      if (balanceRows.length === 0) {
-        throw new Error('User has no transactions');
-      }
-
-      const currentBalances = balanceRows[0];
-      const newInrBalance = currentBalances.inr_balance + amount;
-
-      // Create DEPOSIT_INR transaction
-      const [transactionResult] = await connection.execute(
-        'INSERT INTO transactions (user_id, type, inr_amount, btc_amount, btc_price, inr_balance, btc_balance) VALUES (?, ?, ?, ?, ?, ?, ?)',
-        [userId, 'DEPOSIT_INR', amount, 0, 0, newInrBalance, currentBalances.btc_balance]
+      // Update user balance
+      await connection.execute(
+        'UPDATE users SET available_inr = ? WHERE id = ?',
+        [newInrBalance, userId]
       );
 
-      return { transactionId: transactionResult.insertId, newInrBalance, btcBalance: currentBalances.btc_balance };
+      return { 
+        operationId: operationResult.insertId, 
+        newInrBalance, 
+        btcBalance: currentUser.available_btc 
+      };
     });
 
     // Clear user cache
@@ -333,7 +311,7 @@ router.post('/users/:userId/deposit-inr', async (req, res) => {
       success: true,
       message: 'INR deposited successfully',
       data: {
-        transaction_id: result.transactionId,
+        operation_id: result.operationId,
         deposited_amount: amount,
         new_balances: {
           inr: result.newInrBalance,
@@ -364,32 +342,41 @@ router.post('/users/:userId/withdraw-inr', async (req, res) => {
       });
     }
 
+    // Check if user exists and get current balances
+    const users = await query('SELECT id, available_inr, available_btc FROM users WHERE id = ?', [userId]);
+    if (users.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
     const result = await transaction(async (connection) => {
-      // Get current balances
-      const [balanceRows] = await connection.execute(
-        'SELECT inr_balance, btc_balance FROM transactions WHERE user_id = ? ORDER BY id DESC LIMIT 1',
-        [userId]
-      );
-
-      if (balanceRows.length === 0) {
-        throw new Error('User has no transactions');
-      }
-
-      const currentBalances = balanceRows[0];
+      const currentUser = users[0];
       
-      if (currentBalances.inr_balance < amount) {
+      if (currentUser.available_inr < amount) {
         throw new Error('Insufficient INR balance');
       }
 
-      const newInrBalance = currentBalances.inr_balance - amount;
+      const newInrBalance = currentUser.available_inr - amount;
 
-      // Create WITHDRAW_INR transaction
-      const [transactionResult] = await connection.execute(
-        'INSERT INTO transactions (user_id, type, inr_amount, btc_amount, btc_price, inr_balance, btc_balance) VALUES (?, ?, ?, ?, ?, ?, ?)',
-        [userId, 'WITHDRAW_INR', amount, 0, 0, newInrBalance, currentBalances.btc_balance]
+      // Create WITHDRAW_INR operation
+      const [operationResult] = await connection.execute(
+        'INSERT INTO operations (user_id, type, status, inr_amount, btc_amount, execution_price, executed_at) VALUES (?, ?, ?, ?, ?, ?, ?)',
+        [userId, 'WITHDRAW_INR', 'EXECUTED', amount, 0, 0, new Date()]
       );
 
-      return { transactionId: transactionResult.insertId, newInrBalance, btcBalance: currentBalances.btc_balance };
+      // Update user balance
+      await connection.execute(
+        'UPDATE users SET available_inr = ? WHERE id = ?',
+        [newInrBalance, userId]
+      );
+
+      return { 
+        operationId: operationResult.insertId, 
+        newInrBalance, 
+        btcBalance: currentUser.available_btc 
+      };
     });
 
     // Clear user cache
@@ -399,7 +386,7 @@ router.post('/users/:userId/withdraw-inr', async (req, res) => {
       success: true,
       message: 'INR withdrawn successfully',
       data: {
-        transaction_id: result.transactionId,
+        operation_id: result.operationId,
         withdrawn_amount: amount,
         new_balances: {
           inr: result.newInrBalance,
@@ -439,8 +426,8 @@ router.post('/users/:userId/deposit-btc', async (req, res) => {
       });
     }
 
-    // Check if user exists
-    const users = await query('SELECT id FROM users WHERE id = ?', [userId]);
+    // Check if user exists and get current balances
+    const users = await query('SELECT id, available_inr, available_btc FROM users WHERE id = ?', [userId]);
     if (users.length === 0) {
       return res.status(404).json({
         success: false,
@@ -449,34 +436,30 @@ router.post('/users/:userId/deposit-btc', async (req, res) => {
     }
 
     const result = await transaction(async (connection) => {
-      // Get current balances
-      const [balanceRows] = await connection.execute(
-        'SELECT inr_balance, btc_balance FROM transactions WHERE user_id = ? ORDER BY id DESC LIMIT 1',
-        [userId]
-      );
-
-      if (balanceRows.length === 0) {
-        throw new Error('User has no transactions');
-      }
-
-      const currentBalances = balanceRows[0];
+      const currentUser = users[0];
       const btcAmountSatoshi = Math.round(amount * 100000000); // Convert BTC to satoshi
-      const newBtcBalance = currentBalances.btc_balance + btcAmountSatoshi;
+      const newBtcBalance = currentUser.available_btc + btcAmountSatoshi;
 
       // Get current BTC price for INR amount calculation
       const rates = await bitcoinDataService.getCalculatedRates();
       const inrAmount = Math.round(amount * rates.sellRate); // Use sell rate for internal calculations
 
-      // Create DEPOSIT_BTC transaction
-      const [transactionResult] = await connection.execute(
-        'INSERT INTO transactions (user_id, type, inr_amount, btc_amount, btc_price, inr_balance, btc_balance) VALUES (?, ?, ?, ?, ?, ?, ?)',
-        [userId, 'DEPOSIT_BTC', inrAmount, btcAmountSatoshi, rates.sellRate, currentBalances.inr_balance, newBtcBalance]
+      // Create DEPOSIT_BTC operation
+      const [operationResult] = await connection.execute(
+        'INSERT INTO operations (user_id, type, status, inr_amount, btc_amount, execution_price, executed_at) VALUES (?, ?, ?, ?, ?, ?, ?)',
+        [userId, 'DEPOSIT_BTC', 'EXECUTED', inrAmount, btcAmountSatoshi, rates.sellRate, new Date()]
+      );
+
+      // Update user balance
+      await connection.execute(
+        'UPDATE users SET available_btc = ? WHERE id = ?',
+        [newBtcBalance, userId]
       );
 
       return { 
-        transactionId: transactionResult.insertId, 
+        operationId: operationResult.insertId, 
         newBtcBalance, 
-        inrBalance: currentBalances.inr_balance,
+        inrBalance: currentUser.available_inr,
         inrAmount,
         sellRate: rates.sellRate
       };
@@ -489,7 +472,7 @@ router.post('/users/:userId/deposit-btc', async (req, res) => {
       success: true,
       message: 'BTC deposited successfully',
       data: {
-        transaction_id: result.transactionId,
+        operation_id: result.operationId,
         deposited_amount: amount,
         inr_equivalent: result.inrAmount,
         btc_price: result.sellRate,
@@ -522,40 +505,45 @@ router.post('/users/:userId/withdraw-btc', async (req, res) => {
       });
     }
 
+    // Check if user exists and get current balances
+    const users = await query('SELECT id, available_inr, available_btc FROM users WHERE id = ?', [userId]);
+    if (users.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
     const result = await transaction(async (connection) => {
-      // Get current balances
-      const [balanceRows] = await connection.execute(
-        'SELECT inr_balance, btc_balance FROM transactions WHERE user_id = ? ORDER BY id DESC LIMIT 1',
-        [userId]
-      );
-
-      if (balanceRows.length === 0) {
-        throw new Error('User has no transactions');
-      }
-
-      const currentBalances = balanceRows[0];
+      const currentUser = users[0];
       const btcAmountSatoshi = Math.round(amount * 100000000); // Convert BTC to satoshi
       
-      if (currentBalances.btc_balance < btcAmountSatoshi) {
+      if (currentUser.available_btc < btcAmountSatoshi) {
         throw new Error('Insufficient BTC balance');
       }
 
-      const newBtcBalance = currentBalances.btc_balance - btcAmountSatoshi;
+      const newBtcBalance = currentUser.available_btc - btcAmountSatoshi;
 
       // Get current BTC price for INR amount calculation
       const rates = await bitcoinDataService.getCalculatedRates();
       const inrAmount = Math.round(amount * rates.sellRate); // Use sell rate for internal calculations
 
-      // Create WITHDRAW_BTC transaction
-      const [transactionResult] = await connection.execute(
-        'INSERT INTO transactions (user_id, type, inr_amount, btc_amount, btc_price, inr_balance, btc_balance) VALUES (?, ?, ?, ?, ?, ?, ?)',
-        [userId, 'WITHDRAW_BTC', inrAmount, btcAmountSatoshi, rates.sellRate, currentBalances.inr_balance, newBtcBalance]
+      // Create WITHDRAW_BTC operation
+      const [operationResult] = await connection.execute(
+        'INSERT INTO operations (user_id, type, status, inr_amount, btc_amount, execution_price, executed_at) VALUES (?, ?, ?, ?, ?, ?, ?)',
+        [userId, 'WITHDRAW_BTC', 'EXECUTED', inrAmount, btcAmountSatoshi, rates.sellRate, new Date()]
+      );
+
+      // Update user balance
+      await connection.execute(
+        'UPDATE users SET available_btc = ? WHERE id = ?',
+        [newBtcBalance, userId]
       );
 
       return { 
-        transactionId: transactionResult.insertId, 
+        operationId: operationResult.insertId, 
         newBtcBalance, 
-        inrBalance: currentBalances.inr_balance,
+        inrBalance: currentUser.available_inr,
         inrAmount,
         sellRate: rates.sellRate
       };
@@ -568,7 +556,7 @@ router.post('/users/:userId/withdraw-btc', async (req, res) => {
       success: true,
       message: 'BTC withdrawn successfully',
       data: {
-        transaction_id: result.transactionId,
+        operation_id: result.operationId,
         withdrawn_amount: amount,
         inr_equivalent: result.inrAmount,
         btc_price: result.sellRate,
@@ -655,7 +643,7 @@ router.patch('/settings', async (req, res) => {
   }
 });
 
-// External buy transaction (creates DEPOSIT_INR and BUY transactions)
+// External buy transaction (creates cash top-up and Bitcoin purchase operations)
 router.post('/users/:userId/external-buy', async (req, res) => {
   try {
     const { userId } = req.params;
@@ -676,7 +664,7 @@ router.post('/users/:userId/external-buy', async (req, res) => {
     }
 
     // Check if user exists
-    const users = await query('SELECT id FROM users WHERE id = ?', [userId]);
+    const users = await query('SELECT id, available_inr, available_btc FROM users WHERE id = ?', [userId]);
     if (users.length === 0) {
       return res.status(404).json({
         success: false,
@@ -685,17 +673,7 @@ router.post('/users/:userId/external-buy', async (req, res) => {
     }
 
     const result = await transaction(async (connection) => {
-      // Get current balances
-      const [balanceRows] = await connection.execute(
-        'SELECT inr_balance, btc_balance FROM transactions WHERE user_id = ? ORDER BY id DESC LIMIT 1',
-        [userId]
-      );
-
-      if (balanceRows.length === 0) {
-        throw new Error('User has no transactions');
-      }
-
-      const currentBalances = balanceRows[0];
+      const currentUser = users[0];
       
       // Calculate BTC price from INR and BTC amounts
       const btcPrice = inrAmount / btcAmount;
@@ -704,30 +682,42 @@ router.post('/users/:userId/external-buy', async (req, res) => {
       // Create deposit timestamp (a few seconds earlier)
       const depositTime = new Date(Date.now() - 5000); // 5 seconds earlier
       
-      // Create DEPOSIT_INR transaction first
-      const newInrBalanceAfterDeposit = currentBalances.inr_balance + inrAmount;
+      // Step 1: Create DEPOSIT_INR operation (cash top-up)
       const [depositResult] = await connection.execute(
-        'INSERT INTO transactions (user_id, type, inr_amount, btc_amount, btc_price, inr_balance, btc_balance, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-        [userId, 'DEPOSIT_INR', inrAmount, 0, 0, newInrBalanceAfterDeposit, currentBalances.btc_balance, depositTime]
+        'INSERT INTO operations (user_id, type, status, inr_amount, btc_amount, execution_price, executed_at, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+        [userId, 'DEPOSIT_INR', 'EXECUTED', inrAmount, 0, 0, depositTime, depositTime]
       );
       
-      // Create BUY transaction (current time)
-      const newInrBalanceAfterBuy = newInrBalanceAfterDeposit - inrAmount;
-      const newBtcBalanceAfterBuy = currentBalances.btc_balance + btcAmountSatoshi;
+      // Step 2: Update user balance after deposit
+      const newInrBalanceAfterDeposit = currentUser.available_inr + inrAmount;
+      await connection.execute(
+        'UPDATE users SET available_inr = ? WHERE id = ?',
+        [newInrBalanceAfterDeposit, userId]
+      );
+      
+      // Step 3: Create MARKET_BUY operation (Bitcoin purchase)
       const [buyResult] = await connection.execute(
-        'INSERT INTO transactions (user_id, type, inr_amount, btc_amount, btc_price, inr_balance, btc_balance) VALUES (?, ?, ?, ?, ?, ?, ?)',
-        [userId, 'BUY', inrAmount, btcAmountSatoshi, btcPrice, newInrBalanceAfterBuy, newBtcBalanceAfterBuy]
+        'INSERT INTO operations (user_id, type, status, inr_amount, btc_amount, execution_price, executed_at) VALUES (?, ?, ?, ?, ?, ?, ?)',
+        [userId, 'MARKET_BUY', 'EXECUTED', inrAmount, btcAmountSatoshi, btcPrice, new Date()]
+      );
+      
+      // Step 4: Update user balances after buy
+      const finalInrBalance = newInrBalanceAfterDeposit - inrAmount;
+      const finalBtcBalance = currentUser.available_btc + btcAmountSatoshi;
+      await connection.execute(
+        'UPDATE users SET available_inr = ?, available_btc = ? WHERE id = ?',
+        [finalInrBalance, finalBtcBalance, userId]
       );
 
       return {
-        depositTransactionId: depositResult.insertId,
-        buyTransactionId: buyResult.insertId,
+        depositOperationId: depositResult.insertId,
+        buyOperationId: buyResult.insertId,
         inrAmount,
         btcAmount,
         btcPrice,
         finalBalances: {
-          inr: newInrBalanceAfterBuy,
-          btc: newBtcBalanceAfterBuy
+          inr: finalInrBalance,
+          btc: finalBtcBalance
         }
       };
     });
@@ -739,8 +729,8 @@ router.post('/users/:userId/external-buy', async (req, res) => {
       success: true,
       message: 'External buy transaction created successfully',
       data: {
-        deposit_transaction_id: result.depositTransactionId,
-        buy_transaction_id: result.buyTransactionId,
+        deposit_operation_id: result.depositOperationId,
+        buy_operation_id: result.buyOperationId,
         inr_amount: result.inrAmount,
         btc_amount: result.btcAmount,
         btc_price: result.btcPrice,
