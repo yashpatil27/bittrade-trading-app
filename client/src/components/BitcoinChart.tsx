@@ -11,7 +11,7 @@ interface ChartDataPoint {
 
 interface ChartData {
   timeframe: string;
-  price_data: string | [number, number][];
+  price_data: string | [number, number][] | {timestamp: number, price: number}[];
   data_points_count: number;
   date_from: string;
   date_to: string;
@@ -54,10 +54,20 @@ const BitcoinChart: React.FC = () => {
           ? JSON.parse(chartData.price_data) 
           : chartData.price_data;
         
-        // Transform price data for chart
-        const formattedData = priceData.map((point: [number, number]) => {
-          const timestamp = point[0];
-          const price = point[1];
+        // Transform price data for chart - handle both array and object formats
+        const formattedData = priceData.map((point: [number, number] | {timestamp: number, price: number}) => {
+          let timestamp: number;
+          let price: number;
+          
+          // Handle both formats: [timestamp, price] and {timestamp, price}
+          if (Array.isArray(point)) {
+            timestamp = point[0];
+            price = point[1];
+          } else {
+            timestamp = point.timestamp;
+            price = point.price;
+          }
+          
           const date = new Date(timestamp);
           
           return {
