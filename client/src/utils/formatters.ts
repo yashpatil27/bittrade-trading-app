@@ -1,11 +1,15 @@
 import { Transaction } from '../types';
 
-export const getTransactionDisplayName = (type: Transaction['type']): string => {
+export const getTransactionDisplayName = (type: Transaction['type'], status?: string): string => {
   const displayNames = {
     'SETUP': 'Account Setup',
     'DEPOSIT_INR': 'Cash Top-up',
     'BUY': 'Bitcoin Purchase',
-    'SELL': 'Bitcoin Sale',
+    'MARKET_BUY': 'Bitcoin Purchase',
+    'SELL': 'Bitcoin Sale', 
+    'MARKET_SELL': 'Bitcoin Sale',
+    'LIMIT_BUY': status === 'PENDING' ? 'Limit Buy Order' : 'Limit Buy Filled',
+    'LIMIT_SELL': status === 'PENDING' ? 'Limit Sell Order' : 'Limit Sell Filled',
     'WITHDRAW_INR': 'Cash Withdrawal',
     'DEPOSIT_BTC': 'Bitcoin Deposit',
     'WITHDRAW_BTC': 'Bitcoin Withdrawal'
@@ -14,12 +18,16 @@ export const getTransactionDisplayName = (type: Transaction['type']): string => 
   return displayNames[type] || type;
 };
 
-export const getTransactionIcon = (type: Transaction['type']): string => {
+export const getTransactionIcon = (type: Transaction['type'], status?: string): string => {
   const icons = {
     'SETUP': 'User',
     'DEPOSIT_INR': 'ArrowUp',
     'BUY': 'TrendingUp',
+    'MARKET_BUY': 'TrendingUp',
     'SELL': 'TrendingDown',
+    'MARKET_SELL': 'TrendingDown',
+    'LIMIT_BUY': status === 'PENDING' ? 'Target' : 'TrendingUp',
+    'LIMIT_SELL': status === 'PENDING' ? 'Target' : 'TrendingDown',
     'WITHDRAW_INR': 'ArrowDown',
     'DEPOSIT_BTC': 'Plus',
     'WITHDRAW_BTC': 'Minus'

@@ -45,9 +45,9 @@ class UserService {
         return cached;
       }
 
-      // Get recent operations (mapped to old transaction format for compatibility)
+      // Get recent operations (including pending limit orders)
       const operations = await query(
-        `SELECT id, type, inr_amount, btc_amount, execution_price as btc_price, created_at FROM operations WHERE user_id = ? AND status = 'EXECUTED' ORDER BY id DESC LIMIT ${parseInt(limit)}`,
+        `SELECT id, type, status, inr_amount, btc_amount, execution_price as btc_price, limit_price, created_at FROM operations WHERE user_id = ? ORDER BY id DESC LIMIT ${parseInt(limit)}`,
         [userId]
       );
 
@@ -56,7 +56,9 @@ class UserService {
       const transactions = operations.map(op => ({
         ...op,
         inr_balance: currentBalances.inr_balance,
-        btc_balance: currentBalances.btc_balance
+        btc_balance: currentBalances.btc_balance,
+        // Use limit_price for pending orders, execution_price for executed orders
+        btc_price: op.status === 'PENDING' ? op.limit_price : op.btc_price
       }));
 
       // Cache for 30 seconds
@@ -71,9 +73,9 @@ class UserService {
 
   async getAllTransactions(userId, offset = 0, limit = 50) {
     try {
-      // Get operations (mapped to old transaction format for compatibility)
+      // Get operations (including pending limit orders)
       const operations = await query(
-        `SELECT id, type, inr_amount, btc_amount, execution_price as btc_price, created_at FROM operations WHERE user_id = ? AND status = 'EXECUTED' ORDER BY id DESC LIMIT ${parseInt(limit)} OFFSET ${parseInt(offset)}`,
+        `SELECT id, type, status, inr_amount, btc_amount, execution_price as btc_price, limit_price, created_at FROM operations WHERE user_id = ? ORDER BY id DESC LIMIT ${parseInt(limit)} OFFSET ${parseInt(offset)}`,
         [userId]
       );
       
@@ -82,7 +84,9 @@ class UserService {
       const transactions = operations.map(op => ({
         ...op,
         inr_balance: currentBalances.inr_balance,
-        btc_balance: currentBalances.btc_balance
+        btc_balance: currentBalances.btc_balance,
+        // Use limit_price for pending orders, execution_price for executed orders
+        btc_price: op.status === 'PENDING' ? op.limit_price : op.btc_price
       }));
       
       return transactions;

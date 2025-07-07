@@ -15,7 +15,8 @@ import {
   X,
   Calendar,
   DollarSign,
-  RotateCcw
+  RotateCcw,
+  Target
 } from 'lucide-react';
 import { userAPI } from '../services/api';
 import { Transaction } from '../types';
@@ -28,7 +29,7 @@ import {
   formatCurrency
 } from '../utils/formatters';
 
-type TransactionType = 'ALL' | 'BUY' | 'SELL' | 'DEPOSIT_INR' | 'DEPOSIT_BTC' | 'WITHDRAW_INR' | 'WITHDRAW_BTC';
+type TransactionType = 'ALL' | 'BUY' | 'SELL' | 'LIMIT_BUY' | 'LIMIT_SELL' | 'DEPOSIT_INR' | 'DEPOSIT_BTC' | 'WITHDRAW_INR' | 'WITHDRAW_BTC';
 type DateFilter = 'ALL' | 'TODAY' | 'WEEK' | 'MONTH' | 'CUSTOM';
 type SortOption = 'NEWEST' | 'OLDEST' | 'HIGHEST' | 'LOWEST';
 
@@ -283,18 +284,19 @@ const History: React.FC = () => {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <div className="p-1.5 bg-zinc-700 rounded-lg">
-                        {getTransactionIcon(transaction.type) === 'User' && <User className="w-3 h-3 text-white" />}
-                        {getTransactionIcon(transaction.type) === 'ArrowUp' && <ArrowUp className="w-3 h-3 text-white" />}
-                        {getTransactionIcon(transaction.type) === 'TrendingUp' && <TrendingUp className="w-3 h-3 text-white" />}
-                        {getTransactionIcon(transaction.type) === 'TrendingDown' && <TrendingDown className="w-3 h-3 text-white" />}
-                        {getTransactionIcon(transaction.type) === 'ArrowDown' && <ArrowDown className="w-3 h-3 text-white" />}
-                        {getTransactionIcon(transaction.type) === 'Plus' && <Plus className="w-3 h-3 text-white" />}
-                        {getTransactionIcon(transaction.type) === 'Minus' && <Minus className="w-3 h-3 text-white" />}
-                        {!['User', 'ArrowUp', 'TrendingUp', 'TrendingDown', 'ArrowDown', 'Plus', 'Minus'].includes(getTransactionIcon(transaction.type)) && <Circle className="w-3 h-3 text-white" />}
+                        {getTransactionIcon(transaction.type, transaction.status) === 'User' && <User className="w-3 h-3 text-white" />}
+                        {getTransactionIcon(transaction.type, transaction.status) === 'ArrowUp' && <ArrowUp className="w-3 h-3 text-white" />}
+                        {getTransactionIcon(transaction.type, transaction.status) === 'TrendingUp' && <TrendingUp className="w-3 h-3 text-white" />}
+                        {getTransactionIcon(transaction.type, transaction.status) === 'TrendingDown' && <TrendingDown className="w-3 h-3 text-white" />}
+                        {getTransactionIcon(transaction.type, transaction.status) === 'ArrowDown' && <ArrowDown className="w-3 h-3 text-white" />}
+                        {getTransactionIcon(transaction.type, transaction.status) === 'Plus' && <Plus className="w-3 h-3 text-white" />}
+                        {getTransactionIcon(transaction.type, transaction.status) === 'Minus' && <Minus className="w-3 h-3 text-white" />}
+                        {getTransactionIcon(transaction.type, transaction.status) === 'Target' && <Target className="w-3 h-3 text-white" />}
+                        {!['User', 'ArrowUp', 'TrendingUp', 'TrendingDown', 'ArrowDown', 'Plus', 'Minus', 'Target'].includes(getTransactionIcon(transaction.type, transaction.status)) && <Circle className="w-3 h-3 text-white" />}
                       </div>
                       <div>
                         <p className="font-medium text-white text-sm">
-                          {getTransactionDisplayName(transaction.type)}
+                          {getTransactionDisplayName(transaction.type, transaction.status)}
                         </p>
                         <p className="text-zinc-400 text-xs">
                           {formatTimeAgo(transaction.created_at)}
@@ -400,6 +402,8 @@ const History: React.FC = () => {
                     { key: 'ALL', label: 'All Types', icon: Circle },
                     { key: 'BUY', label: 'Buy', icon: TrendingUp },
                     { key: 'SELL', label: 'Sell', icon: TrendingDown },
+                    { key: 'LIMIT_BUY', label: 'Limit Buy', icon: Target },
+                    { key: 'LIMIT_SELL', label: 'Limit Sell', icon: Target },
                     { key: 'DEPOSIT_INR', label: 'Deposit INR', icon: Plus },
                     { key: 'DEPOSIT_BTC', label: 'Deposit BTC', icon: Plus },
                     { key: 'WITHDRAW_INR', label: 'Withdraw INR', icon: Minus },
