@@ -221,10 +221,6 @@ const DcaPlansSection = forwardRef<DcaPlansSectionRef, DcaPlansSectionProps>(({ 
                       </p>
                     </div>
                   </div>
-                  
-                  <div className="text-zinc-400 text-xs">
-                    Tap to manage
-                  </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4 text-sm">
@@ -283,52 +279,126 @@ const DcaPlansSection = forwardRef<DcaPlansSectionRef, DcaPlansSectionProps>(({ 
       
       {/* Modal for managing selected DCA plan */}
       {showDetailsModal && selectedPlan && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-70 z-50">
-          <div className="bg-zinc-900 border border-zinc-800 rounded-lg shadow-lg p-6 max-w-md mx-4">
-            <h2 className="text-xl font-semibold mb-4 text-white">DCA Plan Details</h2>
-            <div className="space-y-3 text-sm">
-              <p><strong className="text-zinc-400">Type:</strong> <span className="text-white">{selectedPlan!.plan_type === 'DCA_BUY' ? 'DCA Buy' : 'DCA Sell'}</span></p>
-              <p><strong className="text-zinc-400">Frequency:</strong> <span className="text-white">{selectedPlan!.frequency}</span></p>
-              <p><strong className="text-zinc-400">Status:</strong> <span className={`${getStatusColor(selectedPlan!.status).split(' ')[0]} font-medium`}>{selectedPlan!.status}</span></p>
-              <p><strong className="text-zinc-400">Amount per Execution:</strong> <span className="text-white">
-                {selectedPlan!.plan_type === 'DCA_BUY' 
-                  ? `₹${selectedPlan!.amount_per_execution.toLocaleString('en-IN')}`
-                  : formatCurrency(selectedPlan!.amount_per_execution, 'BTC')
-                }</span></p>
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-zinc-900 border border-zinc-700 rounded-xl w-full max-w-md max-h-[90vh] overflow-hidden">
+            {/* Header */}
+            <div className="flex items-center justify-between p-6 border-b border-zinc-800">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-zinc-800 rounded-lg">
+                  {selectedPlan.plan_type === 'DCA_BUY' ? (
+                    <TrendingUp className="w-5 h-5 text-green-400" />
+                  ) : (
+                    <TrendingDown className="w-5 h-5 text-red-400" />
+                  )}
+                </div>
+                <div>
+                  <h2 className="text-lg font-semibold text-white">DCA Plan Details</h2>
+                  <p className="text-zinc-400 text-sm">{selectedPlan.plan_type === 'DCA_BUY' ? 'DCA Buy' : 'DCA Sell'} Plan</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowDetailsModal(false)}
+                className="p-2 text-zinc-400 hover:text-white transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
             </div>
-            
-            <div className="flex flex-col gap-3 mt-6">
-              {selectedPlan!.status === 'ACTIVE' && (
-                <button 
-                  onClick={() => handlePausePlan(selectedPlan!.id)} 
-                  disabled={pausingPlan === selectedPlan!.id} 
-                  className="w-full py-3 px-4 bg-yellow-600 hover:bg-yellow-700 disabled:opacity-50 text-white font-medium rounded-lg transition-colors"
-                >
-                  {pausingPlan === selectedPlan!.id ? 'Pausing...' : 'Pause Plan'}
-                </button>
+
+            {/* Content */}
+            <div className="p-6 space-y-3">
+              {/* Plan Details - 4 Separate Sections */}
+              <div className="grid grid-cols-2 gap-3">
+                {/* Frequency */}
+                <div className="bg-zinc-800/50 rounded-lg p-3">
+                  <p className="text-zinc-400 text-xs mb-1">Frequency</p>
+                  <p className="text-white font-medium text-sm">{selectedPlan.frequency}</p>
+                </div>
+                
+                {/* Amount per Execution */}
+                <div className="bg-zinc-800/50 rounded-lg p-3">
+                  <p className="text-zinc-400 text-xs mb-1">Amount per Execution</p>
+                  <p className="text-white font-medium text-sm">
+                    {selectedPlan.plan_type === 'DCA_BUY' 
+                      ? `₹${selectedPlan.amount_per_execution.toLocaleString('en-IN')}`
+                      : formatCurrency(selectedPlan.amount_per_execution, 'BTC')
+                    }
+                  </p>
+                </div>
+                
+                {/* Next Execution */}
+                <div className="bg-zinc-800/50 rounded-lg p-3">
+                  <p className="text-zinc-400 text-xs mb-1">Next Execution</p>
+                  <p className="text-white font-medium text-sm flex items-center gap-1">
+                    <Clock className="w-3 h-3" />
+                    {formatNextExecution(selectedPlan.next_execution_at)}
+                  </p>
+                </div>
+                
+                {/* Status */}
+                <div className="bg-zinc-800/50 rounded-lg p-3">
+                  <p className="text-zinc-400 text-xs mb-1">Status</p>
+                  <span className={`px-2 py-1 text-xs border rounded flex items-center gap-1 w-fit ${getStatusColor(selectedPlan.status)}`}>
+                    {getStatusIcon(selectedPlan.status)}
+                    {selectedPlan.status}
+                  </span>
+                </div>
+              </div>
+
+              {/* Optional Details */}
+              {(selectedPlan.remaining_executions !== null || selectedPlan.max_price || selectedPlan.min_price) && (
+                <div className="bg-zinc-800/50 rounded-lg p-4">
+                  <div className="space-y-2 text-sm">
+                    {selectedPlan.remaining_executions !== null && (
+                      <div>
+                        <span className="text-zinc-400">Progress: </span>
+                        <span className="text-white">{selectedPlan.remaining_executions} of {selectedPlan.total_executions} remaining</span>
+                      </div>
+                    )}
+                    {(selectedPlan.max_price || selectedPlan.min_price) && (
+                      <div>
+                        <span className="text-zinc-400">Price Limits: </span>
+                        <span className="text-white">
+                          {selectedPlan.max_price && `Max ₹${selectedPlan.max_price.toLocaleString('en-IN')}`}
+                          {selectedPlan.max_price && selectedPlan.min_price && ', '}
+                          {selectedPlan.min_price && `Min ₹${selectedPlan.min_price.toLocaleString('en-IN')}`}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </div>
               )}
-              {selectedPlan!.status === 'PAUSED' && (
+
+              {/* Action Buttons */}
+              <div className="flex gap-3">
+                {selectedPlan.status === 'ACTIVE' && (
+                  <button 
+                    onClick={() => handlePausePlan(selectedPlan.id)} 
+                    disabled={pausingPlan === selectedPlan.id} 
+                    className="flex-1 bg-yellow-900/20 border border-yellow-800 text-yellow-300 hover:bg-yellow-900/30 disabled:opacity-50 disabled:cursor-not-allowed py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
+                  >
+                    <Pause className="w-4 h-4" />
+                    {pausingPlan === selectedPlan.id ? 'Pausing...' : 'Pause'}
+                  </button>
+                )}
+                {selectedPlan.status === 'PAUSED' && (
+                  <button 
+                    onClick={() => handleResumePlan(selectedPlan.id)} 
+                    disabled={resumingPlan === selectedPlan.id} 
+                    className="flex-1 bg-green-900/20 border border-green-800 text-green-300 hover:bg-green-900/30 disabled:opacity-50 disabled:cursor-not-allowed py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
+                  >
+                    <TrendingUp className="w-4 h-4" />
+                    {resumingPlan === selectedPlan.id ? 'Resuming...' : 'Resume'}
+                  </button>
+                )}
                 <button 
-                  onClick={() => handleResumePlan(selectedPlan!.id)} 
-                  disabled={resumingPlan === selectedPlan!.id} 
-                  className="w-full py-3 px-4 bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white font-medium rounded-lg transition-colors"
+                  onClick={() => handleCancelPlan(selectedPlan.id)} 
+                  disabled={cancellingPlan === selectedPlan.id} 
+                  className="flex-1 bg-red-900/20 border border-red-800 text-red-300 hover:bg-red-900/30 disabled:opacity-50 disabled:cursor-not-allowed py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
                 >
-                  {resumingPlan === selectedPlan!.id ? 'Resuming...' : 'Resume Plan'}
+                  <X className="w-4 h-4" />
+                  {cancellingPlan === selectedPlan.id ? 'Deleting...' : 'Delete'}
                 </button>
-              )}
-              <button 
-                onClick={() => handleCancelPlan(selectedPlan!.id)} 
-                disabled={cancellingPlan === selectedPlan!.id} 
-                className="w-full py-3 px-4 bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white font-medium rounded-lg transition-colors"
-              >
-                {cancellingPlan === selectedPlan!.id ? 'Deleting...' : 'Delete Plan'}
-              </button>
-              <button 
-                onClick={() => setShowDetailsModal(false)} 
-                className="w-full py-3 px-4 bg-zinc-700 hover:bg-zinc-600 text-white font-medium rounded-lg transition-colors"
-              >
-                Close
-              </button>
+              </div>
             </div>
           </div>
         </div>
