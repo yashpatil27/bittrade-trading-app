@@ -387,6 +387,7 @@ class UserService {
     return {
       id: transaction.id,
       type: transaction.type,
+      status: transaction.status || 'EXECUTED', // Default to EXECUTED for backward compatibility
       inr_amount: transaction.inr_amount,
       btc_amount: transaction.btc_amount / 100000000, // Convert satoshis to BTC
       btc_price: transaction.btc_price,
