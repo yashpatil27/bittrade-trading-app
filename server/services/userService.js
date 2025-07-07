@@ -668,8 +668,8 @@ class UserService {
             amountPerExecution, 
             nextExecutionAt, 
             totalExecutions || null, 
-            maxPrice, 
-            minPrice
+            maxPrice || null, 
+            minPrice || null
           ]
         );
 
@@ -739,8 +739,8 @@ class UserService {
             amountPerExecution, 
             nextExecutionAt, 
             totalExecutions || null, 
-            maxPrice, 
-            minPrice
+            maxPrice || null, 
+            minPrice || null
           ]
         );
 
