@@ -185,7 +185,7 @@ const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
               <div className="space-y-1">
                 <div className="flex justify-between">
                   <span className="text-zinc-400 text-xs">{transaction.status === 'PENDING' ? 'Target Price:' : 'BTC Price:'}</span>
-                  <span className="text-white text-xs">₹{transaction.btc_price.toLocaleString('en-IN')}</span>
+                  <span className="text-white text-xs">₹{transaction.btc_price ? transaction.btc_price.toLocaleString('en-IN') : 'N/A'}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-zinc-400 text-xs">{transaction.status === 'PENDING' ? 'Estimated BTC:' : 'BTC Amount:'}</span>
@@ -198,13 +198,20 @@ const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
                     </span>
                   </div>
                 )}
+                {transaction.status === 'CANCELLED' && (
+                  <div className="text-center mt-2">
+                    <span className="px-2 py-1 text-xs bg-gray-900/20 border border-gray-800 text-gray-400 rounded">
+                      Order was cancelled
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
           )}
 
           {/* Balances After Transaction */}
           <div className="bg-zinc-800/50 rounded-lg p-3">
-            <p className="text-zinc-400 text-xs mb-2">{transaction.status === 'PENDING' ? 'Current Balances' : 'Balances After'}</p>
+            <p className="text-zinc-400 text-xs mb-2">{transaction.status === 'PENDING' ? 'Current Balances' : transaction.status === 'CANCELLED' ? 'Balances (Unchanged)' : 'Balances After'}</p>
             <div className="grid grid-cols-2 gap-3">
               <div className="text-center">
                 <p className="text-zinc-400 text-xs">INR</p>
@@ -232,6 +239,11 @@ const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
                   <>
                     <div className="w-1.5 h-1.5 bg-orange-400 rounded-full animate-pulse" />
                     <span className="text-orange-300 text-xs">Pending</span>
+                  </>
+                ) : transaction.status === 'CANCELLED' ? (
+                  <>
+                    <div className="w-1.5 h-1.5 bg-gray-400 rounded-full" />
+                    <span className="text-gray-400 text-xs">Cancelled</span>
                   </>
                 ) : (
                   <>
