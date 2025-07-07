@@ -100,16 +100,25 @@ const Portfolio: React.FC = () => {
     }
   };
 
-  const formatPercentage = (value: number) => {
+  const formatPercentage = (value: number | null | undefined) => {
+    if (value === null || value === undefined || isNaN(value)) {
+      return 'N/A';
+    }
     const sign = value >= 0 ? '+' : '';
     return `${sign}${value.toFixed(2)}%`;
   };
 
-  const formatCurrencyInr = (value: number) => {
+  const formatCurrencyInr = (value: number | null | undefined) => {
+    if (value === null || value === undefined || isNaN(value)) {
+      return '₹0';
+    }
     return `₹${Math.round(value).toLocaleString('en-IN')}`;
   };
 
-  const formatLargeNumber = (value: number) => {
+  const formatLargeNumber = (value: number | null | undefined) => {
+    if (value === null || value === undefined || isNaN(value)) {
+      return 'N/A';
+    }
     if (value >= 1e12) {
       return `$${(value / 1e12).toFixed(2)}T`;
     } else if (value >= 1e9) {
@@ -207,14 +216,14 @@ const Portfolio: React.FC = () => {
           <h2 className="text-lg font-semibold">Total Portfolio Value</h2>
         </div>
         <p className="text-3xl font-bold text-white mb-2">
-          {formatCurrencyInr(totalPortfolioValue)}
+          {formatCurrencyInr(totalPortfolioValue || 0)}
         </p>
         <div className="flex items-center justify-center gap-4 text-sm">
           <span className="text-zinc-400">
-            Investment: {formatCurrencyInr(totalInvestment)}
+            Investment: {formatCurrencyInr(totalInvestment || 0)}
           </span>
-          <span className={`flex items-center gap-1 ${unrealizedProfit >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-            {unrealizedProfit >= 0 ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />}
+          <span className={`flex items-center gap-1 ${(unrealizedProfit || 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+            {(unrealizedProfit || 0) >= 0 ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />}
             {formatPercentage(totalReturn)}
           </span>
         </div>
@@ -227,8 +236,8 @@ const Portfolio: React.FC = () => {
             <TrendingUp className="w-4 h-4 text-green-400" />
             <span className="text-zinc-400 text-sm">Unrealized P&L</span>
           </div>
-          <p className={`text-lg font-bold ${unrealizedProfit >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-            {formatCurrencyInr(unrealizedProfit)}
+          <p className={`text-lg font-bold ${(unrealizedProfit || 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+            {formatCurrencyInr(unrealizedProfit || 0)}
           </p>
         </div>
 
@@ -237,8 +246,8 @@ const Portfolio: React.FC = () => {
             <Trophy className="w-4 h-4 text-blue-400" />
             <span className="text-zinc-400 text-sm">Realized P&L</span>
           </div>
-          <p className={`text-lg font-bold ${realizedProfit >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-            {realizedProfit === 0 ? 'Coming Soon' : formatCurrencyInr(realizedProfit)}
+          <p className={`text-lg font-bold ${(realizedProfit || 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+            {(realizedProfit || 0) === 0 ? 'Coming Soon' : formatCurrencyInr(realizedProfit || 0)}
           </p>
         </div>
       </div>
@@ -253,14 +262,14 @@ const Portfolio: React.FC = () => {
           <div className="bg-zinc-800/50 rounded-lg p-4 text-center">
             <DollarSign className="w-6 h-6 text-white mx-auto mb-2" />
             <p className="text-zinc-400 text-sm">Cash Balance</p>
-            <p className="text-lg font-bold">{formatCurrencyInr(currentBalances.inr)}</p>
+            <p className="text-lg font-bold">{formatCurrencyInr(currentBalances?.inr || 0)}</p>
           </div>
           <div className="bg-zinc-800/50 rounded-lg p-4 text-center">
             <Bitcoin className="w-6 h-6 text-white mx-auto mb-2" />
             <p className="text-zinc-400 text-sm">Bitcoin</p>
-            <p className="text-lg font-bold">{formatCurrency(currentBalances.btc, 'BTC')}</p>
+            <p className="text-lg font-bold">{formatCurrency(currentBalances?.btc || 0, 'BTC')}</p>
             <p className="text-xs text-zinc-500">
-              ≈ {formatCurrencyInr(currentBalances.btc * currentRates.sellRate)}
+              ≈ {formatCurrencyInr((currentBalances?.btc || 0) * (currentRates?.sellRate || 0))}
             </p>
           </div>
         </div>
@@ -277,12 +286,12 @@ const Portfolio: React.FC = () => {
           <div>
             <div className="flex justify-between text-sm mb-2">
               <span className="text-zinc-400">Cash (INR)</span>
-              <span className="text-white font-medium">{assetAllocation.inrPercentage.toFixed(1)}%</span>
+              <span className="text-white font-medium">{(assetAllocation?.inrPercentage || 0).toFixed(1)}%</span>
             </div>
             <div className="w-full bg-zinc-800 rounded-full h-3">
               <div 
                 className="bg-green-500 h-3 rounded-full transition-all duration-300"
-                style={{ width: `${assetAllocation.inrPercentage}%` }}
+                style={{ width: `${assetAllocation?.inrPercentage || 0}%` }}
               />
             </div>
           </div>
@@ -291,12 +300,12 @@ const Portfolio: React.FC = () => {
           <div>
             <div className="flex justify-between text-sm mb-2">
               <span className="text-zinc-400">Bitcoin</span>
-              <span className="text-white font-medium">{assetAllocation.btcPercentage.toFixed(1)}%</span>
+              <span className="text-white font-medium">{(assetAllocation?.btcPercentage || 0).toFixed(1)}%</span>
             </div>
             <div className="w-full bg-zinc-800 rounded-full h-3">
               <div 
                 className="bg-orange-500 h-3 rounded-full transition-all duration-300"
-                style={{ width: `${assetAllocation.btcPercentage}%` }}
+                style={{ width: `${assetAllocation?.btcPercentage || 0}%` }}
               />
             </div>
           </div>
@@ -309,7 +318,7 @@ const Portfolio: React.FC = () => {
           <Target className="w-6 h-6 text-white mx-auto mb-2" />
           <p className="text-zinc-400 text-sm">Avg Buy Price</p>
           <p className="text-lg font-bold">
-            {averageBuyPrice > 0 ? formatCurrencyInr(averageBuyPrice) : 'N/A'}
+            {(averageBuyPrice || 0) > 0 ? formatCurrencyInr(averageBuyPrice || 0) : 'N/A'}
           </p>
         </div>
 
@@ -317,7 +326,7 @@ const Portfolio: React.FC = () => {
           <TrendingDown className="w-6 h-6 text-white mx-auto mb-2" />
           <p className="text-zinc-400 text-sm">Breakeven Price</p>
           <p className="text-lg font-bold">
-            {breakEvenPrice > 0 ? formatCurrencyInr(breakEvenPrice) : 'N/A'}
+            {(breakEvenPrice || 0) > 0 ? formatCurrencyInr(breakEvenPrice || 0) : 'N/A'}
           </p>
         </div>
       </div>
@@ -339,7 +348,7 @@ const Portfolio: React.FC = () => {
                   <BarChart3 className="w-4 h-4 text-zinc-400" />
                   <span className="text-zinc-400 text-sm">Market Cap</span>
                 </div>
-                <p className="text-lg font-bold">{formatLargeNumber(bitcoinData.market_cap_usd)}</p>
+                <p className="text-lg font-bold">{formatLargeNumber(bitcoinData?.market_cap_usd)}</p>
               </div>
 
               {/* 24h Volume */}
@@ -348,7 +357,7 @@ const Portfolio: React.FC = () => {
                   <Activity className="w-4 h-4 text-zinc-400" />
                   <span className="text-zinc-400 text-sm">24h Volume</span>
                 </div>
-                <p className="text-lg font-bold">{formatLargeNumber(bitcoinData.volume_24h_usd)}</p>
+                <p className="text-lg font-bold">{formatLargeNumber(bitcoinData?.volume_24h_usd)}</p>
               </div>
             </div>
 
@@ -381,16 +390,16 @@ const Portfolio: React.FC = () => {
             <div className="grid grid-cols-3 gap-4">
               <div>
                 <p className="text-zinc-500 text-xs mb-1">Price</p>
-                <p className="text-base font-bold">${bitcoinData.ath_usd.toLocaleString()}</p>
+                <p className="text-base font-bold">${(bitcoinData?.ath_usd || 0).toLocaleString()}</p>
               </div>
               <div>
                 <p className="text-zinc-500 text-xs mb-1">Date</p>
-                <p className="text-base font-bold">{formatDate(bitcoinData.ath_date)}</p>
+                <p className="text-base font-bold">{bitcoinData?.ath_date ? formatDate(bitcoinData.ath_date) : 'N/A'}</p>
               </div>
               <div>
                 <p className="text-zinc-500 text-xs mb-1">From ATH</p>
-                <p className={`text-base font-bold ${bitcoinData.ath_change_pct >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                  {formatPercentage(bitcoinData.ath_change_pct)}
+                <p className={`text-base font-bold ${(bitcoinData?.ath_change_pct || 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                  {formatPercentage(bitcoinData?.ath_change_pct)}
                 </p>
               </div>
             </div>
@@ -413,17 +422,17 @@ const Portfolio: React.FC = () => {
             <div>
               <p className="text-zinc-500 text-xs mb-2">Fear & Greed Index</p>
               <div className="relative">
-                <div className="text-lg font-bold mb-2">{sentimentData.fear_greed_value}/100</div>
+                <div className="text-lg font-bold mb-2">{sentimentData?.fear_greed_value || 0}/100</div>
                 <div className="w-full bg-zinc-800 rounded-full h-2 mb-1">
                   <div 
                     className={`h-2 rounded-full transition-all duration-300 ${
-                      sentimentData.fear_greed_value <= 25 ? 'bg-red-500' :
-                      sentimentData.fear_greed_value <= 45 ? 'bg-orange-500' :
-                      sentimentData.fear_greed_value <= 55 ? 'bg-yellow-500' :
-                      sentimentData.fear_greed_value <= 75 ? 'bg-green-500' :
+                      (sentimentData?.fear_greed_value || 0) <= 25 ? 'bg-red-500' :
+                      (sentimentData?.fear_greed_value || 0) <= 45 ? 'bg-orange-500' :
+                      (sentimentData?.fear_greed_value || 0) <= 55 ? 'bg-yellow-500' :
+                      (sentimentData?.fear_greed_value || 0) <= 75 ? 'bg-green-500' :
                       'bg-green-600'
                     }`}
-                    style={{ width: `${sentimentData.fear_greed_value}%` }}
+                    style={{ width: `${sentimentData?.fear_greed_value || 0}%` }}
                   />
                 </div>
                 <div className="flex justify-between text-xs text-zinc-600">
@@ -436,8 +445,8 @@ const Portfolio: React.FC = () => {
             {/* Classification */}
             <div className="flex flex-col items-center justify-center h-full">
               <p className="text-zinc-500 text-xs mb-2">Classification</p>
-              <p className={`text-lg font-bold ${getSentimentColor(sentimentData.fear_greed_classification)}`}>
-                {sentimentData.fear_greed_classification}
+              <p className={`text-lg font-bold ${getSentimentColor(sentimentData?.fear_greed_classification || 'Neutral')}`}>
+                {sentimentData?.fear_greed_classification || 'N/A'}
               </p>
             </div>
           </div>
@@ -456,38 +465,38 @@ const Portfolio: React.FC = () => {
         <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 text-center">
           <Activity className="w-6 h-6 text-white mx-auto mb-2" />
           <p className="text-zinc-400 text-sm">Trading Days</p>
-          <p className="text-xl font-bold">{tradingStats.tradingDays}</p>
+          <p className="text-xl font-bold">{tradingStats?.tradingDays || 0}</p>
         </div>
 
         <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 text-center">
           <BarChart3 className="w-6 h-6 text-white mx-auto mb-2" />
           <p className="text-zinc-400 text-sm">Total Trades</p>
-          <p className="text-xl font-bold">{tradingStats.totalTrades}</p>
+          <p className="text-xl font-bold">{tradingStats?.totalTrades || 0}</p>
         </div>
 
         <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 text-center">
           <Clock className="w-6 h-6 text-white mx-auto mb-2" />
           <p className="text-zinc-400 text-sm">This Month</p>
-          <p className="text-xl font-bold">{tradingStats.tradesThisMonth}</p>
+          <p className="text-xl font-bold">{tradingStats?.tradesThisMonth || 0}</p>
         </div>
 
         <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 text-center">
           <DollarSign className="w-6 h-6 text-white mx-auto mb-2" />
           <p className="text-zinc-400 text-sm">Avg Trade Size</p>
-          <p className="text-lg font-bold">{formatCurrencyInr(tradingStats.averageTradeSize)}</p>
+          <p className="text-lg font-bold">{formatCurrencyInr(tradingStats?.averageTradeSize || 0)}</p>
         </div>
 
         <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 text-center">
           <TrendingUp className="w-6 h-6 text-white mx-auto mb-2" />
           <p className="text-zinc-400 text-sm">Total Volume</p>
-          <p className="text-lg font-bold">{formatCurrencyInr(tradingStats.totalVolume)}</p>
+          <p className="text-lg font-bold">{formatCurrencyInr(tradingStats?.totalVolume || 0)}</p>
         </div>
 
         <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 text-center">
           <Trophy className="w-6 h-6 text-white mx-auto mb-2" />
           <p className="text-zinc-400 text-sm">Days in Profit</p>
           <p className="text-lg font-bold">
-            {tradingStats.daysInProfit === 0 ? 'Coming Soon' : tradingStats.daysInProfit}
+            {(tradingStats?.daysInProfit || 0) === 0 ? 'Coming Soon' : (tradingStats?.daysInProfit || 0)}
           </p>
         </div>
       </div>
@@ -501,15 +510,15 @@ const Portfolio: React.FC = () => {
         <div className="grid grid-cols-3 gap-4 text-center text-sm">
           <div>
             <p className="text-zinc-500">BTC/USD</p>
-            <p className="font-bold">${currentRates.btcUsdPrice.toLocaleString()}</p>
+            <p className="font-bold">${(currentRates?.btcUsdPrice || 0).toLocaleString()}</p>
           </div>
           <div>
             <p className="text-zinc-500">Buy Rate</p>
-            <p className="font-bold">{formatCurrencyInr(currentRates.buyRate)}</p>
+            <p className="font-bold">{formatCurrencyInr(currentRates?.buyRate || 0)}</p>
           </div>
           <div>
             <p className="text-zinc-500">Sell Rate</p>
-            <p className="font-bold">{formatCurrencyInr(currentRates.sellRate)}</p>
+            <p className="font-bold">{formatCurrencyInr(currentRates?.sellRate || 0)}</p>
           </div>
         </div>
       </div>
