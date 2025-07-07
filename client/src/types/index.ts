@@ -43,8 +43,8 @@ export interface Transaction {
   inr_amount: number;
   btc_amount: number;
   btc_price: number;
-  inr_balance: number;
-  btc_balance: number;
+  inr_balance?: number; // Optional for admin views
+  btc_balance?: number; // Optional for admin views
   created_at: string;
 }
 
@@ -86,12 +86,16 @@ export interface AdminUser extends User {
 
 export interface DcaPlan {
   id: number;
+  user_id?: number;
   plan_type: 'DCA_BUY' | 'DCA_SELL';
   status: 'ACTIVE' | 'PAUSED' | 'COMPLETED' | 'CANCELLED';
   frequency: 'HOURLY' | 'DAILY' | 'WEEKLY' | 'MONTHLY';
   amount_per_execution: number;
+  amount?: number; // For admin interface compatibility
+  total_invested?: number; // For admin interface compatibility
+  executions_count?: number; // For admin interface compatibility
   next_execution_at: string;
-  total_executions: number;
+  total_executions: number | null;
   remaining_executions: number | null;
   max_price: number | null;
   min_price: number | null;

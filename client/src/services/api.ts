@@ -187,6 +187,9 @@ export const adminAPI = {
   updateSettings: (settings: { buy_multiplier?: number, sell_multiplier?: number }): Promise<AxiosResponse<ApiResponse>> =>
     api.patch('/admin/settings', settings),
   
+  getTransactions: (page = 1, limit = 50): Promise<AxiosResponse<ApiResponse<{ transactions: any[], pagination: any }>>> =>
+    api.get(`/admin/transactions?page=${page}&limit=${limit}`),
+  
   getAllTransactions: (page = 1, limit = 50): Promise<AxiosResponse<ApiResponse<{ transactions: any[], pagination: any }>>> =>
     api.get(`/admin/transactions?page=${page}&limit=${limit}`),
   
@@ -212,6 +215,22 @@ export const adminAPI = {
   
   controlLimitOrderService: (action: 'start' | 'stop'): Promise<AxiosResponse<ApiResponse<any>>> =>
     api.post(`/admin/limit-orders/service/${action}`),
+  
+  // DCA plans management
+  getDcaPlans: (page = 1, limit = 50): Promise<AxiosResponse<ApiResponse<{ dcaPlans: any[], pagination: any }>>> =>
+    api.get(`/admin/dca-plans?page=${page}&limit=${limit}`),
+  
+  getAllDcaPlans: (): Promise<AxiosResponse<ApiResponse<any[]>>> =>
+    api.get('/admin/dca-plans'),
+  
+  pauseDcaPlan: (planId: number): Promise<AxiosResponse<ApiResponse<any>>> =>
+    api.patch(`/admin/dca-plans/${planId}/pause`),
+  
+  resumeDcaPlan: (planId: number): Promise<AxiosResponse<ApiResponse<any>>> =>
+    api.patch(`/admin/dca-plans/${planId}/resume`),
+  
+  deleteDcaPlan: (planId: number): Promise<AxiosResponse<ApiResponse<any>>> =>
+    api.delete(`/admin/dca-plans/${planId}`),
 };
 
 export default api;

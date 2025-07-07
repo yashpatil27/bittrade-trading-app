@@ -18,18 +18,21 @@ router.get('/dashboard', async (req, res) => {
     // Get platform statistics
     const [userCount, totalTrades, platformBalances] = await Promise.all([
       query('SELECT COUNT(*) as count FROM users WHERE is_admin = false'),
-      query('SELECT COUNT(*) as count FROM transactions WHERE type IN (?, ?)', ['BUY', 'SELL']),
+      query('SELECT COUNT(*) as count FROM operations WHERE type IN (?, ?, ?, ?) AND status = ?', ['MARKET_BUY', 'MARKET_SELL', 'LIMIT_BUY', 'LIMIT_SELL', 'EXECUTED']),
       query(`
         SELECT 
-          SUM(inr_balance) as total_inr,
-          SUM(btc_balance) as total_btc
-        FROM (
-          SELECT DISTINCT user_id, 
-            FIRST_VALUE(inr_balance) OVER (PARTITION BY user_id ORDER BY id DESC) as inr_balance,
-            FIRST_VALUE(btc_balance) OVER (PARTITION BY user_id ORDER BY id DESC) as btc_balance
-          FROM transactions
-        ) as latest_balances
-      `)
+          COALESCE(SUM(CASE WHEN movement_type = 'CREDIT_INR' THEN amount WHEN movement_type = 'DEBIT_INR' THEN -amount ELSE 0 END), 0) as total_inr,
+          COALESCE(SUM(CASE WHEN movement_type = 'CREDIT_BTC' THEN amount WHEN movement_type = 'DEBIT_BTC' THEN -amount ELSE 0 END), 0) as total_btc
+        FROM balance_movements
+        GROUP BY user_id
+      `).then(results => {
+        const totals = results.reduce((acc, row) => {
+          acc.total_inr += row.total_inr || 0;
+          acc.total_btc += row.total_btc || 0;
+          return acc;
+        }, { total_inr: 0, total_btc: 0 });
+        return [totals];
+      })
     ]);
 
     // Get current prices
@@ -73,15 +76,23 @@ router.get('/users', async (req, res) => {
     const users = await query(`
       SELECT 
         u.id, u.email, u.name, u.is_admin, u.created_at,
-        COALESCE(latest.inr_balance, 0) as inr_balance,
-        COALESCE(latest.btc_balance, 0) as btc_balance
+        COALESCE(inr_balance.total, 0) as inr_balance,
+        COALESCE(btc_balance.total, 0) as btc_balance
       FROM users u
       LEFT JOIN (
-        SELECT DISTINCT user_id,
-          FIRST_VALUE(inr_balance) OVER (PARTITION BY user_id ORDER BY id DESC) as inr_balance,
-          FIRST_VALUE(btc_balance) OVER (PARTITION BY user_id ORDER BY id DESC) as btc_balance
-        FROM transactions
-      ) latest ON u.id = latest.user_id
+        SELECT user_id, 
+          SUM(CASE WHEN movement_type = 'CREDIT_INR' THEN amount WHEN movement_type = 'DEBIT_INR' THEN -amount ELSE 0 END) as total
+        FROM balance_movements 
+        WHERE movement_type IN ('CREDIT_INR', 'DEBIT_INR')
+        GROUP BY user_id
+      ) inr_balance ON u.id = inr_balance.user_id
+      LEFT JOIN (
+        SELECT user_id, 
+          SUM(CASE WHEN movement_type = 'CREDIT_BTC' THEN amount WHEN movement_type = 'DEBIT_BTC' THEN -amount ELSE 0 END) as total
+        FROM balance_movements 
+        WHERE movement_type IN ('CREDIT_BTC', 'DEBIT_BTC')
+        GROUP BY user_id
+      ) btc_balance ON u.id = btc_balance.user_id
       ORDER BY u.created_at DESC
       LIMIT ${limit} OFFSET ${offset}
     `);
@@ -756,40 +767,41 @@ router.get('/transactions', async (req, res) => {
     const limit = parseInt(req.query.limit) || 50;
     const offset = (page - 1) * limit;
 
-    const transactions = await query(`
+    const operations = await query(`
       SELECT 
-        t.id, t.user_id, t.type, t.inr_amount, t.btc_amount, t.btc_price,
-        t.inr_balance, t.btc_balance, t.created_at,
+        o.id, o.user_id, o.type, o.status, o.inr_amount, o.btc_amount, 
+        o.execution_price, o.limit_price, o.executed_at, o.created_at,
         u.email, u.name
-      FROM transactions t
-      JOIN users u ON t.user_id = u.id
-      ORDER BY t.id DESC
+      FROM operations o
+      JOIN users u ON o.user_id = u.id
+      ORDER BY o.id DESC
       LIMIT ${limit} OFFSET ${offset}
     `);
 
-    const formattedTransactions = transactions.map(transaction => ({
-      ...transaction,
-      btc_amount: transaction.btc_amount / 100000000,
-      btc_balance: transaction.btc_balance / 100000000
+    const formattedOperations = operations.map(operation => ({
+      ...operation,
+      btc_amount: operation.btc_amount / 100000000,
+      execution_price: operation.execution_price,
+      limit_price: operation.limit_price
     }));
 
     res.json({
       success: true,
       data: {
-        transactions: formattedTransactions,
+        transactions: formattedOperations, // Keep the same field name for frontend compatibility
         pagination: {
           page,
           limit,
-          has_more: transactions.length === limit
+          has_more: operations.length === limit
         }
       }
     });
 
   } catch (error) {
-    console.error('Get all transactions error:', error);
+    console.error('Get all operations error:', error);
     res.status(500).json({
       success: false,
-      message: 'Error fetching transactions'
+      message: 'Error fetching operations'
     });
   }
 });
@@ -992,6 +1004,193 @@ router.post('/limit-orders/service/:action', async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Error controlling service'
+    });
+  }
+});
+
+// ========== DCA PLANS MANAGEMENT ENDPOINTS ==========
+
+// Get all DCA plans across platform (with pagination)
+router.get('/dca-plans', async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 50;
+    const offset = (page - 1) * limit;
+
+    // Get DCA plans with enhanced data
+    const dcaPlans = await query(`
+      SELECT 
+        ap.id, ap.user_id, ap.plan_type, ap.status, ap.frequency,
+        ap.amount_per_execution, ap.next_execution_at, ap.total_executions,
+        ap.remaining_executions, ap.max_price, ap.min_price, ap.created_at,
+        u.email, u.name,
+        -- Calculate additional metrics
+        COALESCE((
+          SELECT SUM(CASE 
+            WHEN o.type = 'DCA_BUY' THEN o.inr_amount 
+            WHEN o.type = 'DCA_SELL' THEN o.btc_amount / 100000000 * o.execution_price 
+            ELSE 0 
+          END)
+          FROM operations o 
+          WHERE o.parent_id = ap.id AND o.status = 'EXECUTED'
+        ), 0) as total_invested,
+        COALESCE((
+          SELECT COUNT(*) 
+          FROM operations o 
+          WHERE o.parent_id = ap.id AND o.status = 'EXECUTED'
+        ), 0) as executions_count
+      FROM active_plans ap
+      JOIN users u ON ap.user_id = u.id
+      ORDER BY ap.created_at DESC
+      LIMIT ${limit} OFFSET ${offset}
+    `);
+
+    // Format the DCA plans with proper field mapping
+    const formattedPlans = dcaPlans.map(plan => ({
+      ...plan,
+      amount: plan.amount_per_execution, // Map for admin UI compatibility
+      amount_per_execution: plan.plan_type === 'DCA_SELL' ? 
+        plan.amount_per_execution / 100000000 : plan.amount_per_execution, // Convert to BTC for sell plans
+      total_invested: parseFloat(plan.total_invested) || 0,
+      executions_count: parseInt(plan.executions_count) || 0
+    }));
+
+    res.json({
+      success: true,
+      data: {
+        dcaPlans: formattedPlans,
+        pagination: {
+          page,
+          limit,
+          has_more: dcaPlans.length === limit
+        }
+      }
+    });
+
+  } catch (error) {
+    console.error('Get all DCA plans error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching DCA plans'
+    });
+  }
+});
+
+// Pause DCA plan (admin)
+router.patch('/dca-plans/:planId/pause', async (req, res) => {
+  try {
+    const { planId } = req.params;
+
+    // Check if plan exists and is active
+    const plans = await query('SELECT * FROM active_plans WHERE id = ? AND status = ?', [planId, 'ACTIVE']);
+    if (plans.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Active DCA plan not found'
+      });
+    }
+
+    // Pause the plan
+    await query('UPDATE active_plans SET status = ? WHERE id = ?', ['PAUSED', planId]);
+
+    res.json({
+      success: true,
+      message: 'DCA plan paused successfully'
+    });
+
+  } catch (error) {
+    console.error('Pause DCA plan error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error pausing DCA plan'
+    });
+  }
+});
+
+// Resume DCA plan (admin)
+router.patch('/dca-plans/:planId/resume', async (req, res) => {
+  try {
+    const { planId } = req.params;
+
+    // Check if plan exists and is paused
+    const plans = await query('SELECT * FROM active_plans WHERE id = ? AND status = ?', [planId, 'PAUSED']);
+    if (plans.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Paused DCA plan not found'
+      });
+    }
+
+    const plan = plans[0];
+
+    // Calculate next execution time based on frequency
+    const now = new Date();
+    let nextExecution;
+    
+    switch (plan.frequency) {
+      case 'HOURLY':
+        nextExecution = new Date(now.getTime() + 60 * 60 * 1000);
+        break;
+      case 'DAILY':
+        nextExecution = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+        break;
+      case 'WEEKLY':
+        nextExecution = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+        break;
+      case 'MONTHLY':
+        nextExecution = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+        break;
+      default:
+        nextExecution = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+    }
+
+    // Resume the plan
+    await query(
+      'UPDATE active_plans SET status = ?, next_execution_at = ? WHERE id = ?',
+      ['ACTIVE', nextExecution, planId]
+    );
+
+    res.json({
+      success: true,
+      message: 'DCA plan resumed successfully'
+    });
+
+  } catch (error) {
+    console.error('Resume DCA plan error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error resuming DCA plan'
+    });
+  }
+});
+
+// Delete DCA plan (admin)
+router.delete('/dca-plans/:planId', async (req, res) => {
+  try {
+    const { planId } = req.params;
+
+    // Check if plan exists
+    const plans = await query('SELECT * FROM active_plans WHERE id = ?', [planId]);
+    if (plans.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'DCA plan not found'
+      });
+    }
+
+    // Delete the plan
+    await query('DELETE FROM active_plans WHERE id = ?', [planId]);
+
+    res.json({
+      success: true,
+      message: 'DCA plan deleted successfully'
+    });
+
+  } catch (error) {
+    console.error('Delete DCA plan error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error deleting DCA plan'
     });
   }
 });
