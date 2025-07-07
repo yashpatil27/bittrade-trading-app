@@ -66,13 +66,39 @@ const Home: React.FC = () => {
     setIsModalOpen(true);
   };
 
-  const handleTrade = async (amount: number, targetPrice?: number) => {
+  const handleTrade = async (amount: number, targetPrice?: number, dcaConfig?: {
+    frequency: 'DAILY' | 'WEEKLY' | 'MONTHLY';
+    totalExecutions?: number;
+    maxPrice?: number;
+    minPrice?: number;
+  }) => {
     setIsLoading(true);
     setError('');
     setSuccess('');
 
     try {
-      if (targetPrice) {
+      if (dcaConfig) {
+        // DCA plan
+        if (modalType === 'buy') {
+          await userAPI.createDcaBuyPlan({ 
+            amountPerExecution: amount, 
+            frequency: dcaConfig.frequency,
+            totalExecutions: dcaConfig.totalExecutions,
+            maxPrice: dcaConfig.maxPrice,
+            minPrice: dcaConfig.minPrice
+          });
+          setSuccess(`🔄 DCA ${dcaConfig.frequency.toLowerCase()} buy plan created successfully!`);
+        } else {
+          await userAPI.createDcaSellPlan({ 
+            amountPerExecution: amount, 
+            frequency: dcaConfig.frequency,
+            totalExecutions: dcaConfig.totalExecutions,
+            maxPrice: dcaConfig.maxPrice,
+            minPrice: dcaConfig.minPrice
+          });
+          setSuccess(`🔄 DCA ${dcaConfig.frequency.toLowerCase()} sell plan created successfully!`);
+        }
+      } else if (targetPrice) {
         // Limit order
         if (modalType === 'buy') {
           await userAPI.placeLimitBuyOrder({ inrAmount: amount, targetPrice });
@@ -103,7 +129,7 @@ const Home: React.FC = () => {
       // Trigger balance refresh for persistent top bar
       refreshBalance();
     } catch (error: any) {
-      setError(error.response?.data?.message || `Failed to ${targetPrice ? 'place limit order' : modalType + ' Bitcoin'}`);
+      setError(error.response?.data?.message || `Failed to ${dcaConfig ? 'create DCA plan' : targetPrice ? 'place limit order' : modalType + ' Bitcoin'}`);
     } finally {
       setIsLoading(false);
     }

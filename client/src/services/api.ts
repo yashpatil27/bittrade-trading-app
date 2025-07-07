@@ -123,6 +123,30 @@ export const userAPI = {
   
   cancelLimitOrder: (orderId: number): Promise<AxiosResponse<ApiResponse<any>>> =>
     api.delete(`/user/limit-orders/${orderId}`),
+  
+  createDcaBuyPlan: (data: {
+    amountPerExecution: number;
+    frequency: 'DAILY' | 'WEEKLY' | 'MONTHLY';
+    totalExecutions?: number;
+    maxPrice?: number;
+    minPrice?: number;
+  }): Promise<AxiosResponse<ApiResponse<any>>> =>
+    api.post('/user/dca-buy', data),
+  
+  createDcaSellPlan: (data: {
+    amountPerExecution: number;
+    frequency: 'DAILY' | 'WEEKLY' | 'MONTHLY';
+    totalExecutions?: number;
+    maxPrice?: number;
+    minPrice?: number;
+  }): Promise<AxiosResponse<ApiResponse<any>>> =>
+    api.post('/user/dca-sell', data),
+  
+  getDcaPlans: (): Promise<AxiosResponse<ApiResponse<any[]>>> =>
+    api.get('/user/dca-plans'),
+  
+  cancelDcaPlan: (planId: number): Promise<AxiosResponse<ApiResponse<any>>> =>
+    api.delete(`/user/dca-plans/${planId}`),
 };
 
 // Admin API

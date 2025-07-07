@@ -16,6 +16,7 @@ const { createPool } = require('./config/database');
 const { createRedisClient } = require('./config/redis');
 const bitcoinDataService = require('./services/bitcoinDataService');
 const limitOrderExecutionService = require('./services/limitOrderExecutionService');
+const dcaExecutionService = require('./services/dcaExecutionService');
 
 // Load environment variables
 dotenv.config();
@@ -46,6 +47,10 @@ const initializeServices = async () => {
     // Start limit order execution service
     limitOrderExecutionService.startService();
     console.log('✓ Limit order execution service started');
+
+    // Start DCA execution service
+    dcaExecutionService.startService();
+    console.log('✓ DCA execution service started');
     
     console.log('All services initialized successfully');
   } catch (error) {
@@ -95,7 +100,8 @@ app.get('/health', (req, res) => {
     services: {
       database: 'connected',
       bitcoin_data_service: bitcoinDataService.isRunning ? 'running' : 'stopped',
-      limit_order_execution: limitOrderExecutionService.isRunning ? 'running' : 'stopped'
+      limit_order_execution: limitOrderExecutionService.isRunning ? 'running' : 'stopped',
+      dca_execution: dcaExecutionService.isRunning ? 'running' : 'stopped'
     }
   });
 });
@@ -124,6 +130,7 @@ process.on('SIGINT', () => {
   console.log('\nReceived SIGINT. Graceful shutdown...');
   bitcoinDataService.stopDataUpdates();
   limitOrderExecutionService.stopService();
+  dcaExecutionService.stopService();
   process.exit(0);
 });
 
@@ -131,6 +138,7 @@ process.on('SIGTERM', () => {
   console.log('\nReceived SIGTERM. Graceful shutdown...');
   bitcoinDataService.stopDataUpdates();
   limitOrderExecutionService.stopService();
+  dcaExecutionService.stopService();
   process.exit(0);
 });
 

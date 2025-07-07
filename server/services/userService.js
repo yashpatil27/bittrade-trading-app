@@ -616,6 +616,148 @@ class UserService {
       throw error;
     }
   }
+
+  async createDcaBuyPlan(userId, planConfig) {
+    const {
+      amountPerExecution,
+      frequency,
+      totalExecutions,
+      maxPrice,
+      minPrice
+    } = planConfig;
+
+    // Validate price limits
+    if (maxPrice && minPrice && maxPrice <= minPrice) {
+      throw new Error('Invalid price limits');
+    }
+
+    try {
+      return await transaction(async (connection) => {  
+        const [userRows] = await connection.execute(
+          'SELECT available_inr FROM users WHERE id = ?',
+          [userId]
+        );
+
+        if (userRows.length === 0) {
+          throw new Error('User not found');
+        }
+
+        const currentBalances = userRows[0];
+
+        // Check if user has enough balance for at least one execution
+        if (currentBalances.available_inr < amountPerExecution) {
+          throw new Error('Insufficient INR balance for DCA plan');
+        }
+
+        const nextExecutionAt = new Date();
+        if (frequency === 'WEEKLY') {
+          nextExecutionAt.setDate(nextExecutionAt.getDate() + 7);
+        } else if (frequency === 'MONTHLY') {
+          nextExecutionAt.setMonth(nextExecutionAt.getMonth() + 1);
+        } else {
+          nextExecutionAt.setDate(nextExecutionAt.getDate() + 1);
+        }
+
+        const [result] = await connection.execute(
+          'INSERT INTO active_plans (user_id, plan_type, status, frequency, amount_per_execution, next_execution_at, remaining_executions, max_price, min_price) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+          [
+            userId, 
+            'DCA_BUY', 
+            'ACTIVE', 
+            frequency, 
+            amountPerExecution, 
+            nextExecutionAt, 
+            totalExecutions || null, 
+            maxPrice, 
+            minPrice
+          ]
+        );
+
+        await clearUserCache(userId);
+
+        return {
+          planId: result.insertId,
+          amountPerExecution,
+          frequency,
+          nextExecutionAt,
+        };
+      });
+    } catch (error) {
+      console.error('Error creating DCA buy plan:', error);
+      throw error;
+    }
+  }
+
+  async createDcaSellPlan(userId, planConfig) {
+    const {
+      amountPerExecution,
+      frequency,
+      totalExecutions,
+      maxPrice,
+      minPrice
+    } = planConfig;
+
+    // Validate price limits
+    if (maxPrice && minPrice && maxPrice <= minPrice) {
+      throw new Error('Invalid price limits');
+    }
+
+    try {
+      return await transaction(async (connection) => {  
+        const [userRows] = await connection.execute(
+          'SELECT available_btc FROM users WHERE id = ?',
+          [userId]
+        );
+
+        if (userRows.length === 0) {
+          throw new Error('User not found');
+        }
+
+        const currentBalances = userRows[0];
+
+        // Check if user has enough balance for at least one execution
+        if (currentBalances.available_btc < amountPerExecution) {
+          throw new Error('Insufficient BTC balance for DCA plan');
+        }
+
+        const nextExecutionAt = new Date();
+        if (frequency === 'WEEKLY') {
+          nextExecutionAt.setDate(nextExecutionAt.getDate() + 7);
+        } else if (frequency === 'MONTHLY') {
+          nextExecutionAt.setMonth(nextExecutionAt.getMonth() + 1);
+        } else {
+          nextExecutionAt.setDate(nextExecutionAt.getDate() + 1);
+        }
+
+        const [result] = await connection.execute(
+          'INSERT INTO active_plans (user_id, plan_type, status, frequency, amount_per_execution, next_execution_at, remaining_executions, max_price, min_price) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+          [
+            userId, 
+            'DCA_SELL', 
+            'ACTIVE', 
+            frequency, 
+            amountPerExecution, 
+            nextExecutionAt, 
+            totalExecutions || null, 
+            maxPrice, 
+            minPrice
+          ]
+        );
+
+        await clearUserCache(userId);
+
+        return {
+          planId: result.insertId,
+          amountPerExecution,
+          frequency,
+          nextExecutionAt,
+        };
+      });
+    } catch (error) {
+      console.error('Error creating DCA sell plan:', error);
+      throw error;
+    }
+  }
 }
 
 // Export singleton instance

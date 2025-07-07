@@ -717,6 +717,211 @@ router.patch('/profile', async (req, res) => {
   }
 });
 
+// Create DCA Buy Plan
+router.post('/dca-buy', async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { amountPerExecution, frequency, totalExecutions, maxPrice, minPrice } = req.body;
+
+    // Validation
+    if (!amountPerExecution || amountPerExecution <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Amount per execution must be greater than 0'
+      });
+    }
+
+    if (!frequency || !['DAILY', 'WEEKLY', 'MONTHLY'].includes(frequency)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid frequency. Must be DAILY, WEEKLY, or MONTHLY'
+      });
+    }
+
+    if (!Number.isInteger(amountPerExecution)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Amount per execution must be a whole number (in rupees)'
+      });
+    }
+
+    const result = await userService.createDcaBuyPlan(userId, {
+      amountPerExecution,
+      frequency,
+      totalExecutions,
+      maxPrice,
+      minPrice
+    });
+
+    res.json({
+      success: true,
+      message: 'DCA buy plan created successfully',
+      data: result
+    });
+
+  } catch (error) {
+    console.error('DCA buy plan creation error:', error);
+    
+    let statusCode = 500;
+    let message = 'Error creating DCA buy plan';
+    
+    if (error.message === 'Invalid frequency' || error.message === 'Invalid price limits') {
+      statusCode = 400;
+      message = error.message;
+    }
+
+    res.status(statusCode).json({
+      success: false,
+      message
+    });
+  }
+});
+
+// Create DCA Sell Plan
+router.post('/dca-sell', async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { amountPerExecution, frequency, totalExecutions, maxPrice, minPrice } = req.body;
+
+    // Validation
+    if (!amountPerExecution || amountPerExecution <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Amount per execution must be greater than 0'
+      });
+    }
+
+    if (!frequency || !['DAILY', 'WEEKLY', 'MONTHLY'].includes(frequency)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid frequency. Must be DAILY, WEEKLY, or MONTHLY'
+      });
+    }
+
+    // Convert BTC amount to satoshis
+    const satoshiAmount = Math.floor(amountPerExecution * 100000000);
+    
+    if (satoshiAmount <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Amount too small'
+      });
+    }
+
+    const result = await userService.createDcaSellPlan(userId, {
+      amountPerExecution: satoshiAmount,
+      frequency,
+      totalExecutions,
+      maxPrice,
+      minPrice
+    });
+
+    res.json({
+      success: true,
+      message: 'DCA sell plan created successfully',
+      data: result
+    });
+
+  } catch (error) {
+    console.error('DCA sell plan creation error:', error);
+    
+    let statusCode = 500;
+    let message = 'Error creating DCA sell plan';
+    
+    if (error.message === 'Invalid frequency' || error.message === 'Invalid price limits') {
+      statusCode = 400;
+      message = error.message;
+    }
+
+    res.status(statusCode).json({
+      success: false,
+      message
+    });
+  }
+});
+
+// Get user's DCA plans
+router.get('/dca-plans', async (req, res) => {
+  try {
+    const userId = req.user.id;
+    
+    const plans = await query(`
+      SELECT 
+        id, plan_type, status, frequency, amount_per_execution,
+        next_execution_at, total_executions, remaining_executions,
+        max_price, min_price, created_at
+      FROM active_plans 
+      WHERE user_id = ? 
+      AND status IN ('ACTIVE', 'PAUSED')
+      ORDER BY created_at DESC
+    `, [userId]);
+
+    const formattedPlans = plans.map(plan => ({
+      ...plan,
+      amount_per_execution: plan.plan_type === 'DCA_SELL' ? 
+        plan.amount_per_execution / 100000000 : plan.amount_per_execution // Convert to BTC for sell plans
+    }));
+
+    res.json({
+      success: true,
+      data: formattedPlans
+    });
+
+  } catch (error) {
+    console.error('Get DCA plans error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching DCA plans'
+    });
+  }
+});
+
+// Cancel DCA plan
+router.delete('/dca-plans/:planId', async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { planId } = req.params;
+
+    // Get plan details and verify ownership
+    const plans = await query(
+      'SELECT * FROM active_plans WHERE id = ? AND user_id = ? AND status IN ("ACTIVE", "PAUSED")',
+      [planId, userId]
+    );
+
+    if (plans.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Active DCA plan not found'
+      });
+    }
+
+    const plan = plans[0];
+
+    // Cancel the plan
+    await query(
+      'UPDATE active_plans SET status = ?, completed_at = NOW() WHERE id = ?',
+      ['CANCELLED', planId]
+    );
+
+    res.json({
+      success: true,
+      message: 'DCA plan cancelled successfully',
+      data: {
+        plan_id: planId,
+        plan_type: plan.plan_type,
+        frequency: plan.frequency
+      }
+    });
+
+  } catch (error) {
+    console.error('Cancel DCA plan error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error cancelling DCA plan'
+    });
+  }
+});
+
 // Change password
 router.patch('/password', async (req, res) => {
   try {

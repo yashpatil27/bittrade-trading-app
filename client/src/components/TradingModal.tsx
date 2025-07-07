@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, TrendingUp, TrendingDown, Calculator, Zap, Target, Clock } from 'lucide-react';
+import { X, TrendingUp, TrendingDown, Calculator, Zap, Target, Clock, Repeat } from 'lucide-react';
 import { Prices } from '../types';
 import { userAPI } from '../services/api';
 import PinConfirmationModal from './PinConfirmationModal';
@@ -11,7 +11,12 @@ interface TradingModalProps {
   type: 'buy' | 'sell';
   prices: Prices | null;
   userBalance: { inr: number; btc: number };
-  onTrade: (amount: number, targetPrice?: number) => Promise<void>;
+  onTrade: (amount: number, targetPrice?: number, dcaConfig?: {
+    frequency: 'DAILY' | 'WEEKLY' | 'MONTHLY';
+    totalExecutions?: number;
+    maxPrice?: number;
+    minPrice?: number;
+  }) => Promise<void>;
   isLoading: boolean;
 }
 
@@ -24,13 +29,18 @@ const TradingModal: React.FC<TradingModalProps> = ({
   onTrade,
   isLoading
 }) => {
-  const [orderType, setOrderType] = useState<'market' | 'limit'>('market');
+  const [orderType, setOrderType] = useState<'market' | 'limit' | 'dca'>('market');
   const [amount, setAmount] = useState('');
   const [targetPrice, setTargetPrice] = useState('');
   const [estimation, setEstimation] = useState<number>(0);
   const [isPinModalOpen, setIsPinModalOpen] = useState(false);
   const [pendingAmount, setPendingAmount] = useState<number>(0);
   const [pendingTargetPrice, setPendingTargetPrice] = useState<number | undefined>(undefined);
+  const [dcaFrequency, setDcaFrequency] = useState<'DAILY' | 'WEEKLY' | 'MONTHLY'>('WEEKLY');
+  const [dcaExecutions, setDcaExecutions] = useState('');
+  const [dcaMaxPrice, setDcaMaxPrice] = useState('');
+  const [dcaMinPrice, setDcaMinPrice] = useState('');
+  const [pendingDcaConfig, setPendingDcaConfig] = useState<any>(undefined);
 
   const isBuy = type === 'buy';
   const rate = isBuy ? prices?.buy_rate : prices?.sell_rate;
@@ -64,9 +74,21 @@ const TradingModal: React.FC<TradingModalProps> = ({
     if (!amount || parseFloat(amount) <= 0) return;
     if (orderType === 'limit' && (!targetPrice || parseFloat(targetPrice) <= 0)) return;
     
-    // Store the amount and target price, then open PIN confirmation
+    // Store the amount and configuration, then open PIN confirmation
     setPendingAmount(parseFloat(amount));
     setPendingTargetPrice(orderType === 'limit' ? parseFloat(targetPrice) : undefined);
+    
+    if (orderType === 'dca') {
+      setPendingDcaConfig({
+        frequency: dcaFrequency,
+        totalExecutions: dcaExecutions ? parseInt(dcaExecutions) : undefined,
+        maxPrice: dcaMaxPrice ? parseFloat(dcaMaxPrice) : undefined,
+        minPrice: dcaMinPrice ? parseFloat(dcaMinPrice) : undefined
+      });
+    } else {
+      setPendingDcaConfig(undefined);
+    }
+    
     setIsPinModalOpen(true);
   };
 
@@ -76,11 +98,15 @@ const TradingModal: React.FC<TradingModalProps> = ({
       const response = await userAPI.verifyPin(pin);
       if (response.data.data?.valid) {
         // PIN is correct, proceed with trade
-        await onTrade(pendingAmount, pendingTargetPrice);
+        await onTrade(pendingAmount, pendingTargetPrice, pendingDcaConfig);
         setAmount('');
         setTargetPrice('');
+        setDcaExecutions('');
+        setDcaMaxPrice('');
+        setDcaMinPrice('');
         setPendingAmount(0);
         setPendingTargetPrice(undefined);
+        setPendingDcaConfig(undefined);
         setIsPinModalOpen(false);
         onClose();
         return true;
@@ -98,6 +124,7 @@ const TradingModal: React.FC<TradingModalProps> = ({
     setIsPinModalOpen(false);
     setPendingAmount(0);
     setPendingTargetPrice(undefined);
+    setPendingDcaConfig(undefined);
   };
 
   const getMaxAmount = () => {
@@ -124,21 +151,27 @@ const TradingModal: React.FC<TradingModalProps> = ({
                 ) : (
                   <TrendingDown className="w-6 h-6 text-white" />
                 )
-              ) : (
+              ) : orderType === 'limit' ? (
                 <Target className="w-6 h-6 text-white" />
+              ) : (
+                <Repeat className="w-6 h-6 text-white" />
               )}
             </div>
             <div>
               <h2 className="text-xl font-bold">
                 {orderType === 'market' ? 
                   (isBuy ? 'Buy Bitcoin' : 'Sell Bitcoin') : 
-                  (isBuy ? 'Limit Buy Order' : 'Limit Sell Order')
+                  orderType === 'limit' ?
+                  (isBuy ? 'Limit Buy Order' : 'Limit Sell Order') :
+                  (isBuy ? 'DCA Buy Plan' : 'DCA Sell Plan')
                 }
               </h2>
               <p className="text-sm text-zinc-400">
                 {orderType === 'market' ? 
                   `Market Rate: ₹${rate?.toLocaleString('en-IN')}/BTC` :
-                  `Current: ₹${rate?.toLocaleString('en-IN')}/BTC`
+                  orderType === 'limit' ?
+                  `Current: ₹${rate?.toLocaleString('en-IN')}/BTC` :
+                  `Recurring ${dcaFrequency.toLowerCase()} ${isBuy ? 'purchases' : 'sales'}`
                 }
               </p>
             </div>
@@ -156,25 +189,36 @@ const TradingModal: React.FC<TradingModalProps> = ({
           <div className="flex bg-zinc-800 rounded-lg p-1">
             <button
               onClick={() => setOrderType('market')}
-              className={`flex-1 py-2 px-3 rounded-md text-sm font-medium transition-colors flex items-center justify-center gap-2 ${
+              className={`flex-1 py-2 px-2 rounded-md text-xs font-medium transition-colors flex items-center justify-center gap-1 ${
                 orderType === 'market' 
                   ? 'bg-white text-black' 
                   : 'text-zinc-400 hover:text-white'
               }`}
             >
-              <Zap className="w-4 h-4" />
-              Market Order
+              <Zap className="w-3 h-3" />
+              Market
             </button>
             <button
               onClick={() => setOrderType('limit')}
-              className={`flex-1 py-2 px-3 rounded-md text-sm font-medium transition-colors flex items-center justify-center gap-2 ${
+              className={`flex-1 py-2 px-2 rounded-md text-xs font-medium transition-colors flex items-center justify-center gap-1 ${
                 orderType === 'limit' 
                   ? 'bg-white text-black' 
                   : 'text-zinc-400 hover:text-white'
               }`}
             >
-              <Target className="w-4 h-4" />
-              Limit Order
+              <Target className="w-3 h-3" />
+              Limit
+            </button>
+            <button
+              onClick={() => setOrderType('dca')}
+              className={`flex-1 py-2 px-2 rounded-md text-xs font-medium transition-colors flex items-center justify-center gap-1 ${
+                orderType === 'dca' 
+                  ? 'bg-white text-black' 
+                  : 'text-zinc-400 hover:text-white'
+              }`}
+            >
+              <Repeat className="w-3 h-3" />
+              DCA
             </button>
           </div>
         </div>
@@ -196,7 +240,10 @@ const TradingModal: React.FC<TradingModalProps> = ({
         {/* Amount Input */}
         <div className="mb-6">
           <label className="block text-sm font-medium mb-2">
-            {isBuy ? 'Amount to Spend (INR)' : 'Amount to Sell (BTC)'}
+            {orderType === 'dca' ? 
+              (isBuy ? 'Amount per Purchase (INR)' : 'Amount per Sale (BTC)') :
+              (isBuy ? 'Amount to Spend (INR)' : 'Amount to Sell (BTC)')
+            }
           </label>
           <div className="relative">
             <input
@@ -298,6 +345,96 @@ const TradingModal: React.FC<TradingModalProps> = ({
           </div>
         )}
 
+        {/* DCA Configuration (DCA Orders Only) */}
+        {orderType === 'dca' && (
+          <div className="mb-6 space-y-4">
+            {/* Frequency Selection */}
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                Purchase Frequency
+              </label>
+              <div className="flex bg-zinc-800 rounded-lg p-1">
+                <button
+                  onClick={() => setDcaFrequency('DAILY')}
+                  className={`flex-1 py-2 px-3 rounded-md text-sm font-medium transition-colors ${
+                    dcaFrequency === 'DAILY' 
+                      ? 'bg-white text-black' 
+                      : 'text-zinc-400 hover:text-white'
+                  }`}
+                >
+                  Daily
+                </button>
+                <button
+                  onClick={() => setDcaFrequency('WEEKLY')}
+                  className={`flex-1 py-2 px-3 rounded-md text-sm font-medium transition-colors ${
+                    dcaFrequency === 'WEEKLY' 
+                      ? 'bg-white text-black' 
+                      : 'text-zinc-400 hover:text-white'
+                  }`}
+                >
+                  Weekly
+                </button>
+                <button
+                  onClick={() => setDcaFrequency('MONTHLY')}
+                  className={`flex-1 py-2 px-3 rounded-md text-sm font-medium transition-colors ${
+                    dcaFrequency === 'MONTHLY' 
+                      ? 'bg-white text-black' 
+                      : 'text-zinc-400 hover:text-white'
+                  }`}
+                >
+                  Monthly
+                </button>
+              </div>
+            </div>
+            
+            {/* Total Executions (Optional) */}
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                Total Executions (Leave empty for unlimited)
+              </label>
+              <input
+                type="number"
+                value={dcaExecutions}
+                onChange={(e) => setDcaExecutions(e.target.value)}
+                className="input-field w-full"
+                placeholder="10"
+                min="1"
+                max="1000"
+              />
+            </div>
+            
+            {/* Price Limits (Optional) */}
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-sm font-medium mb-2">
+                  Max Price (₹/BTC)
+                </label>
+                <input
+                  type="number"
+                  value={dcaMaxPrice}
+                  onChange={(e) => setDcaMaxPrice(e.target.value)}
+                  className="input-field w-full"
+                  placeholder="Optional"
+                  min="1"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2">
+                  Min Price (₹/BTC)
+                </label>
+                <input
+                  type="number"
+                  value={dcaMinPrice}
+                  onChange={(e) => setDcaMinPrice(e.target.value)}
+                  className="input-field w-full"
+                  placeholder="Optional"
+                  min="1"
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Estimation Display */}
         {amount && estimation > 0 && (
           <div className="bg-zinc-800/50 border border-zinc-700 rounded-lg p-4 mb-6">
@@ -310,7 +447,9 @@ const TradingModal: React.FC<TradingModalProps> = ({
               <span className="text-sm font-medium text-white">
                 {orderType === 'market' ? 
                   'You\'ll receive approximately:' : 
-                  'Estimated when filled:'
+                  orderType === 'limit' ?
+                  'Estimated when filled:' :
+                  `Per ${dcaFrequency.toLowerCase()} execution:`
                 }
               </span>
             </div>
@@ -356,7 +495,7 @@ const TradingModal: React.FC<TradingModalProps> = ({
               !amount || 
               parseFloat(amount) <= 0 || 
               isLoading || 
-              parseFloat(amount) > availableBalance ||
+              (orderType !== 'dca' && parseFloat(amount) > availableBalance) ||
               (orderType === 'limit' && (!targetPrice || parseFloat(targetPrice) <= 0))
             }
             className="flex-1 font-medium px-4 py-2 rounded-lg transition-all duration-200 flex items-center justify-center gap-2 bg-white text-black hover:bg-zinc-200 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -368,10 +507,13 @@ const TradingModal: React.FC<TradingModalProps> = ({
               </>
             ) : (
               <>
-                {orderType === 'market' ? <Zap className="w-4 h-4" /> : <Target className="w-4 h-4" />}
+                {orderType === 'market' ? <Zap className="w-4 h-4" /> : 
+                 orderType === 'limit' ? <Target className="w-4 h-4" /> : <Repeat className="w-4 h-4" />}
                 {orderType === 'market' ? 
                   (isBuy ? 'Buy Bitcoin' : 'Sell Bitcoin') :
-                  (isBuy ? 'Place Buy Order' : 'Place Sell Order')
+                  orderType === 'limit' ?
+                  (isBuy ? 'Place Buy Order' : 'Place Sell Order') :
+                  (isBuy ? 'Start DCA Buy Plan' : 'Start DCA Sell Plan')
                 }
               </>
             )}
@@ -384,20 +526,26 @@ const TradingModal: React.FC<TradingModalProps> = ({
         isOpen={isPinModalOpen}
         onClose={handlePinModalClose}
         onConfirm={handlePinConfirm}
-        title={`Confirm ${orderType === 'market' ? (isBuy ? 'Buy' : 'Sell') : 'Limit'} Order`}
+        title={`Confirm ${orderType === 'market' ? (isBuy ? 'Buy' : 'Sell') : orderType === 'limit' ? 'Limit' : 'DCA'} Order`}
         message={(() => {
           const baseText = 'Enter your PIN to confirm ';
           if (orderType === 'market') {
             const action = isBuy ? 'purchasing' : 'selling';
             const amount = isBuy ? `₹${pendingAmount.toLocaleString('en-IN')} worth of Bitcoin` : `${pendingAmount.toFixed(8)} BTC`;
             return `${baseText}${action} ${amount}`;
-          } else {
+          } else if (orderType === 'limit') {
             const action = isBuy ? 'buy' : 'sell';
             const amount = isBuy ? `₹${pendingAmount.toLocaleString('en-IN')}` : `${pendingAmount.toFixed(8)} BTC`;
             const price = `₹${(pendingTargetPrice || 0).toLocaleString('en-IN')}/BTC`;
             return `${baseText}placing a limit ${action} order for ${amount} at ${price}`;
+          } else {
+            const action = isBuy ? 'buy' : 'sell';
+            const amount = isBuy ? `₹${pendingAmount.toLocaleString('en-IN')}` : `${pendingAmount.toFixed(8)} BTC`;
+            const frequency = pendingDcaConfig?.frequency?.toLowerCase() || 'weekly';
+            const executions = pendingDcaConfig?.totalExecutions ? ` for ${pendingDcaConfig.totalExecutions} executions` : '';
+            return `${baseText}starting a ${frequency} DCA ${action} plan of ${amount}${executions}`;
           }
-        })()}
+        })()
         isLoading={isLoading}
       />
     </div>
