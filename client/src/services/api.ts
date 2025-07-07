@@ -192,6 +192,26 @@ export const adminAPI = {
   
   externalBuy: (userId: number, inrAmount: number, btcAmount: number): Promise<AxiosResponse<ApiResponse>> =>
     api.post(`/admin/users/${userId}/external-buy`, { inrAmount, btcAmount }),
+  
+  // System health and monitoring
+  getSystemHealth: (): Promise<AxiosResponse<any>> =>
+    axios.get(`${API_BASE_URL.replace('/api', '')}/health`),
+  
+  // Limit order management
+  getLimitOrdersSummary: (): Promise<AxiosResponse<ApiResponse<any>>> =>
+    api.get('/admin/limit-orders/summary'),
+  
+  getPendingLimitOrders: (): Promise<AxiosResponse<ApiResponse<any[]>>> =>
+    api.get('/admin/limit-orders/pending'),
+  
+  executeLimitOrders: (): Promise<AxiosResponse<ApiResponse<any>>> =>
+    api.post('/admin/limit-orders/execute'),
+  
+  cancelLimitOrder: (orderId: number, reason?: string): Promise<AxiosResponse<ApiResponse<any>>> =>
+    api.delete(`/admin/limit-orders/${orderId}`, { data: { reason } }),
+  
+  controlLimitOrderService: (action: 'start' | 'stop'): Promise<AxiosResponse<ApiResponse<any>>> =>
+    api.post(`/admin/limit-orders/service/${action}`),
 };
 
 export default api;

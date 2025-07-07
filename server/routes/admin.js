@@ -1,4 +1,5 @@
 const express = require('express');
+const bcrypt = require('bcrypt');
 const { verifyToken, requireAdmin } = require('../middleware/auth');
 const { query, transaction } = require('../config/database');
 const { clearUserCache } = require('../config/redis');
