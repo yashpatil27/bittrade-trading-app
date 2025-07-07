@@ -545,7 +545,7 @@ const TradingModal: React.FC<TradingModalProps> = ({
             const executions = pendingDcaConfig?.totalExecutions ? ` for ${pendingDcaConfig.totalExecutions} executions` : '';
             return `${baseText}starting a ${frequency} DCA ${action} plan of ${amount}${executions}`;
           }
-        })()
+        })()}
         isLoading={isLoading}
       />
     </div>

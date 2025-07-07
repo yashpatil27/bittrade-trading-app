@@ -10,8 +10,7 @@ import {
   Minus,
   Circle,
   Target,
-  Trash2,
-  AlertTriangle
+  Trash2
 } from 'lucide-react';
 import { Transaction } from '../types';
 import { getTransactionDisplayName, getTransactionIcon, formatBitcoin } from '../utils/formatters';
@@ -33,7 +32,6 @@ const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
   onTransactionUpdate
 }) => {
   const [isCancelling, setIsCancelling] = useState(false);
-  const [showCancelConfirm, setShowCancelConfirm] = useState(false);
   const [isPinModalOpen, setIsPinModalOpen] = useState(false);
   useBodyScrollLock(isOpen);
   
@@ -62,7 +60,6 @@ const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
       alert(error.response?.data?.message || 'Failed to cancel order. Please try again.');
     } finally {
       setIsCancelling(false);
-      setShowCancelConfirm(false);
       setIsPinModalOpen(false);
     }
   };
