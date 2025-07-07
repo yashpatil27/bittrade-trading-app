@@ -352,6 +352,7 @@ const Home: React.FC = () => {
         isOpen={isTransactionModalOpen}
         onClose={() => setIsTransactionModalOpen(false)}
         transaction={selectedTransaction}
+        onTransactionUpdate={refreshData}
       />
     </>
   );
