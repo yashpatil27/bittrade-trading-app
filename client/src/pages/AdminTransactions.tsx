@@ -444,7 +444,7 @@ const AdminTransactions: React.FC = () => {
     return matchesSearch && matchesStatus;
   });
 
-  const transactionTypes = ['ALL', 'SETUP', 'DEPOSIT_INR', 'BUY', 'SELL', 'WITHDRAW_INR', 'DEPOSIT_BTC', 'WITHDRAW_BTC', 'LIMIT_BUY', 'LIMIT_SELL'];
+  const transactionTypes = ['ALL', 'SETUP', 'DEPOSIT_INR', 'BUY', 'SELL', 'WITHDRAW_INR', 'DEPOSIT_BTC', 'WITHDRAW_BTC', 'LIMIT_BUY', 'LIMIT_SELL', 'DCA_BUY', 'DCA_SELL'];
   const dcaStatuses = ['ALL', 'ACTIVE', 'PAUSED', 'COMPLETED', 'CANCELLED'];
 
   // Calculate stats
@@ -623,7 +623,8 @@ const AdminTransactions: React.FC = () => {
                           {getTransactionIcon(transaction.type, transaction.status) === 'Minus' && <Minus className="w-3 h-3 text-white" />}
                           {getTransactionIcon(transaction.type, transaction.status) === 'Target' && <Target className="w-3 h-3 text-white" />}
                           {getTransactionIcon(transaction.type, transaction.status) === 'X' && <X className="w-3 h-3 text-white" />}
-                          {!['User', 'ArrowUp', 'TrendingUp', 'TrendingDown', 'ArrowDown', 'Plus', 'Minus', 'Target', 'X'].includes(getTransactionIcon(transaction.type, transaction.status)) && <Circle className="w-3 h-3 text-white" />}
+                          {getTransactionIcon(transaction.type, transaction.status) === 'Repeat' && <Repeat className="w-3 h-3 text-white" />}
+                          {!['User', 'ArrowUp', 'TrendingUp', 'TrendingDown', 'ArrowDown', 'Plus', 'Minus', 'Target', 'X', 'Repeat'].includes(getTransactionIcon(transaction.type, transaction.status)) && <Circle className="w-3 h-3 text-white" />}
                         </div>
                         <div>
                           <div className="flex items-center gap-2">
@@ -642,7 +643,7 @@ const AdminTransactions: React.FC = () => {
                         </div>
                       </div>
                       <div className="text-right">
-                        {(transaction.type === 'BUY' || transaction.type === 'SELL' || transaction.type === 'MARKET_BUY' || transaction.type === 'MARKET_SELL' || transaction.type === 'LIMIT_BUY' || transaction.type === 'LIMIT_SELL') ? (
+                        {(transaction.type === 'BUY' || transaction.type === 'SELL' || transaction.type === 'MARKET_BUY' || transaction.type === 'MARKET_SELL' || transaction.type === 'LIMIT_BUY' || transaction.type === 'LIMIT_SELL' || transaction.type === 'DCA_BUY' || transaction.type === 'DCA_SELL') ? (
                           <div>
                             <p className="font-bold text-sm text-white">
                               ₹{transaction.inr_amount.toLocaleString('en-IN')}
@@ -653,6 +654,11 @@ const AdminTransactions: React.FC = () => {
                             {transaction.status === 'PENDING' && transaction.btc_price && (
                               <p className="text-xs text-orange-300">
                                 @ ₹{transaction.btc_price.toLocaleString('en-IN')}
+                              </p>
+                            )}
+                            {(transaction.type === 'DCA_BUY' || transaction.type === 'DCA_SELL') && (
+                              <p className="text-xs text-zinc-500">
+                                Auto-DCA
                               </p>
                             )}
                           </div>
@@ -862,6 +868,8 @@ const AdminTransactions: React.FC = () => {
                     { key: 'SELL', label: 'Sell', icon: TrendingDown },
                     { key: 'LIMIT_BUY', label: 'Limit Buy', icon: Target },
                     { key: 'LIMIT_SELL', label: 'Limit Sell', icon: Target },
+                    { key: 'DCA_BUY', label: 'DCA Buy', icon: Repeat },
+                    { key: 'DCA_SELL', label: 'DCA Sell', icon: Repeat },
                     { key: 'DEPOSIT_INR', label: 'Deposit INR', icon: Plus },
                     { key: 'DEPOSIT_BTC', label: 'Deposit BTC', icon: Plus },
                     { key: 'WITHDRAW_INR', label: 'Withdraw INR', icon: Minus },

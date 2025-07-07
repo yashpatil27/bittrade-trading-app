@@ -10,7 +10,8 @@ import {
   Minus,
   Circle,
   Target,
-  Trash2
+  Trash2,
+  Repeat
 } from 'lucide-react';
 import { Transaction } from '../types';
 import { getTransactionDisplayName, getTransactionIcon, formatBitcoin } from '../utils/formatters';
@@ -102,12 +103,13 @@ const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
       case 'Minus': return <Minus {...iconProps} />;
       case 'Target': return <Target {...iconProps} />;
       case 'X': return <X {...iconProps} />;
+      case 'Repeat': return <Repeat {...iconProps} />;
       default: return <Circle {...iconProps} />;
     }
   };
 
   const formatAmount = () => {
-    if (transaction.type === 'BUY' || transaction.type === 'SELL' || transaction.type === 'MARKET_BUY' || transaction.type === 'MARKET_SELL' || transaction.type === 'LIMIT_BUY' || transaction.type === 'LIMIT_SELL') {
+    if (transaction.type === 'BUY' || transaction.type === 'SELL' || transaction.type === 'MARKET_BUY' || transaction.type === 'MARKET_SELL' || transaction.type === 'LIMIT_BUY' || transaction.type === 'LIMIT_SELL' || transaction.type === 'DCA_BUY' || transaction.type === 'DCA_SELL') {
       return `₹${transaction.inr_amount.toLocaleString('en-IN')} / ₿${formatBitcoin(transaction.btc_amount)}`;
     } else if (transaction.type.includes('INR')) {
       return `₹${transaction.inr_amount.toLocaleString('en-IN')}`;
@@ -176,8 +178,8 @@ const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
             </div>
           </div>
 
-          {/* Price Information (for BUY/SELL) */}
-          {(transaction.type === 'BUY' || transaction.type === 'SELL' || transaction.type === 'MARKET_BUY' || transaction.type === 'MARKET_SELL' || transaction.type === 'LIMIT_BUY' || transaction.type === 'LIMIT_SELL') && (
+          {/* Price Information (for BUY/SELL/DCA) */}
+          {(transaction.type === 'BUY' || transaction.type === 'SELL' || transaction.type === 'MARKET_BUY' || transaction.type === 'MARKET_SELL' || transaction.type === 'LIMIT_BUY' || transaction.type === 'LIMIT_SELL' || transaction.type === 'DCA_BUY' || transaction.type === 'DCA_SELL') && (
             <div className="bg-zinc-800/50 rounded-lg p-3">
               <div className="space-y-1">
                 <div className="flex justify-between">
@@ -188,6 +190,13 @@ const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
                   <span className="text-zinc-400 text-xs">{transaction.status === 'PENDING' ? 'Estimated BTC:' : 'BTC Amount:'}</span>
                   <span className="text-white text-xs">₿{formatBitcoin(transaction.btc_amount)}</span>
                 </div>
+                {(transaction.type === 'DCA_BUY' || transaction.type === 'DCA_SELL') && (
+                  <div className="text-center mt-2">
+                    <span className="px-2 py-1 text-xs bg-blue-900/20 border border-blue-800 text-blue-300 rounded">
+                      Automated DCA Transaction
+                    </span>
+                  </div>
+                )}
                 {transaction.status === 'PENDING' && (
                   <div className="text-center mt-2">
                     <span className="px-2 py-1 text-xs bg-orange-900/20 border border-orange-800 text-orange-300 rounded">

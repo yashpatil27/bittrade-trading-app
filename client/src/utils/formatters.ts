@@ -14,7 +14,9 @@ export const getTransactionDisplayName = (type: Transaction['type'], status?: st
                   status === 'CANCELLED' ? 'Limit Sell Cancelled' : 'Limit Sell Filled',
     'WITHDRAW_INR': 'Cash Withdrawal',
     'DEPOSIT_BTC': 'Bitcoin Deposit',
-    'WITHDRAW_BTC': 'Bitcoin Withdrawal'
+    'WITHDRAW_BTC': 'Bitcoin Withdrawal',
+    'DCA_BUY': 'DCA Bitcoin Purchase',
+    'DCA_SELL': 'DCA Bitcoin Sale'
   };
   
   return displayNames[type] || type;
@@ -34,7 +36,9 @@ export const getTransactionIcon = (type: Transaction['type'], status?: string): 
                   status === 'CANCELLED' ? 'X' : 'TrendingDown',
     'WITHDRAW_INR': 'ArrowDown',
     'DEPOSIT_BTC': 'Plus',
-    'WITHDRAW_BTC': 'Minus'
+    'WITHDRAW_BTC': 'Minus',
+    'DCA_BUY': 'Repeat',
+    'DCA_SELL': 'Repeat'
   };
   
   return icons[type] || 'Circle';

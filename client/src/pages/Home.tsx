@@ -15,7 +15,8 @@ import {
   Minus,
   Circle,
   Target,
-  X
+  X,
+  Repeat
 } from 'lucide-react';
 import { userAPI } from '../services/api';
 import { Balances, Prices, Transaction, DashboardData } from '../types';
@@ -317,7 +318,8 @@ const Home: React.FC = () => {
                         {getTransactionIcon(transaction.type, transaction.status) === 'Minus' && <Minus className="w-3 h-3 text-white" />}
                         {getTransactionIcon(transaction.type, transaction.status) === 'Target' && <Target className="w-3 h-3 text-white" />}
                         {getTransactionIcon(transaction.type, transaction.status) === 'X' && <X className="w-3 h-3 text-white" />}
-                        {!['User', 'ArrowUp', 'TrendingUp', 'TrendingDown', 'ArrowDown', 'Plus', 'Minus', 'Target', 'X'].includes(getTransactionIcon(transaction.type, transaction.status)) && <Circle className="w-3 h-3 text-white" />}
+                        {getTransactionIcon(transaction.type, transaction.status) === 'Repeat' && <Repeat className="w-3 h-3 text-white" />}
+                        {!['User', 'ArrowUp', 'TrendingUp', 'TrendingDown', 'ArrowDown', 'Plus', 'Minus', 'Target', 'X', 'Repeat'].includes(getTransactionIcon(transaction.type, transaction.status)) && <Circle className="w-3 h-3 text-white" />}
                         </div>
                         <div>
                           <div className="flex items-center gap-2">
@@ -336,7 +338,7 @@ const Home: React.FC = () => {
                         </div>
                       </div>
                       <div className="text-right">
-                        {(transaction.type === 'BUY' || transaction.type === 'SELL' || transaction.type === 'MARKET_BUY' || transaction.type === 'MARKET_SELL' || transaction.type === 'LIMIT_BUY' || transaction.type === 'LIMIT_SELL') ? (
+                        {(transaction.type === 'BUY' || transaction.type === 'SELL' || transaction.type === 'MARKET_BUY' || transaction.type === 'MARKET_SELL' || transaction.type === 'LIMIT_BUY' || transaction.type === 'LIMIT_SELL' || transaction.type === 'DCA_BUY' || transaction.type === 'DCA_SELL') ? (
                           <div>
                             <p className="font-bold text-sm text-white">
                               ₹{transaction.inr_amount.toLocaleString('en-IN')}
