@@ -39,7 +39,7 @@ export interface Transaction {
   id: number;
   user_id: number;
   type: 'SETUP' | 'DEPOSIT_INR' | 'MARKET_BUY' | 'BUY' | 'MARKET_SELL' | 'SELL' | 'LIMIT_BUY' | 'LIMIT_SELL' | 'WITHDRAW_INR' | 'DEPOSIT_BTC' | 'WITHDRAW_BTC';
-  status?: 'PENDING' | 'EXECUTED' | 'CANCELLED';
+  status?: 'PENDING' | 'EXECUTED' | 'CANCELLED' | 'EXPIRED';
   inr_amount: number;
   btc_amount: number;
   btc_price: number;

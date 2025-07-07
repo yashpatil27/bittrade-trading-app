@@ -117,6 +117,12 @@ export const userAPI = {
   
   getBitcoinSentiment: (): Promise<AxiosResponse<ApiResponse<any>>> =>
     api.get('/user/bitcoin/sentiment'),
+  
+  getLimitOrders: (): Promise<AxiosResponse<ApiResponse<Transaction[]>>> =>
+    api.get('/user/limit-orders'),
+  
+  cancelLimitOrder: (orderId: number): Promise<AxiosResponse<ApiResponse<any>>> =>
+    api.delete(`/user/limit-orders/${orderId}`),
 };
 
 // Admin API

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   X, 
   User,
@@ -9,26 +9,89 @@ import {
   Plus,
   Minus,
   Circle,
-  Target
+  Target,
+  Trash2,
+  AlertTriangle
 } from 'lucide-react';
 import { Transaction } from '../types';
 import { getTransactionDisplayName, getTransactionIcon, formatBitcoin } from '../utils/formatters';
 import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
+import { userAPI } from '../services/api';
+import PinConfirmationModal from './PinConfirmationModal';
 
 interface TransactionDetailModalProps {
   isOpen: boolean;
   onClose: () => void;
   transaction: Transaction | null;
+  onTransactionUpdate?: () => void;
 }
 
 const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
   isOpen,
   onClose,
-  transaction
+  transaction,
+  onTransactionUpdate
 }) => {
+  const [isCancelling, setIsCancelling] = useState(false);
+  const [showCancelConfirm, setShowCancelConfirm] = useState(false);
+  const [isPinModalOpen, setIsPinModalOpen] = useState(false);
   useBodyScrollLock(isOpen);
   
   if (!isOpen || !transaction) return null;
+
+  // Check if transaction can be cancelled
+  const canCancel = transaction.status === 'PENDING' && 
+    (transaction.type === 'LIMIT_BUY' || transaction.type === 'LIMIT_SELL');
+
+  const handleCancelOrder = async () => {
+    if (!transaction || isCancelling) return;
+    
+    try {
+      setIsCancelling(true);
+      await userAPI.cancelLimitOrder(transaction.id);
+      
+      // Call the update callback to refresh the transaction list
+      if (onTransactionUpdate) {
+        onTransactionUpdate();
+      }
+      
+      // Close the modal
+      onClose();
+    } catch (error: any) {
+      console.error('Error cancelling order:', error);
+      alert(error.response?.data?.message || 'Failed to cancel order. Please try again.');
+    } finally {
+      setIsCancelling(false);
+      setShowCancelConfirm(false);
+      setIsPinModalOpen(false);
+    }
+  };
+
+  const handleCancelClick = () => {
+    setIsPinModalOpen(true);
+  };
+
+  const handlePinConfirm = async (pin: string): Promise<boolean> => {
+    try {
+      // Verify PIN
+      const response = await userAPI.verifyPin(pin);
+      if (response.data.data?.valid) {
+        // PIN is correct, proceed with canceling the order
+        await handleCancelOrder();
+        return true;
+      } else {
+        // PIN is incorrect
+        return false;
+      }
+    } catch (error) {
+      console.error('PIN verification error:', error);
+      return false;
+    }
+  };
+
+  const handlePinModalClose = () => {
+    setIsPinModalOpen(false);
+  };
 
   const getIconComponent = (iconName: string) => {
     const iconProps = { className: "w-6 h-6 text-white" };
@@ -191,8 +254,30 @@ const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
               </p>
             </div>
           </div>
+
+          {/* Cancel Order Button */}
+          {canCancel && (
+            <button
+              onClick={handleCancelClick}
+              disabled={isCancelling}
+              className="w-full bg-red-900/20 border border-red-800 text-red-300 hover:bg-red-900/30 disabled:opacity-50 disabled:cursor-not-allowed py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
+            >
+              <Trash2 className="w-4 h-4" />
+              {isCancelling ? 'Cancelling...' : 'Cancel Order'}
+            </button>
+          )}
         </div>
       </div>
+      
+      {/* PIN Confirmation Modal */}
+      <PinConfirmationModal
+        isOpen={isPinModalOpen}
+        onClose={handlePinModalClose}
+        onConfirm={handlePinConfirm}
+        title="Confirm Cancel Order"
+        message="Enter your PIN to confirm canceling this limit order"
+        isLoading={isCancelling}
+      />
     </div>
   );
 };
