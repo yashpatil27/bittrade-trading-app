@@ -99,8 +99,8 @@ npm run client  # Frontend only
 
 6. **Access the application:**
 - Frontend: http://localhost:3000
-- Backend API: http://localhost:5000
-- Health Check: http://localhost:5000/health
+- Backend API: http://localhost:3001
+- Health Check: http://localhost:3001/health
 
 ## Default Admin Account
 
@@ -189,7 +189,7 @@ npm start
 - `DB_NAME` - Database name (default: bittrade)
 - `JWT_SECRET` - Secret key for JWT tokens
 - `REDIS_HOST` - Redis host (optional)
-- `PORT` - Server port (default: 5000)
+- `PORT` - Server port (default: 3001)
 
 ### System Settings
 

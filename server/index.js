@@ -123,7 +123,7 @@ app.use('*', (req, res) => {
   });
 });
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 3001;
 
 // Graceful shutdown
 process.on('SIGINT', () => {
