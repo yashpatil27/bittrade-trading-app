@@ -279,16 +279,23 @@ const Home: React.FC = () => {
                         {!['User', 'ArrowUp', 'TrendingUp', 'TrendingDown', 'ArrowDown', 'Plus', 'Minus', 'Target'].includes(getTransactionIcon(transaction.type, transaction.status)) && <Circle className="w-3 h-3 text-white" />}
                         </div>
                         <div>
-                          <p className="font-medium text-white text-sm">
-                            {getTransactionDisplayName(transaction.type, transaction.status)}
-                          </p>
+                          <div className="flex items-center gap-2">
+                            <p className="font-medium text-white text-sm">
+                              {getTransactionDisplayName(transaction.type, transaction.status)}
+                            </p>
+                            {transaction.status === 'PENDING' && (
+                              <span className="px-1.5 py-0.5 text-xs bg-orange-900/20 border border-orange-800 text-orange-300 rounded">
+                                PENDING
+                              </span>
+                            )}
+                          </div>
                           <p className="text-zinc-400 text-xs">
                             {formatTimeAgo(transaction.created_at)}
                           </p>
                         </div>
                       </div>
                       <div className="text-right">
-                        {transaction.type === 'BUY' || transaction.type === 'SELL' ? (
+                        {(transaction.type === 'BUY' || transaction.type === 'SELL' || transaction.type === 'MARKET_BUY' || transaction.type === 'MARKET_SELL' || transaction.type === 'LIMIT_BUY' || transaction.type === 'LIMIT_SELL') ? (
                           <div>
                             <p className="font-bold text-sm text-white">
                               ₹{transaction.inr_amount.toLocaleString('en-IN')}
@@ -296,6 +303,11 @@ const Home: React.FC = () => {
                             <p className="text-xs text-zinc-400">
                               {formatCurrency(transaction.btc_amount, 'BTC')}
                             </p>
+                            {transaction.status === 'PENDING' && transaction.btc_price && (
+                              <p className="text-xs text-orange-300">
+                                @ ₹{transaction.btc_price.toLocaleString('en-IN')}
+                              </p>
+                            )}
                           </div>
                         ) : (
                           <p className="font-bold text-sm text-white">
