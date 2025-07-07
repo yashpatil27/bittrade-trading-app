@@ -876,6 +876,119 @@ router.get('/dca-plans', async (req, res) => {
   }
 });
 
+// Pause DCA plan
+router.patch('/dca-plans/:planId/pause', async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { planId } = req.params;
+
+    // Get plan details and verify ownership
+    const plans = await query(
+      'SELECT * FROM active_plans WHERE id = ? AND user_id = ? AND status = "ACTIVE"',
+      [planId, userId]
+    );
+
+    if (plans.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Active DCA plan not found'
+      });
+    }
+
+    const plan = plans[0];
+
+    // Pause the plan
+    await query(
+      'UPDATE active_plans SET status = ? WHERE id = ?',
+      ['PAUSED', planId]
+    );
+
+    res.json({
+      success: true,
+      message: 'DCA plan paused successfully',
+      data: {
+        plan_id: planId,
+        plan_type: plan.plan_type,
+        frequency: plan.frequency,
+        status: 'PAUSED'
+      }
+    });
+
+  } catch (error) {
+    console.error('Pause DCA plan error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error pausing DCA plan'
+    });
+  }
+});
+
+// Resume DCA plan
+router.patch('/dca-plans/:planId/resume', async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { planId } = req.params;
+
+    // Get plan details and verify ownership
+    const plans = await query(
+      'SELECT * FROM active_plans WHERE id = ? AND user_id = ? AND status = "PAUSED"',
+      [planId, userId]
+    );
+
+    if (plans.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Paused DCA plan not found'
+      });
+    }
+
+    const plan = plans[0];
+
+    // Calculate next execution time based on frequency
+    let nextExecutionQuery;
+    switch (plan.frequency) {
+      case 'HOURLY':
+        nextExecutionQuery = 'DATE_ADD(NOW(), INTERVAL 1 HOUR)';
+        break;
+      case 'DAILY':
+        nextExecutionQuery = 'DATE_ADD(NOW(), INTERVAL 1 DAY)';
+        break;
+      case 'WEEKLY':
+        nextExecutionQuery = 'DATE_ADD(NOW(), INTERVAL 1 WEEK)';
+        break;
+      case 'MONTHLY':
+        nextExecutionQuery = 'DATE_ADD(NOW(), INTERVAL 1 MONTH)';
+        break;
+      default:
+        nextExecutionQuery = 'DATE_ADD(NOW(), INTERVAL 1 DAY)';
+    }
+
+    // Resume the plan and set next execution time
+    await query(
+      `UPDATE active_plans SET status = ?, next_execution_at = ${nextExecutionQuery} WHERE id = ?`,
+      ['ACTIVE', planId]
+    );
+
+    res.json({
+      success: true,
+      message: 'DCA plan resumed successfully',
+      data: {
+        plan_id: planId,
+        plan_type: plan.plan_type,
+        frequency: plan.frequency,
+        status: 'ACTIVE'
+      }
+    });
+
+  } catch (error) {
+    console.error('Resume DCA plan error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error resuming DCA plan'
+    });
+  }
+});
+
 // Delete DCA plan
 router.delete('/dca-plans/:planId', async (req, res) => {
   try {

@@ -147,6 +147,12 @@ export const userAPI = {
   
   cancelDcaPlan: (planId: number): Promise<AxiosResponse<ApiResponse<any>>> =>
     api.delete(`/user/dca-plans/${planId}`),
+
+  pauseDcaPlan: (planId: number): Promise<AxiosResponse<ApiResponse<any>>> =>
+    api.patch(`/user/dca-plans/${planId}/pause`),
+
+  resumeDcaPlan: (planId: number): Promise<AxiosResponse<ApiResponse<any>>> =>
+    api.patch(`/user/dca-plans/${planId}/resume`),
 };
 
 // Admin API
