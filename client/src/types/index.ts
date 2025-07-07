@@ -83,3 +83,17 @@ export interface AdminUser extends User {
   inr_balance: number;
   btc_balance: number;
 }
+
+export interface DcaPlan {
+  id: number;
+  plan_type: 'DCA_BUY' | 'DCA_SELL';
+  status: 'ACTIVE' | 'PAUSED' | 'COMPLETED' | 'CANCELLED';
+  frequency: 'DAILY' | 'WEEKLY' | 'MONTHLY';
+  amount_per_execution: number;
+  next_execution_at: string;
+  total_executions: number;
+  remaining_executions: number | null;
+  max_price: number | null;
+  min_price: number | null;
+  created_at: string;
+}

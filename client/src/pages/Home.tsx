@@ -23,6 +23,7 @@ import TradingModal from '../components/TradingModal';
 import PriceUpdateTimer from '../components/PriceUpdateTimer';
 import TransactionDetailModal from '../components/TransactionDetailModal';
 import BitcoinChart from '../components/BitcoinChart';
+import DcaPlansSection from '../components/DcaPlansSection';
 import { useBalance } from '../contexts/BalanceContext';
 import { 
   getTransactionDisplayName, 
@@ -273,6 +274,9 @@ const Home: React.FC = () => {
 
         {/* Bitcoin Price Chart */}
         <BitcoinChart />
+
+        {/* Active DCA Plans */}
+        <DcaPlansSection onUpdate={refreshData} />
 
         {/* Recent Activity */}
         <div className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden">
