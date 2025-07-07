@@ -15,6 +15,7 @@ const publicRoutes = require('./routes/public');
 const { createPool } = require('./config/database');
 const { createRedisClient } = require('./config/redis');
 const bitcoinDataService = require('./services/bitcoinDataService');
+const limitOrderExecutionService = require('./services/limitOrderExecutionService');
 
 // Load environment variables
 dotenv.config();
@@ -41,6 +42,10 @@ const initializeServices = async () => {
     // Start Bitcoin data updates
     bitcoinDataService.startDataUpdates();
     console.log('✓ Bitcoin data service started');
+    
+    // Start limit order execution service
+    limitOrderExecutionService.startService();
+    console.log('✓ Limit order execution service started');
     
     console.log('All services initialized successfully');
   } catch (error) {
@@ -89,7 +94,8 @@ app.get('/health', (req, res) => {
     timestamp: new Date().toISOString(),
     services: {
       database: 'connected',
-      bitcoin_data_service: bitcoinDataService.isRunning ? 'running' : 'stopped'
+      bitcoin_data_service: bitcoinDataService.isRunning ? 'running' : 'stopped',
+      limit_order_execution: limitOrderExecutionService.isRunning ? 'running' : 'stopped'
     }
   });
 });
@@ -117,12 +123,14 @@ const PORT = process.env.PORT || 5000;
 process.on('SIGINT', () => {
   console.log('\nReceived SIGINT. Graceful shutdown...');
   bitcoinDataService.stopDataUpdates();
+  limitOrderExecutionService.stopService();
   process.exit(0);
 });
 
 process.on('SIGTERM', () => {
   console.log('\nReceived SIGTERM. Graceful shutdown...');
   bitcoinDataService.stopDataUpdates();
+  limitOrderExecutionService.stopService();
   process.exit(0);
 });
 

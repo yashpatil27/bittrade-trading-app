@@ -203,7 +203,7 @@ class BitcoinDataService {
       );
 
       // Cache for quick access
-      await setCache('current_bitcoin_data', bitcoinData, 60); // Cache for 1 minute
+      await setCache('current_bitcoin_data', bitcoinData, 35); // Cache for 35 seconds (just longer than update interval)
       
       this.currentData = bitcoinData;
       this.lastUpdate = new Date();
@@ -315,7 +315,7 @@ class BitcoinDataService {
         this.currentData = data;
         
         // Cache it for future requests
-        await setCache('current_bitcoin_data', data, 60);
+        await setCache('current_bitcoin_data', data, 35);
         
         return data;
       }
@@ -489,8 +489,8 @@ class BitcoinDataService {
       console.error('Initial sentiment data fetch failed:', error.message);
     });
 
-    // Schedule Bitcoin data updates every 2 minutes to avoid rate limits
-    cron.schedule('*/2 * * * *', async () => {
+    // Schedule Bitcoin data updates every 30 seconds for real-time trading
+    cron.schedule('*/30 * * * * *', async () => {
       if (this.isRunning) {
         try {
           await this.updateBitcoinData();
@@ -553,7 +553,7 @@ class BitcoinDataService {
     });
 
     console.log('Bitcoin data updates scheduled:');
-    console.log('- Bitcoin data: every 2 minutes');
+    console.log('- Bitcoin data: every 30 seconds');
     console.log('- Sentiment data: daily at 00:05');
     console.log('- Chart data: hourly (1d) and daily (7d, 30d, 90d, 365d)');
   }

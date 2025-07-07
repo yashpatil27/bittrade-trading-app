@@ -1,5 +1,7 @@
 const express = require('express');
 const { verifyToken } = require('../middleware/auth');
+const { query, transaction } = require('../config/database');
+const { clearUserCache } = require('../config/redis');
 const userService = require('../services/userService');
 const bitcoinDataService = require('../services/bitcoinDataService');
 const portfolioService = require('../services/portfolioService');
@@ -551,6 +553,109 @@ router.get('/portfolio', async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Error fetching portfolio data'
+    });
+  }
+});
+
+// Get user's pending limit orders
+router.get('/limit-orders', async (req, res) => {
+  try {
+    const userId = req.user.id;
+    
+    const pendingOrders = await query(`
+      SELECT 
+        id, type, status, inr_amount, btc_amount, limit_price, 
+        created_at, expires_at,
+        TIMESTAMPDIFF(MINUTE, created_at, NOW()) as age_minutes
+      FROM operations 
+      WHERE user_id = ? 
+      AND status = 'PENDING' 
+      AND type IN ('LIMIT_BUY', 'LIMIT_SELL')
+      ORDER BY created_at DESC
+    `, [userId]);
+
+    const formattedOrders = pendingOrders.map(order => ({
+      ...order,
+      btc_amount: order.btc_amount / 100000000, // Convert to BTC
+      age_hours: Math.round(order.age_minutes / 60 * 10) / 10 // Round to 1 decimal
+    }));
+
+    res.json({
+      success: true,
+      data: formattedOrders
+    });
+
+  } catch (error) {
+    console.error('Get user limit orders error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching limit orders'
+    });
+  }
+});
+
+// Cancel user's own pending limit order
+router.delete('/limit-orders/:orderId', async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { orderId } = req.params;
+
+    // Get order details and verify ownership
+    const orders = await query(
+      'SELECT * FROM operations WHERE id = ? AND user_id = ? AND status = "PENDING"',
+      [orderId, userId]
+    );
+
+    if (orders.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Pending order not found'
+      });
+    }
+
+    const order = orders[0];
+
+    // Cancel the order and release funds
+    await transaction(async (connection) => {
+      if (order.type === 'LIMIT_BUY') {
+        // Release reserved INR back to available
+        await connection.execute(
+          'UPDATE users SET available_inr = available_inr + ?, reserved_inr = reserved_inr - ? WHERE id = ?',
+          [order.inr_amount, order.inr_amount, userId]
+        );
+      } else if (order.type === 'LIMIT_SELL') {
+        // Release reserved BTC back to available
+        await connection.execute(
+          'UPDATE users SET available_btc = available_btc + ?, reserved_btc = reserved_btc - ? WHERE id = ?',
+          [order.btc_amount, order.btc_amount, userId]
+        );
+      }
+
+      // Update operation status
+      await connection.execute(
+        'UPDATE operations SET status = ?, cancelled_at = NOW(), cancellation_reason = ? WHERE id = ?',
+        ['CANCELLED', 'User cancellation', orderId]
+      );
+
+      // Clear user cache
+      await clearUserCache(userId);
+    });
+
+    res.json({
+      success: true,
+      message: 'Order cancelled successfully',
+      data: {
+        order_id: orderId,
+        order_type: order.type,
+        released_amount: order.type === 'LIMIT_BUY' ? order.inr_amount : order.btc_amount / 100000000
+      }
+    });
+
+  } catch (error) {
+    console.error('Cancel user order error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error cancelling order'
     });
   }
 });

@@ -1,9 +1,9 @@
 const express = require('express');
-const bcrypt = require('bcryptjs');
 const { verifyToken, requireAdmin } = require('../middleware/auth');
 const { query, transaction } = require('../config/database');
 const { clearUserCache } = require('../config/redis');
 const bitcoinDataService = require('../services/bitcoinDataService');
+const limitOrderExecutionService = require('../services/limitOrderExecutionService');
 
 const router = express.Router();
 
@@ -789,6 +789,208 @@ router.get('/transactions', async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Error fetching transactions'
+    });
+  }
+});
+
+// ========== LIMIT ORDER EXECUTION ENDPOINTS ==========
+
+// Get pending orders summary
+router.get('/limit-orders/summary', async (req, res) => {
+  try {
+    const summary = await limitOrderExecutionService.getPendingOrdersSummary();
+    const serviceStatus = {
+      is_running: limitOrderExecutionService.isRunning,
+      execution_in_progress: limitOrderExecutionService.executionInProgress
+    };
+
+    res.json({
+      success: true,
+      data: {
+        service_status: serviceStatus,
+        pending_orders: {
+          total_orders: parseInt(summary.total_orders),
+          buy_orders: parseInt(summary.buy_orders),
+          sell_orders: parseInt(summary.sell_orders),
+          total_buy_inr: parseInt(summary.total_buy_inr),
+          total_sell_btc: parseInt(summary.total_sell_btc) / 100000000 // Convert to BTC
+        }
+      }
+    });
+
+  } catch (error) {
+    console.error('Get pending orders summary error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching pending orders summary'
+    });
+  }
+});
+
+// Get all pending orders with details
+router.get('/limit-orders/pending', async (req, res) => {
+  try {
+    const pendingOrders = await query(`
+      SELECT 
+        o.id, o.user_id, o.type, o.status, o.inr_amount, o.btc_amount, 
+        o.limit_price, o.created_at,
+        u.email, u.name,
+        TIMESTAMPDIFF(MINUTE, o.created_at, NOW()) as age_minutes
+      FROM operations o
+      JOIN users u ON o.user_id = u.id
+      WHERE o.status = 'PENDING' 
+      AND o.type IN ('LIMIT_BUY', 'LIMIT_SELL')
+      ORDER BY o.created_at ASC
+    `);
+
+    const formattedOrders = pendingOrders.map(order => ({
+      ...order,
+      btc_amount: order.btc_amount / 100000000, // Convert to BTC
+      limit_price: order.limit_price,
+      age_hours: Math.round(order.age_minutes / 60 * 10) / 10 // Round to 1 decimal
+    }));
+
+    res.json({
+      success: true,
+      data: formattedOrders
+    });
+
+  } catch (error) {
+    console.error('Get pending orders error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching pending orders'
+    });
+  }
+});
+
+// Manually trigger limit order execution
+router.post('/limit-orders/execute', async (req, res) => {
+  try {
+    const result = await limitOrderExecutionService.executeNow();
+
+    res.json({
+      success: true,
+      message: 'Manual limit order execution completed',
+      data: result
+    });
+
+  } catch (error) {
+    console.error('Manual limit order execution error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error executing limit orders'
+    });
+  }
+});
+
+// Cancel a specific pending order (admin override)
+router.delete('/limit-orders/:orderId', async (req, res) => {
+  try {
+    const { orderId } = req.params;
+    const { reason } = req.body;
+
+    // Get order details
+    const orders = await query(
+      'SELECT * FROM operations WHERE id = ? AND status = "PENDING"',
+      [orderId]
+    );
+
+    if (orders.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Pending order not found'
+      });
+    }
+
+    const order = orders[0];
+
+    // Cancel the order and release funds
+    await transaction(async (connection) => {
+      if (order.type === 'LIMIT_BUY') {
+        // Release reserved INR back to available
+        await connection.execute(
+          'UPDATE users SET available_inr = available_inr + ?, reserved_inr = reserved_inr - ? WHERE id = ?',
+          [order.inr_amount, order.inr_amount, order.user_id]
+        );
+      } else if (order.type === 'LIMIT_SELL') {
+        // Release reserved BTC back to available
+        await connection.execute(
+          'UPDATE users SET available_btc = available_btc + ?, reserved_btc = reserved_btc - ? WHERE id = ?',
+          [order.btc_amount, order.btc_amount, order.user_id]
+        );
+      }
+
+      // Update operation status with admin cancellation
+      await connection.execute(
+        'UPDATE operations SET status = ?, cancelled_at = NOW(), cancellation_reason = ? WHERE id = ?',
+        ['CANCELLED', reason || 'Admin cancellation', orderId]
+      );
+
+      // Clear user cache
+      await clearUserCache(order.user_id);
+    });
+
+    res.json({
+      success: true,
+      message: 'Order cancelled successfully',
+      data: {
+        order_id: orderId,
+        order_type: order.type,
+        released_amount: order.type === 'LIMIT_BUY' ? order.inr_amount : order.btc_amount / 100000000
+      }
+    });
+
+  } catch (error) {
+    console.error('Cancel order error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error cancelling order'
+    });
+  }
+});
+
+// Start/stop limit order execution service
+router.post('/limit-orders/service/:action', async (req, res) => {
+  try {
+    const { action } = req.params;
+
+    if (action === 'start') {
+      if (limitOrderExecutionService.isRunning) {
+        return res.json({
+          success: true,
+          message: 'Service is already running'
+        });
+      }
+      limitOrderExecutionService.startService();
+      res.json({
+        success: true,
+        message: 'Limit order execution service started'
+      });
+    } else if (action === 'stop') {
+      if (!limitOrderExecutionService.isRunning) {
+        return res.json({
+          success: true,
+          message: 'Service is already stopped'
+        });
+      }
+      limitOrderExecutionService.stopService();
+      res.json({
+        success: true,
+        message: 'Limit order execution service stopped'
+      });
+    } else {
+      res.status(400).json({
+        success: false,
+        message: 'Invalid action. Use "start" or "stop"'
+      });
+    }
+
+  } catch (error) {
+    console.error('Service control error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error controlling service'
     });
   }
 });
