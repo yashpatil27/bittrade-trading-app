@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, TrendingUp, TrendingDown, Calculator, Zap, Target, Clock, Repeat } from 'lucide-react';
+import { X, TrendingUp, TrendingDown, Calculator, Zap, Target, Clock, Repeat, Settings, ChevronRight } from 'lucide-react';
 import { Prices } from '../types';
 import { userAPI } from '../services/api';
 import PinConfirmationModal from './PinConfirmationModal';
@@ -41,12 +41,14 @@ const TradingModal: React.FC<TradingModalProps> = ({
   const [dcaMaxPrice, setDcaMaxPrice] = useState('');
   const [dcaMinPrice, setDcaMinPrice] = useState('');
   const [pendingDcaConfig, setPendingDcaConfig] = useState<any>(undefined);
+  const [showDcaSettingsModal, setShowDcaSettingsModal] = useState(false);
 
   const isBuy = type === 'buy';
   const rate = isBuy ? prices?.buy_rate : prices?.sell_rate;
   const availableBalance = isBuy ? userBalance.inr : userBalance.btc;
 
   useBodyScrollLock(isOpen);
+  useBodyScrollLock(showDcaSettingsModal);
 
   useEffect(() => {
     if (amount) {
@@ -138,7 +140,11 @@ const TradingModal: React.FC<TradingModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={onClose}>
+    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={(e) => {
+      if (!showDcaSettingsModal) {
+        onClose();
+      }
+    }}>
       {/* Modal */}
       <div className="bg-zinc-900 rounded-2xl border border-zinc-800 p-6 w-full max-w-md shadow-2xl" onClick={(e) => e.stopPropagation()}>
         {/* Header */}
@@ -397,51 +403,26 @@ const TradingModal: React.FC<TradingModalProps> = ({
               </div>
             </div>
             
-            {/* Total Executions (Optional) */}
-            <div>
-              <label className="block text-sm font-medium mb-2">
-                Total Executions (Leave empty for unlimited)
-              </label>
-              <input
-                type="number"
-                value={dcaExecutions}
-                onChange={(e) => setDcaExecutions(e.target.value)}
-                className="input-field w-full"
-                placeholder="10"
-                min="1"
-                max="1000"
-              />
-            </div>
-            
-            {/* Price Limits (Optional) */}
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="block text-sm font-medium mb-2">
-                  Max Price (₹/BTC)
-                </label>
-                <input
-                  type="number"
-                  value={dcaMaxPrice}
-                  onChange={(e) => setDcaMaxPrice(e.target.value)}
-                  className="input-field w-full"
-                  placeholder="Optional"
-                  min="1"
-                />
+            {/* Optional Settings Button */}
+            <button
+              onClick={() => setShowDcaSettingsModal(true)}
+              className="w-full bg-zinc-800/50 border border-zinc-700 rounded-lg p-4 text-left hover:bg-zinc-800 transition-colors flex items-center justify-between"
+            >
+              <div className="flex items-center gap-3">
+                <Settings className="w-4 h-4 text-zinc-400" />
+                <div>
+                  <p className="text-white font-medium text-sm">Optional Settings</p>
+                  <p className="text-zinc-400 text-xs">
+                    {dcaExecutions || dcaMaxPrice || dcaMinPrice ? (
+                      `${dcaExecutions ? `${dcaExecutions} executions` : ''}${dcaExecutions && (dcaMaxPrice || dcaMinPrice) ? ', ' : ''}${dcaMaxPrice ? `Max ₹${parseFloat(dcaMaxPrice).toLocaleString('en-IN')}` : ''}${dcaMaxPrice && dcaMinPrice ? ', ' : ''}${dcaMinPrice ? `Min ₹${parseFloat(dcaMinPrice).toLocaleString('en-IN')}` : ''}`
+                    ) : (
+                      'Set execution limits and price ranges'
+                    )}
+                  </p>
+                </div>
               </div>
-              <div>
-                <label className="block text-sm font-medium mb-2">
-                  Min Price (₹/BTC)
-                </label>
-                <input
-                  type="number"
-                  value={dcaMinPrice}
-                  onChange={(e) => setDcaMinPrice(e.target.value)}
-                  className="input-field w-full"
-                  placeholder="Optional"
-                  min="1"
-                />
-              </div>
-            </div>
+              <ChevronRight className="w-4 h-4 text-zinc-400" />
+            </button>
           </div>
         )}
 
@@ -558,6 +539,106 @@ const TradingModal: React.FC<TradingModalProps> = ({
         })()}
         isLoading={isLoading}
       />
+      
+      {/* DCA Settings Modal */}
+      {showDcaSettingsModal && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-[60] p-4" onClick={() => setShowDcaSettingsModal(false)}>
+          <div className="bg-zinc-900 border border-zinc-700 rounded-xl w-full max-w-md max-h-[90vh] overflow-hidden" onClick={(e) => e.stopPropagation()}>
+            {/* Header */}
+            <div className="flex items-center justify-between p-6 border-b border-zinc-800">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-zinc-800 rounded-lg">
+                  <Settings className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <h2 className="text-lg font-semibold text-white">DCA Settings</h2>
+                  <p className="text-zinc-400 text-sm">Optional execution limits</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowDcaSettingsModal(false)}
+                className="p-2 text-zinc-400 hover:text-white transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="p-6 space-y-6">
+              {/* Total Executions */}
+              <div>
+                <label className="block text-sm font-medium mb-2 text-white">
+                  Total Executions
+                </label>
+                <input
+                  type="number"
+                  value={dcaExecutions}
+                  onChange={(e) => setDcaExecutions(e.target.value)}
+                  className="w-full bg-zinc-700 border border-zinc-600 rounded-lg py-2 px-3 text-white placeholder-zinc-400 focus:outline-none focus:border-white"
+                  placeholder="Leave empty for unlimited"
+                  min="1"
+                  max="1000"
+                />
+                <p className="text-zinc-500 text-xs mt-1">Number of times to execute this DCA plan</p>
+              </div>
+              
+              {/* Price Limits */}
+              <div className="space-y-4">
+                <h3 className="text-white font-medium text-sm">Price Limits</h3>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-sm font-medium mb-2 text-zinc-400">
+                      Max Price (₹/BTC)
+                    </label>
+                    <input
+                      type="number"
+                      value={dcaMaxPrice}
+                      onChange={(e) => setDcaMaxPrice(e.target.value)}
+                      className="w-full bg-zinc-700 border border-zinc-600 rounded-lg py-2 px-3 text-white placeholder-zinc-400 focus:outline-none focus:border-white"
+                      placeholder="Optional"
+                      min="1"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2 text-zinc-400">
+                      Min Price (₹/BTC)
+                    </label>
+                    <input
+                      type="number"
+                      value={dcaMinPrice}
+                      onChange={(e) => setDcaMinPrice(e.target.value)}
+                      className="w-full bg-zinc-700 border border-zinc-600 rounded-lg py-2 px-3 text-white placeholder-zinc-400 focus:outline-none focus:border-white"
+                      placeholder="Optional"
+                      min="1"
+                    />
+                  </div>
+                </div>
+                <p className="text-zinc-500 text-xs">DCA will only execute when Bitcoin price is within these limits</p>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex gap-3">
+                <button
+                  onClick={() => {
+                    setDcaExecutions('');
+                    setDcaMaxPrice('');
+                    setDcaMinPrice('');
+                  }}
+                  className="flex-1 bg-zinc-800 text-zinc-300 hover:bg-zinc-700 py-3 px-4 rounded-lg transition-colors"
+                >
+                  Clear All
+                </button>
+                <button
+                  onClick={() => setShowDcaSettingsModal(false)}
+                  className="flex-1 bg-white text-black hover:bg-zinc-200 py-3 px-4 rounded-lg transition-colors font-medium"
+                >
+                  Done
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
