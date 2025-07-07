@@ -8,7 +8,8 @@ import {
   X, 
   AlertTriangle,
   CheckCircle,
-  Pause
+  Pause,
+  Play
 } from 'lucide-react';
 import { userAPI } from '../services/api';
 import { DcaPlan } from '../types';
@@ -26,6 +27,8 @@ const DcaPlansSection = forwardRef<DcaPlansSectionRef, DcaPlansSectionProps>(({ 
   const [dcaPlans, setDcaPlans] = useState<DcaPlan[]>([]);
   const [loading, setLoading] = useState(true);
   const [cancellingPlan, setCancellingPlan] = useState<number | null>(null);
+  const [pausingPlan, setPausingPlan] = useState<number | null>(null);
+  const [resumingPlan, setResumingPlan] = useState<number | null>(null);
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -59,6 +62,32 @@ const DcaPlansSection = forwardRef<DcaPlansSectionRef, DcaPlansSectionProps>(({ 
       setError(error.response?.data?.message || 'Failed to cancel DCA plan');
     } finally {
       setCancellingPlan(null);
+    }
+  };
+
+  const handlePausePlan = async (planId: number) => {
+    try {
+      setPausingPlan(planId);
+      await userAPI.pauseDcaPlan(planId);
+      await fetchDcaPlans();
+      onUpdate?.();
+    } catch (error: any) {
+      setError(error.response?.data?.message || 'Failed to pause DCA plan');
+    } finally {
+      setPausingPlan(null);
+    }
+  };
+
+  const handleResumePlan = async (planId: number) => {
+    try {
+      setResumingPlan(planId);
+      await userAPI.resumeDcaPlan(planId);
+      await fetchDcaPlans();
+      onUpdate?.();
+    } catch (error: any) {
+      setError(error.response?.data?.message || 'Failed to resume DCA plan');
+    } finally {
+      setResumingPlan(null);
     }
   };
 
@@ -185,20 +214,65 @@ const DcaPlansSection = forwardRef<DcaPlansSectionRef, DcaPlansSectionProps>(({ 
                     </div>
                   </div>
                   
-                  {plan.status === 'ACTIVE' && (
-                    <button
-                      onClick={() => handleCancelPlan(plan.id)}
-                      disabled={cancellingPlan === plan.id}
-                      className="p-1.5 hover:bg-zinc-700 rounded-lg transition-colors text-zinc-400 hover:text-red-400 disabled:opacity-50"
-                      title="Cancel DCA Plan"
-                    >
-                      {cancellingPlan === plan.id ? (
-                        <div className="animate-spin w-3 h-3 border border-zinc-500 border-t-red-400 rounded-full"></div>
-                      ) : (
-                        <X className="w-3 h-3" />
-                      )}
-                    </button>
-                  )}
+                  <div className="flex items-center gap-2">
+                    {plan.status === 'ACTIVE' && (
+                      <>
+                        <button
+                          onClick={() => handlePausePlan(plan.id)}
+                          disabled={pausingPlan === plan.id}
+                          className="p-1.5 hover:bg-zinc-700 rounded-lg transition-colors text-zinc-400 hover:text-yellow-400 disabled:opacity-50"
+                          title="Pause DCA Plan"
+                        >
+                          {pausingPlan === plan.id ? (
+                            <div className="animate-spin w-3 h-3 border border-zinc-500 border-t-yellow-400 rounded-full"></div>
+                          ) : (
+                            <Pause className="w-3 h-3" />
+                          )}
+                        </button>
+                        <button
+                          onClick={() => handleCancelPlan(plan.id)}
+                          disabled={cancellingPlan === plan.id}
+                          className="p-1.5 hover:bg-zinc-700 rounded-lg transition-colors text-zinc-400 hover:text-red-400 disabled:opacity-50"
+                          title="Delete DCA Plan"
+                        >
+                          {cancellingPlan === plan.id ? (
+                            <div className="animate-spin w-3 h-3 border border-zinc-500 border-t-red-400 rounded-full"></div>
+                          ) : (
+                            <X className="w-3 h-3" />
+                          )}
+                        </button>
+                      </>
+                    )}
+                    
+                    {plan.status === 'PAUSED' && (
+                      <>
+                        <button
+                          onClick={() => handleResumePlan(plan.id)}
+                          disabled={resumingPlan === plan.id}
+                          className="p-1.5 hover:bg-zinc-700 rounded-lg transition-colors text-zinc-400 hover:text-green-400 disabled:opacity-50"
+                          title="Resume DCA Plan"
+                        >
+                          {resumingPlan === plan.id ? (
+                            <div className="animate-spin w-3 h-3 border border-zinc-500 border-t-green-400 rounded-full"></div>
+                          ) : (
+                            <Play className="w-3 h-3" />
+                          )}
+                        </button>
+                        <button
+                          onClick={() => handleCancelPlan(plan.id)}
+                          disabled={cancellingPlan === plan.id}
+                          className="p-1.5 hover:bg-zinc-700 rounded-lg transition-colors text-zinc-400 hover:text-red-400 disabled:opacity-50"
+                          title="Delete DCA Plan"
+                        >
+                          {cancellingPlan === plan.id ? (
+                            <div className="animate-spin w-3 h-3 border border-zinc-500 border-t-red-400 rounded-full"></div>
+                          ) : (
+                            <X className="w-3 h-3" />
+                          )}
+                        </button>
+                      </>
+                    )}
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4 text-sm">
