@@ -57,12 +57,12 @@ class PortfolioService {
 
   async getCurrentBalances(userId) {
     const balanceRows = await query(
-      'SELECT inr_balance, btc_balance FROM transactions WHERE user_id = ? ORDER BY created_at DESC LIMIT 1',
+      'SELECT available_inr as inr_balance, available_btc as btc_balance FROM users WHERE id = ?',
       [userId]
     );
 
     if (balanceRows.length === 0) {
-      throw new Error('No transactions found for user');
+      throw new Error('User not found');
     }
 
     return balanceRows[0];
@@ -79,8 +79,8 @@ class PortfolioService {
       SELECT 
         SUM(CASE WHEN type IN ('DEPOSIT_INR', 'DEPOSIT_BTC') THEN inr_amount ELSE 0 END) - 
         SUM(CASE WHEN type IN ('WITHDRAW_INR', 'WITHDRAW_BTC') THEN inr_amount ELSE 0 END) as total_investment
-      FROM transactions 
-      WHERE user_id = ? AND type IN ('DEPOSIT_INR', 'DEPOSIT_BTC', 'WITHDRAW_INR', 'WITHDRAW_BTC')
+      FROM operations 
+      WHERE user_id = ? AND status = 'EXECUTED' AND type IN ('DEPOSIT_INR', 'DEPOSIT_BTC', 'WITHDRAW_INR', 'WITHDRAW_BTC')
     `, [userId]);
 
     return investmentRows[0].total_investment || 0;
@@ -91,8 +91,8 @@ class PortfolioService {
       SELECT 
         SUM(inr_amount) as total_inr_spent,
         SUM(btc_amount) as total_btc_bought
-      FROM transactions 
-      WHERE user_id = ? AND type = 'BUY' AND btc_amount > 0
+      FROM operations 
+      WHERE user_id = ? AND status = 'EXECUTED' AND type IN ('MARKET_BUY', 'LIMIT_BUY') AND btc_amount > 0
     `, [userId]);
 
     const result = buyRows[0];
@@ -137,22 +137,22 @@ class PortfolioService {
     // Trading Days
     const tradingDaysRows = await query(`
       SELECT COUNT(DISTINCT DATE(created_at)) as trading_days
-      FROM transactions 
-      WHERE user_id = ? AND type IN ('BUY', 'SELL')
+      FROM operations 
+      WHERE user_id = ? AND status = 'EXECUTED' AND type IN ('MARKET_BUY', 'MARKET_SELL', 'LIMIT_BUY', 'LIMIT_SELL')
     `, [userId]);
 
     // Total Trades
     const totalTradesRows = await query(`
       SELECT COUNT(*) as total_trades
-      FROM transactions 
-      WHERE user_id = ? AND type IN ('BUY', 'SELL')
+      FROM operations 
+      WHERE user_id = ? AND status = 'EXECUTED' AND type IN ('MARKET_BUY', 'MARKET_SELL', 'LIMIT_BUY', 'LIMIT_SELL')
     `, [userId]);
 
     // Trades This Month
     const tradesThisMonthRows = await query(`
       SELECT COUNT(*) as trades_this_month
-      FROM transactions 
-      WHERE user_id = ? AND type IN ('BUY', 'SELL') 
+      FROM operations 
+      WHERE user_id = ? AND status = 'EXECUTED' AND type IN ('MARKET_BUY', 'MARKET_SELL', 'LIMIT_BUY', 'LIMIT_SELL') 
       AND MONTH(created_at) = MONTH(CURRENT_DATE()) 
       AND YEAR(created_at) = YEAR(CURRENT_DATE())
     `, [userId]);
@@ -162,8 +162,8 @@ class PortfolioService {
       SELECT 
         AVG(inr_amount) as avg_trade_size,
         SUM(inr_amount) as total_volume
-      FROM transactions 
-      WHERE user_id = ? AND type IN ('BUY', 'SELL')
+      FROM operations 
+      WHERE user_id = ? AND status = 'EXECUTED' AND type IN ('MARKET_BUY', 'MARKET_SELL', 'LIMIT_BUY', 'LIMIT_SELL')
     `, [userId]);
 
     // Days in Profit (placeholder - requires more complex calculation)

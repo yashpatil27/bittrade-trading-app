@@ -60,20 +60,20 @@ router.post('/register', async (req, res) => {
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-    // Create user and setup transaction in a single transaction
+    // Create user with initial balances (new schema)
     const result = await transaction(async (connection) => {
-      // Insert user
+      // Insert user with zero balances
       const [userResult] = await connection.execute(
-        'INSERT INTO users (email, name, password_hash, user_pin, is_admin) VALUES (?, ?, ?, ?, ?)',
-        [email.toLowerCase(), name, hashedPassword, pin, false]
+        'INSERT INTO users (email, name, password_hash, user_pin, is_admin, available_inr, available_btc) VALUES (?, ?, ?, ?, ?, ?, ?)',
+        [email.toLowerCase(), name, hashedPassword, pin, false, 0, 0]
       );
 
       const userId = userResult.insertId;
 
-      // Create SETUP transaction
+      // Create SETUP operation
       await connection.execute(
-        'INSERT INTO transactions (user_id, type, inr_amount, btc_amount, btc_price, inr_balance, btc_balance) VALUES (?, ?, ?, ?, ?, ?, ?)',
-        [userId, 'SETUP', 0, 0, 0, 0, 0]
+        'INSERT INTO operations (user_id, type, status, inr_amount, btc_amount, executed_at) VALUES (?, ?, ?, ?, ?, NOW())',
+        [userId, 'DEPOSIT_INR', 'EXECUTED', 0, 0]
       );
 
       return { userId };

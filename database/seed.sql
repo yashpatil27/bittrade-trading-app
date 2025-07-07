@@ -1,17 +1,16 @@
--- ₿itTrade Database Seed Data
--- Updated seed with real chart data for all timeframes except 1h
+-- ₿itTrade Database Seed Data v2.0
+-- Seed with admin account only
 
 USE bittrade;
 
 -- Create the admin account
 -- Password: admin123
 -- Hashed password: $2a$10$Q0aLvT.zTKQ05mKuHwJ.tu3iGdCiEWKweYW4zCkvDMI.mm/VjV6bi
-INSERT INTO users (id, email, name, password_hash, user_pin, is_admin, created_at) VALUES
-(1, "admin@bittrade.co.in", "Admin", "$2a$10$Q0aLvT.zTKQ05mKuHwJ.tu3iGdCiEWKweYW4zCkvDMI.mm/VjV6bi", "1234", true, NOW());
-
--- SETUP transaction for admin account
-INSERT INTO transactions (user_id, type, inr_amount, btc_amount, btc_price, inr_balance, btc_balance) VALUES
-(1, "SETUP", 0, 0, 0, 0, 0);
+INSERT INTO users (id, email, name, password_hash, user_pin, is_admin, 
+                  available_inr, available_btc, reserved_inr, reserved_btc, 
+                  collateral_btc, borrowed_inr, interest_accrued, created_at) VALUES
+(1, "admin@bittrade.co.in", "Admin", "$2a$10$Q0aLvT.zTKQ05mKuHwJ.tu3iGdCiEWKweYW4zCkvDMI.mm/VjV6bi", "1234", true, 
+ 0, 0, 0, 0, 0, 0, 0, NOW());
 
 -- Bitcoin chart data (real data for all supported timeframes as fallback when API is unavailable)
 -- Data includes: 1d, 7d, 30d, 90d (3M), and 365d (1Y) timeframes

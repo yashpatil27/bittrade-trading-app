@@ -12,9 +12,9 @@ class UserService {
         return cachedBalances;
       }
 
-      // Get latest transaction for user to get current balances
-      const transactions = await query(
-        'SELECT inr_balance, btc_balance FROM transactions WHERE user_id = ? ORDER BY id DESC LIMIT 1',
+      // Get current balances from users table (new schema)
+      const users = await query(
+        'SELECT available_inr as inr_balance, available_btc as btc_balance FROM users WHERE id = ?',
         [userId]
       );
 
@@ -23,8 +23,8 @@ class UserService {
         btc_balance: 0
       };
 
-      if (transactions.length > 0) {
-        balances = transactions[0];
+      if (users.length > 0) {
+        balances = users[0];
       }
 
       // Cache balances for 30 seconds
@@ -45,10 +45,19 @@ class UserService {
         return cached;
       }
 
-      const transactions = await query(
-        `SELECT id, type, inr_amount, btc_amount, btc_price, inr_balance, btc_balance, created_at FROM transactions WHERE user_id = ? ORDER BY id DESC LIMIT ${parseInt(limit)}`,
+      // Get recent operations (mapped to old transaction format for compatibility)
+      const operations = await query(
+        `SELECT id, type, inr_amount, btc_amount, execution_price as btc_price, created_at FROM operations WHERE user_id = ? AND status = 'EXECUTED' ORDER BY id DESC LIMIT ${parseInt(limit)}`,
         [userId]
       );
+
+      // Get current balances for each transaction (for backward compatibility)
+      const currentBalances = await this.getUserBalances(userId);
+      const transactions = operations.map(op => ({
+        ...op,
+        inr_balance: currentBalances.inr_balance,
+        btc_balance: currentBalances.btc_balance
+      }));
 
       // Cache for 30 seconds
       await setCache(cacheKey, transactions, 30);
@@ -62,10 +71,19 @@ class UserService {
 
   async getAllTransactions(userId, offset = 0, limit = 50) {
     try {
-      const transactions = await query(
-        `SELECT id, type, inr_amount, btc_amount, btc_price, inr_balance, btc_balance, created_at FROM transactions WHERE user_id = ? ORDER BY id DESC LIMIT ${parseInt(limit)} OFFSET ${parseInt(offset)}`,
+      // Get operations (mapped to old transaction format for compatibility)
+      const operations = await query(
+        `SELECT id, type, inr_amount, btc_amount, execution_price as btc_price, created_at FROM operations WHERE user_id = ? AND status = 'EXECUTED' ORDER BY id DESC LIMIT ${parseInt(limit)} OFFSET ${parseInt(offset)}`,
         [userId]
       );
+      
+      // Get current balances for display (for backward compatibility)
+      const currentBalances = await this.getUserBalances(userId);
+      const transactions = operations.map(op => ({
+        ...op,
+        inr_balance: currentBalances.inr_balance,
+        btc_balance: currentBalances.btc_balance
+      }));
       
       return transactions;
     } catch (error) {
@@ -81,19 +99,19 @@ class UserService {
       }
 
       return await transaction(async (connection) => {
-        // Get current balances
-        const [balanceRows] = await connection.execute(
-          'SELECT inr_balance, btc_balance FROM transactions WHERE user_id = ? ORDER BY id DESC LIMIT 1',
+        // Get current balances using users table
+        const [userRows] = await connection.execute(
+          'SELECT available_inr, available_btc FROM users WHERE id = ?',
           [userId]
         );
 
-        if (balanceRows.length === 0) {
-          throw new Error('User not found or no transactions');
+        if (userRows.length === 0) {
+          throw new Error('User not found');
         }
 
-        const currentBalances = balanceRows[0];
+        const currentBalances = userRows[0];
         
-        if (currentBalances.inr_balance < inrAmount) {
+        if (currentBalances.available_inr < inrAmount) {
           throw new Error('Insufficient INR balance');
         }
 
@@ -105,13 +123,19 @@ class UserService {
           throw new Error('BTC amount too small');
         }
 
-        const newInrBalance = currentBalances.inr_balance - inrAmount;
-        const newBtcBalance = currentBalances.btc_balance + btcAmount;
+        const newInrBalance = currentBalances.available_inr - inrAmount;
+        const newBtcBalance = currentBalances.available_btc + btcAmount;
 
-        // Create BUY transaction
+        // Update balances in users table
+        await connection.execute(
+          'UPDATE users SET available_inr = ?, available_btc = ? WHERE id = ?',
+          [newInrBalance, newBtcBalance, userId]
+        );
+
+        // Create operation entry
         const [result] = await connection.execute(
-          'INSERT INTO transactions (user_id, type, inr_amount, btc_amount, btc_price, inr_balance, btc_balance) VALUES (?, ?, ?, ?, ?, ?, ?)',
-          [userId, 'BUY', inrAmount, btcAmount, rates.buyRate, newInrBalance, newBtcBalance]
+          'INSERT INTO operations (user_id, type, status, inr_amount, btc_amount, execution_price, executed_at) VALUES (?, ?, ?, ?, ?, ?, NOW())',
+          [userId, 'MARKET_BUY', 'EXECUTED', inrAmount, btcAmount, rates.buyRate]
         );
 
         // Clear user cache
@@ -139,19 +163,19 @@ class UserService {
       }
 
       return await transaction(async (connection) => {
-        // Get current balances
-        const [balanceRows] = await connection.execute(
-          'SELECT inr_balance, btc_balance FROM transactions WHERE user_id = ? ORDER BY id DESC LIMIT 1',
+        // Get current balances using users table
+        const [userRows] = await connection.execute(
+          'SELECT available_inr, available_btc FROM users WHERE id = ?',
           [userId]
         );
 
-        if (balanceRows.length === 0) {
-          throw new Error('User not found or no transactions');
+        if (userRows.length === 0) {
+          throw new Error('User not found');
         }
 
-        const currentBalances = balanceRows[0];
+        const currentBalances = userRows[0];
         
-        if (currentBalances.btc_balance < btcAmount) {
+        if (currentBalances.available_btc < btcAmount) {
           throw new Error('Insufficient BTC balance');
         }
 
@@ -163,13 +187,19 @@ class UserService {
           throw new Error('INR amount too small');
         }
 
-        const newInrBalance = currentBalances.inr_balance + inrAmount;
-        const newBtcBalance = currentBalances.btc_balance - btcAmount;
+        const newInrBalance = currentBalances.available_inr + inrAmount;
+        const newBtcBalance = currentBalances.available_btc - btcAmount;
 
-        // Create SELL transaction
+        // Update balances in users table
+        await connection.execute(
+          'UPDATE users SET available_inr = ?, available_btc = ? WHERE id = ?',
+          [newInrBalance, newBtcBalance, userId]
+        );
+
+        // Create operation entry
         const [result] = await connection.execute(
-          'INSERT INTO transactions (user_id, type, inr_amount, btc_amount, btc_price, inr_balance, btc_balance) VALUES (?, ?, ?, ?, ?, ?, ?)',
-          [userId, 'SELL', inrAmount, btcAmount, rates.sellRate, newInrBalance, newBtcBalance]
+          'INSERT INTO operations (user_id, type, status, inr_amount, btc_amount, execution_price, executed_at) VALUES (?, ?, ?, ?, ?, ?, NOW())',
+          [userId, 'MARKET_SELL', 'EXECUTED', inrAmount, btcAmount, rates.sellRate]
         );
 
         // Clear user cache
@@ -401,18 +431,18 @@ class UserService {
 
       const user = userRows[0];
 
-      // Get all transactions
-      const transactions = await query(
-        'SELECT * FROM transactions WHERE user_id = ? ORDER BY created_at ASC',
+      // Get all operations
+      const operations = await query(
+        'SELECT * FROM operations WHERE user_id = ? AND status = "EXECUTED" ORDER BY created_at ASC',
         [userId]
       );
 
       // Format as CSV
-      const csvHeader = 'Date,Type,INR Amount,BTC Amount (Satoshis),BTC Price,INR Balance,BTC Balance (Satoshis)\n';
+      const csvHeader = 'Date,Type,INR Amount,BTC Amount (Satoshis),Execution Price\n';
       
-      const csvRows = transactions.map(tx => {
-        const date = new Date(tx.created_at).toISOString();
-        return `${date},${tx.type},${tx.inr_amount},${tx.btc_amount},${tx.btc_price},${tx.inr_balance},${tx.btc_balance}`;
+      const csvRows = operations.map(op => {
+        const date = new Date(op.created_at).toISOString();
+        return `${date},${op.type},${op.inr_amount},${op.btc_amount},${op.execution_price || ''}`;
       }).join('\n');
 
       const csvData = `# ₿itTrade Data Export\n`
