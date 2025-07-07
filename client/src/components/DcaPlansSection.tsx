@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, forwardRef, useImperativeHandle } from 'react';
 import { 
   Repeat, 
   Calendar, 
@@ -18,7 +18,11 @@ interface DcaPlansSectionProps {
   onUpdate?: () => void;
 }
 
-const DcaPlansSection: React.FC<DcaPlansSectionProps> = ({ onUpdate }) => {
+export interface DcaPlansSectionRef {
+  refresh: () => Promise<void>;
+}
+
+const DcaPlansSection = forwardRef<DcaPlansSectionRef, DcaPlansSectionProps>(({ onUpdate }, ref) => {
   const [dcaPlans, setDcaPlans] = useState<DcaPlan[]>([]);
   const [loading, setLoading] = useState(true);
   const [cancellingPlan, setCancellingPlan] = useState<number | null>(null);
@@ -27,6 +31,10 @@ const DcaPlansSection: React.FC<DcaPlansSectionProps> = ({ onUpdate }) => {
   useEffect(() => {
     fetchDcaPlans();
   }, []);
+
+  useImperativeHandle(ref, () => ({
+    refresh: fetchDcaPlans
+  }));
 
   const fetchDcaPlans = async () => {
     try {
@@ -248,6 +256,8 @@ const DcaPlansSection: React.FC<DcaPlansSectionProps> = ({ onUpdate }) => {
       </div>
     </div>
   );
-};
+});
+
+DcaPlansSection.displayName = 'DcaPlansSection';
 
 export default DcaPlansSection;

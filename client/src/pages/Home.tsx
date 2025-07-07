@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   Wallet, 
   TrendingUp, 
@@ -23,7 +23,7 @@ import TradingModal from '../components/TradingModal';
 import PriceUpdateTimer from '../components/PriceUpdateTimer';
 import TransactionDetailModal from '../components/TransactionDetailModal';
 import BitcoinChart from '../components/BitcoinChart';
-import DcaPlansSection from '../components/DcaPlansSection';
+import DcaPlansSection, { DcaPlansSectionRef } from '../components/DcaPlansSection';
 import { useBalance } from '../contexts/BalanceContext';
 import { 
   getTransactionDisplayName, 
@@ -34,6 +34,7 @@ import {
 
 const Home: React.FC = () => {
   const { refreshBalance } = useBalance();
+  const dcaPlansSectionRef = useRef<DcaPlansSectionRef>(null);
   const [balances, setBalances] = useState<Balances | null>(null);
   const [prices, setPrices] = useState<Prices | null>(null);
   const [recentTransactions, setRecentTransactions] = useState<Transaction[]>([]);
@@ -127,6 +128,11 @@ const Home: React.FC = () => {
       setPrices(prices);
       setRecentTransactions(recent_transactions);
       
+      // Refresh DCA plans if a DCA plan was created
+      if (dcaConfig) {
+        await dcaPlansSectionRef.current?.refresh();
+      }
+      
       // Trigger balance refresh for persistent top bar
       refreshBalance();
     } catch (error: any) {
@@ -144,6 +150,9 @@ const Home: React.FC = () => {
       setBalances(balances);
       setPrices(prices);
       setRecentTransactions(recent_transactions);
+      
+      // Refresh DCA plans section
+      await dcaPlansSectionRef.current?.refresh();
       
       // Trigger balance refresh for persistent top bar
       refreshBalance();
@@ -276,7 +285,7 @@ const Home: React.FC = () => {
         <BitcoinChart />
 
         {/* Active DCA Plans */}
-        <DcaPlansSection onUpdate={refreshData} />
+        <DcaPlansSection ref={dcaPlansSectionRef} onUpdate={refreshData} />
 
         {/* Recent Activity */}
         <div className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden">
