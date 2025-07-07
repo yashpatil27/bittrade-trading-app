@@ -8,8 +8,10 @@ export const getTransactionDisplayName = (type: Transaction['type'], status?: st
     'MARKET_BUY': 'Bitcoin Purchase',
     'SELL': 'Bitcoin Sale', 
     'MARKET_SELL': 'Bitcoin Sale',
-    'LIMIT_BUY': status === 'PENDING' ? 'Limit Buy Order' : 'Limit Buy Filled',
-    'LIMIT_SELL': status === 'PENDING' ? 'Limit Sell Order' : 'Limit Sell Filled',
+    'LIMIT_BUY': status === 'PENDING' ? 'Limit Buy Order' : 
+                 status === 'CANCELLED' ? 'Limit Buy Cancelled' : 'Limit Buy Filled',
+    'LIMIT_SELL': status === 'PENDING' ? 'Limit Sell Order' : 
+                  status === 'CANCELLED' ? 'Limit Sell Cancelled' : 'Limit Sell Filled',
     'WITHDRAW_INR': 'Cash Withdrawal',
     'DEPOSIT_BTC': 'Bitcoin Deposit',
     'WITHDRAW_BTC': 'Bitcoin Withdrawal'
@@ -26,8 +28,10 @@ export const getTransactionIcon = (type: Transaction['type'], status?: string): 
     'MARKET_BUY': 'TrendingUp',
     'SELL': 'TrendingDown',
     'MARKET_SELL': 'TrendingDown',
-    'LIMIT_BUY': status === 'PENDING' ? 'Target' : 'TrendingUp',
-    'LIMIT_SELL': status === 'PENDING' ? 'Target' : 'TrendingDown',
+    'LIMIT_BUY': status === 'PENDING' ? 'Target' : 
+                 status === 'CANCELLED' ? 'X' : 'TrendingUp',
+    'LIMIT_SELL': status === 'PENDING' ? 'Target' : 
+                  status === 'CANCELLED' ? 'X' : 'TrendingDown',
     'WITHDRAW_INR': 'ArrowDown',
     'DEPOSIT_BTC': 'Plus',
     'WITHDRAW_BTC': 'Minus'

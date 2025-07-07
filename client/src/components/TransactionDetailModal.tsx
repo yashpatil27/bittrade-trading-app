@@ -104,6 +104,7 @@ const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
       case 'Plus': return <Plus {...iconProps} />;
       case 'Minus': return <Minus {...iconProps} />;
       case 'Target': return <Target {...iconProps} />;
+      case 'X': return <X {...iconProps} />;
       default: return <Circle {...iconProps} />;
     }
   };
@@ -122,6 +123,9 @@ const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
   const getTransactionTypeColor = () => {
     if (transaction.status === 'PENDING') {
       return 'text-orange-400';
+    }
+    if (transaction.status === 'CANCELLED') {
+      return 'text-gray-400';
     }
     switch (transaction.type) {
       case 'BUY':
