@@ -317,6 +317,155 @@ router.post('/sell', async (req, res) => {
   }
 });
 
+// Place Limit Buy Order
+router.post('/limit-buy', async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { amount, targetPrice } = req.body;
+
+    // Validation
+    if (!amount || amount <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Amount must be greater than 0'
+      });
+    }
+
+    if (!targetPrice || targetPrice <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Target price must be greater than 0'
+      });
+    }
+
+    if (!Number.isInteger(amount)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Amount must be a whole number (in rupees)'
+      });
+    }
+
+    if (!Number.isInteger(targetPrice)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Target price must be a whole number (in rupees)'
+      });
+    }
+
+    const result = await userService.placeLimitBuyOrder(userId, amount, targetPrice);
+
+    res.json({
+      success: true,
+      message: 'Limit buy order placed successfully',
+      data: {
+        order_id: result.orderId,
+        inr_amount: result.inrAmount,
+        target_price: result.targetPrice,
+        estimated_btc: result.estimatedBtc / 100000000, // Convert to BTC
+        new_balances: {
+          inr: result.newAvailableBalance,
+          btc: result.currentBtcBalance / 100000000 // Convert to BTC
+        }
+      }
+    });
+
+  } catch (error) {
+    console.error('Limit buy error:', error);
+    
+    let statusCode = 500;
+    let message = 'Error placing limit buy order';
+    
+    if (error.message === 'Insufficient INR balance') {
+      statusCode = 400;
+      message = error.message;
+    } else if (error.message === 'Target price too high') {
+      statusCode = 400;
+      message = error.message;
+    }
+
+    res.status(statusCode).json({
+      success: false,
+      message
+    });
+  }
+});
+
+// Place Limit Sell Order
+router.post('/limit-sell', async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { amount, targetPrice } = req.body;
+
+    // Validation
+    if (!amount || amount <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Amount must be greater than 0'
+      });
+    }
+
+    if (!targetPrice || targetPrice <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Target price must be greater than 0'
+      });
+    }
+
+    if (!Number.isInteger(targetPrice)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Target price must be a whole number (in rupees)'
+      });
+    }
+
+    // Convert BTC amount to satoshis
+    const satoshiAmount = Math.floor(amount * 100000000);
+    
+    if (satoshiAmount <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Amount too small'
+      });
+    }
+
+    const result = await userService.placeLimitSellOrder(userId, satoshiAmount, targetPrice);
+
+    res.json({
+      success: true,
+      message: 'Limit sell order placed successfully',
+      data: {
+        order_id: result.orderId,
+        btc_amount: result.btcAmount / 100000000, // Convert to BTC
+        target_price: result.targetPrice,
+        estimated_inr: result.estimatedInr,
+        new_balances: {
+          inr: result.currentInrBalance,
+          btc: result.newAvailableBalance / 100000000 // Convert to BTC
+        }
+      }
+    });
+
+  } catch (error) {
+    console.error('Limit sell error:', error);
+    
+    let statusCode = 500;
+    let message = 'Error placing limit sell order';
+    
+    if (error.message === 'Insufficient BTC balance') {
+      statusCode = 400;
+      message = error.message;
+    } else if (error.message === 'Target price too low') {
+      statusCode = 400;
+      message = error.message;
+    }
+
+    res.status(statusCode).json({
+      success: false,
+      message
+    });
+  }
+});
+
 // Get recent transactions
 router.get('/transactions/recent', async (req, res) => {
   try {

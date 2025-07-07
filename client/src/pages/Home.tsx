@@ -64,18 +64,30 @@ const Home: React.FC = () => {
     setIsModalOpen(true);
   };
 
-  const handleTrade = async (amount: number) => {
+  const handleTrade = async (amount: number, targetPrice?: number) => {
     setIsLoading(true);
     setError('');
     setSuccess('');
 
     try {
-      if (modalType === 'buy') {
-        await userAPI.buyBitcoin({ amount });
-        setSuccess('🎉 Bitcoin purchased successfully!');
+      if (targetPrice) {
+        // Limit order
+        if (modalType === 'buy') {
+          await userAPI.placeLimitBuyOrder({ inrAmount: amount, targetPrice });
+          setSuccess('📊 Limit buy order placed successfully!');
+        } else {
+          await userAPI.placeLimitSellOrder({ btcAmount: amount, targetPrice });
+          setSuccess('📊 Limit sell order placed successfully!');
+        }
       } else {
-        await userAPI.sellBitcoin({ amount });
-        setSuccess('✅ Bitcoin sold successfully!');
+        // Market order
+        if (modalType === 'buy') {
+          await userAPI.buyBitcoin({ amount });
+          setSuccess('🎉 Bitcoin purchased successfully!');
+        } else {
+          await userAPI.sellBitcoin({ amount });
+          setSuccess('✅ Bitcoin sold successfully!');
+        }
       }
       
       // Refresh data
@@ -89,7 +101,7 @@ const Home: React.FC = () => {
       // Trigger balance refresh for persistent top bar
       refreshBalance();
     } catch (error: any) {
-      setError(error.response?.data?.message || `Failed to ${modalType} Bitcoin`);
+      setError(error.response?.data?.message || `Failed to ${targetPrice ? 'place limit order' : modalType + ' Bitcoin'}`);
     } finally {
       setIsLoading(false);
     }

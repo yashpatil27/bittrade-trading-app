@@ -82,6 +82,12 @@ export const userAPI = {
   sellBitcoin: (data: TradeRequest): Promise<AxiosResponse<ApiResponse<TradeResponse>>> =>
     api.post('/user/sell', data),
   
+  placeLimitBuyOrder: (data: { inrAmount: number; targetPrice: number }): Promise<AxiosResponse<ApiResponse<any>>> =>
+    api.post('/user/limit-buy', { amount: data.inrAmount, targetPrice: data.targetPrice }),
+  
+  placeLimitSellOrder: (data: { btcAmount: number; targetPrice: number }): Promise<AxiosResponse<ApiResponse<any>>> =>
+    api.post('/user/limit-sell', { amount: data.btcAmount, targetPrice: data.targetPrice }),
+  
   getRecentTransactions: (limit = 5): Promise<AxiosResponse<ApiResponse<Transaction[]>>> =>
     api.get(`/user/transactions/recent?limit=${limit}`),
   

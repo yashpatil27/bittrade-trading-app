@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, TrendingUp, TrendingDown, Calculator, Zap } from 'lucide-react';
+import { X, TrendingUp, TrendingDown, Calculator, Zap, Target, Clock } from 'lucide-react';
 import { Prices } from '../types';
 import { userAPI } from '../services/api';
 import PinConfirmationModal from './PinConfirmationModal';
@@ -11,7 +11,7 @@ interface TradingModalProps {
   type: 'buy' | 'sell';
   prices: Prices | null;
   userBalance: { inr: number; btc: number };
-  onTrade: (amount: number) => Promise<void>;
+  onTrade: (amount: number, targetPrice?: number) => Promise<void>;
   isLoading: boolean;
 }
 
@@ -24,10 +24,13 @@ const TradingModal: React.FC<TradingModalProps> = ({
   onTrade,
   isLoading
 }) => {
+  const [orderType, setOrderType] = useState<'market' | 'limit'>('market');
   const [amount, setAmount] = useState('');
+  const [targetPrice, setTargetPrice] = useState('');
   const [estimation, setEstimation] = useState<number>(0);
   const [isPinModalOpen, setIsPinModalOpen] = useState(false);
   const [pendingAmount, setPendingAmount] = useState<number>(0);
+  const [pendingTargetPrice, setPendingTargetPrice] = useState<number | undefined>(undefined);
 
   const isBuy = type === 'buy';
   const rate = isBuy ? prices?.buy_rate : prices?.sell_rate;
@@ -36,26 +39,34 @@ const TradingModal: React.FC<TradingModalProps> = ({
   useBodyScrollLock(isOpen);
 
   useEffect(() => {
-    if (amount && rate) {
-      if (isBuy) {
-        // Buying BTC with INR
-        const btcAmount = parseFloat(amount) / rate;
-        setEstimation(btcAmount);
+    if (amount) {
+      const effectiveRate = orderType === 'limit' && targetPrice ? parseFloat(targetPrice) : rate;
+      
+      if (effectiveRate) {
+        if (isBuy) {
+          // Buying BTC with INR
+          const btcAmount = parseFloat(amount) / effectiveRate;
+          setEstimation(btcAmount);
+        } else {
+          // Selling BTC for INR
+          const inrAmount = parseFloat(amount) * effectiveRate;
+          setEstimation(inrAmount);
+        }
       } else {
-        // Selling BTC for INR
-        const inrAmount = parseFloat(amount) * rate;
-        setEstimation(inrAmount);
+        setEstimation(0);
       }
     } else {
       setEstimation(0);
     }
-  }, [amount, rate, isBuy]);
+  }, [amount, rate, isBuy, orderType, targetPrice]);
 
   const handleTrade = () => {
     if (!amount || parseFloat(amount) <= 0) return;
+    if (orderType === 'limit' && (!targetPrice || parseFloat(targetPrice) <= 0)) return;
     
-    // Store the amount and open PIN confirmation
+    // Store the amount and target price, then open PIN confirmation
     setPendingAmount(parseFloat(amount));
+    setPendingTargetPrice(orderType === 'limit' ? parseFloat(targetPrice) : undefined);
     setIsPinModalOpen(true);
   };
 
@@ -65,9 +76,11 @@ const TradingModal: React.FC<TradingModalProps> = ({
       const response = await userAPI.verifyPin(pin);
       if (response.data.data?.valid) {
         // PIN is correct, proceed with trade
-        await onTrade(pendingAmount);
+        await onTrade(pendingAmount, pendingTargetPrice);
         setAmount('');
+        setTargetPrice('');
         setPendingAmount(0);
+        setPendingTargetPrice(undefined);
         setIsPinModalOpen(false);
         onClose();
         return true;
@@ -84,6 +97,7 @@ const TradingModal: React.FC<TradingModalProps> = ({
   const handlePinModalClose = () => {
     setIsPinModalOpen(false);
     setPendingAmount(0);
+    setPendingTargetPrice(undefined);
   };
 
   const getMaxAmount = () => {
@@ -104,18 +118,28 @@ const TradingModal: React.FC<TradingModalProps> = ({
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-zinc-800 rounded-lg">
-              {isBuy ? (
-                <TrendingUp className="w-6 h-6 text-white" />
+              {orderType === 'market' ? (
+                isBuy ? (
+                  <TrendingUp className="w-6 h-6 text-white" />
+                ) : (
+                  <TrendingDown className="w-6 h-6 text-white" />
+                )
               ) : (
-                <TrendingDown className="w-6 h-6 text-white" />
+                <Target className="w-6 h-6 text-white" />
               )}
             </div>
             <div>
               <h2 className="text-xl font-bold">
-                {isBuy ? 'Buy Bitcoin' : 'Sell Bitcoin'}
+                {orderType === 'market' ? 
+                  (isBuy ? 'Buy Bitcoin' : 'Sell Bitcoin') : 
+                  (isBuy ? 'Limit Buy Order' : 'Limit Sell Order')
+                }
               </h2>
               <p className="text-sm text-zinc-400">
-                Rate: ₹{rate?.toLocaleString('en-IN')}/BTC
+                {orderType === 'market' ? 
+                  `Market Rate: ₹${rate?.toLocaleString('en-IN')}/BTC` :
+                  `Current: ₹${rate?.toLocaleString('en-IN')}/BTC`
+                }
               </p>
             </div>
           </div>
@@ -125,6 +149,34 @@ const TradingModal: React.FC<TradingModalProps> = ({
           >
             <X className="w-5 h-5" />
           </button>
+        </div>
+
+        {/* Order Type Toggle */}
+        <div className="mb-6">
+          <div className="flex bg-zinc-800 rounded-lg p-1">
+            <button
+              onClick={() => setOrderType('market')}
+              className={`flex-1 py-2 px-3 rounded-md text-sm font-medium transition-colors flex items-center justify-center gap-2 ${
+                orderType === 'market' 
+                  ? 'bg-white text-black' 
+                  : 'text-zinc-400 hover:text-white'
+              }`}
+            >
+              <Zap className="w-4 h-4" />
+              Market Order
+            </button>
+            <button
+              onClick={() => setOrderType('limit')}
+              className={`flex-1 py-2 px-3 rounded-md text-sm font-medium transition-colors flex items-center justify-center gap-2 ${
+                orderType === 'limit' 
+                  ? 'bg-white text-black' 
+                  : 'text-zinc-400 hover:text-white'
+              }`}
+            >
+              <Target className="w-4 h-4" />
+              Limit Order
+            </button>
+          </div>
         </div>
 
         {/* Balance Display */}
@@ -190,13 +242,76 @@ const TradingModal: React.FC<TradingModalProps> = ({
           </div>
         </div>
 
+        {/* Target Price Input (Limit Orders Only) */}
+        {orderType === 'limit' && (
+          <div className="mb-6">
+            <label className="block text-sm font-medium mb-2">
+              Target Price (₹ per BTC)
+            </label>
+            <div className="relative">
+              <input
+                type="number"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                value={targetPrice}
+                onChange={(e) => setTargetPrice(e.target.value)}
+                className="input-field w-full"
+                placeholder={rate?.toLocaleString('en-IN') || "0"}
+                step="1"
+                min="1"
+              />
+            </div>
+            
+            {/* Quick Price Buttons */}
+            <div className="flex gap-2 mt-3">
+              <button
+                onClick={() => setTargetPrice((rate! * 0.95).toFixed(0))}
+                className="flex-1 text-xs bg-zinc-800 hover:bg-zinc-700 px-3 py-2 rounded transition-colors"
+              >
+                -5%
+              </button>
+              <button
+                onClick={() => setTargetPrice((rate! * 0.98).toFixed(0))}
+                className="flex-1 text-xs bg-zinc-800 hover:bg-zinc-700 px-3 py-2 rounded transition-colors"
+              >
+                -2%
+              </button>
+              <button
+                onClick={() => setTargetPrice(rate?.toFixed(0) || '0')}
+                className="flex-1 text-xs bg-zinc-700 hover:bg-zinc-600 px-3 py-2 rounded transition-colors"
+              >
+                Market
+              </button>
+              <button
+                onClick={() => setTargetPrice((rate! * 1.02).toFixed(0))}
+                className="flex-1 text-xs bg-zinc-800 hover:bg-zinc-700 px-3 py-2 rounded transition-colors"
+              >
+                +2%
+              </button>
+              <button
+                onClick={() => setTargetPrice((rate! * 1.05).toFixed(0))}
+                className="flex-1 text-xs bg-zinc-800 hover:bg-zinc-700 px-3 py-2 rounded transition-colors"
+              >
+                +5%
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Estimation Display */}
         {amount && estimation > 0 && (
           <div className="bg-zinc-800/50 border border-zinc-700 rounded-lg p-4 mb-6">
             <div className="flex items-center gap-2 mb-2">
-              <Calculator className="w-4 h-4 text-white" />
+              {orderType === 'market' ? (
+                <Calculator className="w-4 h-4 text-white" />
+              ) : (
+                <Clock className="w-4 h-4 text-white" />
+              )}
               <span className="text-sm font-medium text-white">
-                You'll receive approximately:
+                {orderType === 'market' ? 
+                  'You\'ll receive approximately:' : 
+                  'Estimated when filled:'
+                }
               </span>
             </div>
             <div className="text-2xl font-bold">
@@ -206,6 +321,23 @@ const TradingModal: React.FC<TradingModalProps> = ({
                 `₹${Math.floor(estimation).toLocaleString('en-IN')}`
               )}
             </div>
+            {orderType === 'limit' && (
+              <div className="mt-2 text-xs text-zinc-400">
+                {isBuy ? (
+                  targetPrice && rate && parseFloat(targetPrice) < rate ? (
+                    <span className="text-green-400">• Waiting for price to drop to ₹{parseFloat(targetPrice).toLocaleString('en-IN')}</span>
+                  ) : (
+                    <span className="text-orange-400">• Waiting for price to rise to ₹{parseFloat(targetPrice).toLocaleString('en-IN')}</span>
+                  )
+                ) : (
+                  targetPrice && rate && parseFloat(targetPrice) > rate ? (
+                    <span className="text-green-400">• Waiting for price to rise to ₹{parseFloat(targetPrice).toLocaleString('en-IN')}</span>
+                  ) : (
+                    <span className="text-orange-400">• Waiting for price to drop to ₹{parseFloat(targetPrice).toLocaleString('en-IN')}</span>
+                  )
+                )}
+              </div>
+            )}
           </div>
         )}
 
@@ -220,7 +352,13 @@ const TradingModal: React.FC<TradingModalProps> = ({
           </button>
           <button
             onClick={handleTrade}
-            disabled={!amount || parseFloat(amount) <= 0 || isLoading || parseFloat(amount) > availableBalance}
+            disabled={
+              !amount || 
+              parseFloat(amount) <= 0 || 
+              isLoading || 
+              parseFloat(amount) > availableBalance ||
+              (orderType === 'limit' && (!targetPrice || parseFloat(targetPrice) <= 0))
+            }
             className="flex-1 font-medium px-4 py-2 rounded-lg transition-all duration-200 flex items-center justify-center gap-2 bg-white text-black hover:bg-zinc-200 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isLoading ? (
@@ -230,8 +368,11 @@ const TradingModal: React.FC<TradingModalProps> = ({
               </>
             ) : (
               <>
-                <Zap className="w-4 h-4" />
-                {isBuy ? 'Buy Bitcoin' : 'Sell Bitcoin'}
+                {orderType === 'market' ? <Zap className="w-4 h-4" /> : <Target className="w-4 h-4" />}
+                {orderType === 'market' ? 
+                  (isBuy ? 'Buy Bitcoin' : 'Sell Bitcoin') :
+                  (isBuy ? 'Place Buy Order' : 'Place Sell Order')
+                }
               </>
             )}
           </button>
@@ -243,8 +384,20 @@ const TradingModal: React.FC<TradingModalProps> = ({
         isOpen={isPinModalOpen}
         onClose={handlePinModalClose}
         onConfirm={handlePinConfirm}
-        title={`Confirm ${isBuy ? 'Buy' : 'Sell'} Order`}
-        message={`Enter your PIN to confirm ${isBuy ? 'purchasing' : 'selling'} ${isBuy ? '₹' + pendingAmount.toLocaleString('en-IN') + ' worth of Bitcoin' : pendingAmount.toFixed(8) + ' BTC'}`}
+        title={`Confirm ${orderType === 'market' ? (isBuy ? 'Buy' : 'Sell') : 'Limit'} Order`}
+        message={(() => {
+          const baseText = 'Enter your PIN to confirm ';
+          if (orderType === 'market') {
+            const action = isBuy ? 'purchasing' : 'selling';
+            const amount = isBuy ? `₹${pendingAmount.toLocaleString('en-IN')} worth of Bitcoin` : `${pendingAmount.toFixed(8)} BTC`;
+            return `${baseText}${action} ${amount}`;
+          } else {
+            const action = isBuy ? 'buy' : 'sell';
+            const amount = isBuy ? `₹${pendingAmount.toLocaleString('en-IN')}` : `${pendingAmount.toFixed(8)} BTC`;
+            const price = `₹${(pendingTargetPrice || 0).toLocaleString('en-IN')}/BTC`;
+            return `${baseText}placing a limit ${action} order for ${amount} at ${price}`;
+          }
+        })()}
         isLoading={isLoading}
       />
     </div>

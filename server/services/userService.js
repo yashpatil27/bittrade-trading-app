@@ -220,6 +220,158 @@ class UserService {
     }
   }
 
+  async placeLimitBuyOrder(userId, inrAmount, targetPrice) {
+    try {
+      if (inrAmount <= 0) {
+        throw new Error('Amount must be greater than 0');
+      }
+
+      if (targetPrice <= 0) {
+        throw new Error('Target price must be greater than 0');
+      }
+
+      return await transaction(async (connection) => {
+        // Get current balances
+        const [userRows] = await connection.execute(
+          'SELECT available_inr, available_btc, reserved_inr FROM users WHERE id = ?',
+          [userId]
+        );
+
+        if (userRows.length === 0) {
+          throw new Error('User not found');
+        }
+
+        const currentBalances = userRows[0];
+        
+        if (currentBalances.available_inr < inrAmount) {
+          throw new Error('Insufficient INR balance');
+        }
+
+        // Get current market price for validation
+        const rates = await bitcoinDataService.getCalculatedRates();
+        
+        // Prevent placing buy orders too far above market price (protection)
+        if (targetPrice > rates.buyRate * 1.5) {
+          throw new Error('Target price too high');
+        }
+
+        // Calculate estimated BTC amount
+        const estimatedBtc = Math.floor((inrAmount / targetPrice) * 100000000); // Convert to satoshis
+
+        if (estimatedBtc <= 0) {
+          throw new Error('Estimated BTC amount too small');
+        }
+
+        // Move INR from available to reserved
+        const newAvailableInr = currentBalances.available_inr - inrAmount;
+        const newReservedInr = currentBalances.reserved_inr + inrAmount;
+
+        // Update balances
+        await connection.execute(
+          'UPDATE users SET available_inr = ?, reserved_inr = ? WHERE id = ?',
+          [newAvailableInr, newReservedInr, userId]
+        );
+
+        // Create limit buy operation
+        const [result] = await connection.execute(
+          'INSERT INTO operations (user_id, type, status, inr_amount, btc_amount, limit_price) VALUES (?, ?, ?, ?, ?, ?)',
+          [userId, 'LIMIT_BUY', 'PENDING', inrAmount, estimatedBtc, targetPrice]
+        );
+
+        // Clear user cache
+        await clearUserCache(userId);
+
+        return {
+          orderId: result.insertId,
+          inrAmount,
+          targetPrice,
+          estimatedBtc,
+          newAvailableBalance: newAvailableInr,
+          currentBtcBalance: currentBalances.available_btc
+        };
+      });
+    } catch (error) {
+      console.error('Error placing limit buy order:', error);
+      throw error;
+    }
+  }
+
+  async placeLimitSellOrder(userId, btcAmount, targetPrice) {
+    try {
+      if (btcAmount <= 0) {
+        throw new Error('Amount must be greater than 0');
+      }
+
+      if (targetPrice <= 0) {
+        throw new Error('Target price must be greater than 0');
+      }
+
+      return await transaction(async (connection) => {
+        // Get current balances
+        const [userRows] = await connection.execute(
+          'SELECT available_inr, available_btc, reserved_btc FROM users WHERE id = ?',
+          [userId]
+        );
+
+        if (userRows.length === 0) {
+          throw new Error('User not found');
+        }
+
+        const currentBalances = userRows[0];
+        
+        if (currentBalances.available_btc < btcAmount) {
+          throw new Error('Insufficient BTC balance');
+        }
+
+        // Get current market price for validation
+        const rates = await bitcoinDataService.getCalculatedRates();
+        
+        // Prevent placing sell orders too far below market price (protection)
+        if (targetPrice < rates.sellRate * 0.5) {
+          throw new Error('Target price too low');
+        }
+
+        // Calculate estimated INR amount
+        const estimatedInr = Math.floor((btcAmount / 100000000) * targetPrice);
+
+        if (estimatedInr <= 0) {
+          throw new Error('Estimated INR amount too small');
+        }
+
+        // Move BTC from available to reserved
+        const newAvailableBtc = currentBalances.available_btc - btcAmount;
+        const newReservedBtc = currentBalances.reserved_btc + btcAmount;
+
+        // Update balances
+        await connection.execute(
+          'UPDATE users SET available_btc = ?, reserved_btc = ? WHERE id = ?',
+          [newAvailableBtc, newReservedBtc, userId]
+        );
+
+        // Create limit sell operation
+        const [result] = await connection.execute(
+          'INSERT INTO operations (user_id, type, status, inr_amount, btc_amount, limit_price) VALUES (?, ?, ?, ?, ?, ?)',
+          [userId, 'LIMIT_SELL', 'PENDING', estimatedInr, btcAmount, targetPrice]
+        );
+
+        // Clear user cache
+        await clearUserCache(userId);
+
+        return {
+          orderId: result.insertId,
+          btcAmount,
+          targetPrice,
+          estimatedInr,
+          newAvailableBalance: newAvailableBtc,
+          currentInrBalance: currentBalances.available_inr
+        };
+      });
+    } catch (error) {
+      console.error('Error placing limit sell order:', error);
+      throw error;
+    }
+  }
+
   formatBalancesForDisplay(balances) {
     return {
       inr: balances.inr_balance,
