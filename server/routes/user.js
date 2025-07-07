@@ -731,10 +731,10 @@ router.post('/dca-buy', async (req, res) => {
       });
     }
 
-    if (!frequency || !['DAILY', 'WEEKLY', 'MONTHLY'].includes(frequency)) {
+    if (!frequency || !['HOURLY', 'DAILY', 'WEEKLY', 'MONTHLY'].includes(frequency)) {
       return res.status(400).json({
         success: false,
-        message: 'Invalid frequency. Must be DAILY, WEEKLY, or MONTHLY'
+        message: 'Invalid frequency. Must be HOURLY, DAILY, WEEKLY, or MONTHLY'
       });
     }
 
@@ -791,10 +791,10 @@ router.post('/dca-sell', async (req, res) => {
       });
     }
 
-    if (!frequency || !['DAILY', 'WEEKLY', 'MONTHLY'].includes(frequency)) {
+    if (!frequency || !['HOURLY', 'DAILY', 'WEEKLY', 'MONTHLY'].includes(frequency)) {
       return res.status(400).json({
         success: false,
-        message: 'Invalid frequency. Must be DAILY, WEEKLY, or MONTHLY'
+        message: 'Invalid frequency. Must be HOURLY, DAILY, WEEKLY, or MONTHLY'
       });
     }
 

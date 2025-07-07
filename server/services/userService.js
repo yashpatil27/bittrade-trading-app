@@ -650,12 +650,14 @@ class UserService {
         }
 
         const nextExecutionAt = new Date();
-        if (frequency === 'WEEKLY') {
+        if (frequency === 'HOURLY') {
+          nextExecutionAt.setHours(nextExecutionAt.getHours() + 1);
+        } else if (frequency === 'DAILY') {
+          nextExecutionAt.setDate(nextExecutionAt.getDate() + 1);
+        } else if (frequency === 'WEEKLY') {
           nextExecutionAt.setDate(nextExecutionAt.getDate() + 7);
         } else if (frequency === 'MONTHLY') {
           nextExecutionAt.setMonth(nextExecutionAt.getMonth() + 1);
-        } else {
-          nextExecutionAt.setDate(nextExecutionAt.getDate() + 1);
         }
 
         const [result] = await connection.execute(
@@ -721,12 +723,14 @@ class UserService {
         }
 
         const nextExecutionAt = new Date();
-        if (frequency === 'WEEKLY') {
+        if (frequency === 'HOURLY') {
+          nextExecutionAt.setHours(nextExecutionAt.getHours() + 1);
+        } else if (frequency === 'DAILY') {
+          nextExecutionAt.setDate(nextExecutionAt.getDate() + 1);
+        } else if (frequency === 'WEEKLY') {
           nextExecutionAt.setDate(nextExecutionAt.getDate() + 7);
         } else if (frequency === 'MONTHLY') {
           nextExecutionAt.setMonth(nextExecutionAt.getMonth() + 1);
-        } else {
-          nextExecutionAt.setDate(nextExecutionAt.getDate() + 1);
         }
 
         const [result] = await connection.execute(

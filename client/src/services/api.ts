@@ -126,7 +126,7 @@ export const userAPI = {
   
   createDcaBuyPlan: (data: {
     amountPerExecution: number;
-    frequency: 'DAILY' | 'WEEKLY' | 'MONTHLY';
+    frequency: 'HOURLY' | 'DAILY' | 'WEEKLY' | 'MONTHLY';
     totalExecutions?: number;
     maxPrice?: number;
     minPrice?: number;
@@ -135,7 +135,7 @@ export const userAPI = {
   
   createDcaSellPlan: (data: {
     amountPerExecution: number;
-    frequency: 'DAILY' | 'WEEKLY' | 'MONTHLY';
+    frequency: 'HOURLY' | 'DAILY' | 'WEEKLY' | 'MONTHLY';
     totalExecutions?: number;
     maxPrice?: number;
     minPrice?: number;

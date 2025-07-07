@@ -88,7 +88,7 @@ export interface DcaPlan {
   id: number;
   plan_type: 'DCA_BUY' | 'DCA_SELL';
   status: 'ACTIVE' | 'PAUSED' | 'COMPLETED' | 'CANCELLED';
-  frequency: 'DAILY' | 'WEEKLY' | 'MONTHLY';
+  frequency: 'HOURLY' | 'DAILY' | 'WEEKLY' | 'MONTHLY';
   amount_per_execution: number;
   next_execution_at: string;
   total_executions: number;

@@ -286,7 +286,9 @@ class DcaExecutionService {
   async scheduleNextExecution(plan) {
     const nextExecutionAt = new Date(plan.next_execution_at);
     
-    if (plan.frequency === 'DAILY') {
+    if (plan.frequency === 'HOURLY') {
+      nextExecutionAt.setHours(nextExecutionAt.getHours() + 1);
+    } else if (plan.frequency === 'DAILY') {
       nextExecutionAt.setDate(nextExecutionAt.getDate() + 1);
     } else if (plan.frequency === 'WEEKLY') {
       nextExecutionAt.setDate(nextExecutionAt.getDate() + 7);
@@ -304,7 +306,9 @@ class DcaExecutionService {
   async updatePlanForNextExecution(connection, plan, newTotalExecutions, newRemainingExecutions) {
     const nextExecutionAt = new Date(plan.next_execution_at);
     
-    if (plan.frequency === 'DAILY') {
+    if (plan.frequency === 'HOURLY') {
+      nextExecutionAt.setHours(nextExecutionAt.getHours() + 1);
+    } else if (plan.frequency === 'DAILY') {
       nextExecutionAt.setDate(nextExecutionAt.getDate() + 1);
     } else if (plan.frequency === 'WEEKLY') {
       nextExecutionAt.setDate(nextExecutionAt.getDate() + 7);

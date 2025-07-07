@@ -69,7 +69,7 @@ const Home: React.FC = () => {
   };
 
   const handleTrade = async (amount: number, targetPrice?: number, dcaConfig?: {
-    frequency: 'DAILY' | 'WEEKLY' | 'MONTHLY';
+    frequency: 'HOURLY' | 'DAILY' | 'WEEKLY' | 'MONTHLY';
     totalExecutions?: number;
     maxPrice?: number;
     minPrice?: number;

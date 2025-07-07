@@ -12,7 +12,7 @@ interface TradingModalProps {
   prices: Prices | null;
   userBalance: { inr: number; btc: number };
   onTrade: (amount: number, targetPrice?: number, dcaConfig?: {
-    frequency: 'DAILY' | 'WEEKLY' | 'MONTHLY';
+    frequency: 'HOURLY' | 'DAILY' | 'WEEKLY' | 'MONTHLY';
     totalExecutions?: number;
     maxPrice?: number;
     minPrice?: number;
@@ -36,7 +36,7 @@ const TradingModal: React.FC<TradingModalProps> = ({
   const [isPinModalOpen, setIsPinModalOpen] = useState(false);
   const [pendingAmount, setPendingAmount] = useState<number>(0);
   const [pendingTargetPrice, setPendingTargetPrice] = useState<number | undefined>(undefined);
-  const [dcaFrequency, setDcaFrequency] = useState<'DAILY' | 'WEEKLY' | 'MONTHLY'>('WEEKLY');
+  const [dcaFrequency, setDcaFrequency] = useState<'HOURLY' | 'DAILY' | 'WEEKLY' | 'MONTHLY'>('WEEKLY');
   const [dcaExecutions, setDcaExecutions] = useState('');
   const [dcaMaxPrice, setDcaMaxPrice] = useState('');
   const [dcaMinPrice, setDcaMinPrice] = useState('');
@@ -353,10 +353,20 @@ const TradingModal: React.FC<TradingModalProps> = ({
               <label className="block text-sm font-medium mb-2">
                 Purchase Frequency
               </label>
-              <div className="flex bg-zinc-800 rounded-lg p-1">
+              <div className="grid grid-cols-4 bg-zinc-800 rounded-lg p-1 gap-1">
+                <button
+                  onClick={() => setDcaFrequency('HOURLY')}
+                  className={`py-2 px-2 rounded-md text-sm font-medium transition-colors ${
+                    dcaFrequency === 'HOURLY' 
+                      ? 'bg-white text-black' 
+                      : 'text-zinc-400 hover:text-white'
+                  }`}
+                >
+                  Hourly
+                </button>
                 <button
                   onClick={() => setDcaFrequency('DAILY')}
-                  className={`flex-1 py-2 px-3 rounded-md text-sm font-medium transition-colors ${
+                  className={`py-2 px-2 rounded-md text-sm font-medium transition-colors ${
                     dcaFrequency === 'DAILY' 
                       ? 'bg-white text-black' 
                       : 'text-zinc-400 hover:text-white'
@@ -366,7 +376,7 @@ const TradingModal: React.FC<TradingModalProps> = ({
                 </button>
                 <button
                   onClick={() => setDcaFrequency('WEEKLY')}
-                  className={`flex-1 py-2 px-3 rounded-md text-sm font-medium transition-colors ${
+                  className={`py-2 px-2 rounded-md text-sm font-medium transition-colors ${
                     dcaFrequency === 'WEEKLY' 
                       ? 'bg-white text-black' 
                       : 'text-zinc-400 hover:text-white'
@@ -376,7 +386,7 @@ const TradingModal: React.FC<TradingModalProps> = ({
                 </button>
                 <button
                   onClick={() => setDcaFrequency('MONTHLY')}
-                  className={`flex-1 py-2 px-3 rounded-md text-sm font-medium transition-colors ${
+                  className={`py-2 px-2 rounded-md text-sm font-medium transition-colors ${
                     dcaFrequency === 'MONTHLY' 
                       ? 'bg-white text-black' 
                       : 'text-zinc-400 hover:text-white'
