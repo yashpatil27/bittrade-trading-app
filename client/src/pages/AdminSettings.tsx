@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { 
   Settings, 
   Database, 
-  Wifi, 
   Server, 
   Activity, 
   DollarSign, 

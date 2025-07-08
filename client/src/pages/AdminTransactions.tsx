@@ -109,7 +109,7 @@ const AdminTransactions: React.FC = () => {
   // Apply filters whenever transactions or filters change
   useEffect(() => {
     applyFilters();
-  }, [allTransactions, filters]);
+  }, [allTransactions, filters]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const applyFilters = () => {
     let filtered = [...allTransactions];
@@ -349,41 +349,7 @@ const AdminTransactions: React.FC = () => {
     }
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'COMPLETED':
-      case 'EXECUTED':
-        return 'text-green-400';
-      case 'PENDING':
-        return 'text-yellow-400';
-      case 'CANCELLED':
-        return 'text-red-400';
-      case 'PAUSED':
-        return 'text-orange-400';
-      case 'ACTIVE':
-        return 'text-blue-400';
-      default:
-        return 'text-zinc-400';
-    }
-  };
 
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'COMPLETED':
-      case 'EXECUTED':
-        return <CheckCircle className="w-4 h-4" />;
-      case 'PENDING':
-        return <Clock className="w-4 h-4" />;
-      case 'CANCELLED':
-        return <X className="w-4 h-4" />;
-      case 'PAUSED':
-        return <Pause className="w-4 h-4" />;
-      case 'ACTIVE':
-        return <Play className="w-4 h-4" />;
-      default:
-        return <Circle className="w-4 h-4" />;
-    }
-  };
 
   const getDcaStatusColor = (status: string) => {
     switch (status) {
@@ -444,7 +410,6 @@ const AdminTransactions: React.FC = () => {
     return matchesSearch && matchesStatus;
   });
 
-  const transactionTypes = ['ALL', 'SETUP', 'DEPOSIT_INR', 'BUY', 'SELL', 'WITHDRAW_INR', 'DEPOSIT_BTC', 'WITHDRAW_BTC', 'LIMIT_BUY', 'LIMIT_SELL', 'DCA_BUY', 'DCA_SELL'];
   const dcaStatuses = ['ALL', 'ACTIVE', 'PAUSED', 'COMPLETED', 'CANCELLED'];
 
   // Calculate stats
