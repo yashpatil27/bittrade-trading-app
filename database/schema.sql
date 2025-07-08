@@ -36,7 +36,8 @@ CREATE TABLE operations (
     'MARKET_BUY', 'MARKET_SELL', 
     'LIMIT_BUY', 'LIMIT_SELL', 
     'DCA_BUY', 'DCA_SELL', 
-    'LOAN_CREATE', 'LOAN_REPAY', 'LIQUIDATION', 
+    'LOAN_CREATE', 'LOAN_BORROW', 'LOAN_REPAY', 'LIQUIDATION', 
+    'PARTIAL_LIQUIDATION', 'FULL_LIQUIDATION',
     'INTEREST_ACCRUAL',
     'DEPOSIT_INR', 'WITHDRAW_INR', 'DEPOSIT_BTC', 'WITHDRAW_BTC'
   ) NOT NULL,
@@ -105,7 +106,7 @@ CREATE TABLE loans (
   -- Loan amounts
   btc_collateral_amount BIGINT NOT NULL,        -- BTC locked as collateral (satoshis)
   inr_borrowed_amount INT NOT NULL,             -- INR borrowed (rupees)
-  collateral_ratio DECIMAL(5,2) NOT NULL,      -- e.g., 150.00 for 150%
+  ltv_ratio DECIMAL(5,2) NOT NULL,             -- e.g., 60.00 for 60% LTV
   interest_rate DECIMAL(5,2) NOT NULL,         -- Annual interest rate
   
   -- Risk management
