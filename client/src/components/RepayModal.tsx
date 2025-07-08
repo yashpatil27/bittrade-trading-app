@@ -94,14 +94,15 @@ const RepayModal: React.FC<RepayModalProps> = ({
 
   const handlePinConfirm = async (pin: string): Promise<boolean> => {
     try {
-      setLoading(true);
-      
-      // Verify PIN
+      // Verify PIN first
       const pinResponse = await userAPI.verifyPin(pin);
       if (!pinResponse.data.data?.valid) {
         return false;
       }
 
+      // PIN is correct, now proceed with the operation
+      setLoading(true);
+      
       // Repay funds
       await userAPI.repayFunds(parseFloat(amount));
       

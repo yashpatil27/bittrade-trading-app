@@ -76,14 +76,15 @@ const BorrowModal: React.FC<BorrowModalProps> = ({
 
   const handlePinConfirm = async (pin: string): Promise<boolean> => {
     try {
-      setLoading(true);
-      
-      // Verify PIN
+      // Verify PIN first
       const pinResponse = await userAPI.verifyPin(pin);
       if (!pinResponse.data.data?.valid) {
         return false;
       }
 
+      // PIN is correct, now proceed with the operation
+      setLoading(true);
+      
       // Borrow funds
       await userAPI.borrowFunds(parseFloat(amount));
       
