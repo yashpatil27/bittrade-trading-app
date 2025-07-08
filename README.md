@@ -1,74 +1,252 @@
-# ₿itTrade - Bitcoin Paper Trading App
+# ₿itTrade - Advanced Bitcoin Paper Trading Platform
 
-A modern, mobile-first Bitcoin paper trading application built with React.js and Node.js.
+<div align="center">
 
-## Features
+![BitTrade Logo](https://img.shields.io/badge/₿itTrade-Trading%20Platform-orange?style=for-the-badge&logo=bitcoin)
 
-- 📱 **Mobile-First Design** - Optimized for mobile devices with dark theme
-- 💰 **Paper Trading** - Trade Bitcoin with virtual money
-- 📊 **Real-Time Prices** - Live Bitcoin prices from CoinGecko API
-- 👤 **User Management** - Complete authentication and user accounts
-- 🔧 **Admin Dashboard** - Full admin interface for user and system management
-- ⚡ **Fast & Cached** - Redis caching for optimal performance
-- 🔒 **Secure** - JWT authentication with bcrypt password hashing
+**A modern, feature-rich Bitcoin paper trading application with advanced trading features, real-time data, and comprehensive admin controls.**
 
-## Tech Stack
+[![Node.js](https://img.shields.io/badge/Node.js-339933?style=flat&logo=node.js&logoColor=white)](https://nodejs.org/)
+[![React](https://img.shields.io/badge/React-61DAFB?style=flat&logo=react&logoColor=black)](https://reactjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![MySQL](https://img.shields.io/badge/MySQL-4479A1?style=flat&logo=mysql&logoColor=white)](https://mysql.com/)
+[![Redis](https://img.shields.io/badge/Redis-DC382D?style=flat&logo=redis&logoColor=white)](https://redis.io/)
 
-**Frontend:**
-- React.js with TypeScript
-- Tailwind CSS for styling
-- Lucide React for icons
-- Axios for API calls
+*Stay Humble, Stack Sats* 🚀
 
-**Backend:**
-- Node.js with Express.js
-- MySQL database
-- Redis for caching
-- JWT authentication
-- bcrypt for password hashing
-- CoinGecko API for Bitcoin prices
+</div>
 
-## Quick Start
+## 🎯 Overview
 
-### Prerequisites
+BitTrade is a comprehensive Bitcoin paper trading platform that simulates real Bitcoin trading with virtual money. It's designed for educational purposes, trading practice, and learning Bitcoin market dynamics without financial risk.
 
-- Node.js (v16 or higher)
-- MySQL (v8 or higher)
-- Redis (optional but recommended)
+## ✨ Core Features
 
-### Installation
+### 🏠 **User Features**
 
-1. **Clone and install dependencies:**
+#### **1. Trading System**
+- **Market Orders**: Instant buy/sell at current market rates
+- **Limit Orders**: Set target prices for automatic execution
+- **Dollar-Cost Averaging (DCA)**: Automated recurring purchases/sales
+  - Hourly, Daily, Weekly, or Monthly frequency
+  - Customizable execution limits and price ranges
+  - Smart price threshold controls
+
+#### **2. Real-Time Market Data**
+- **Live Bitcoin Prices**: Updated every 30 seconds from CoinGecko API
+- **Interactive Charts**: Multi-timeframe Bitcoin price charts (1D, 7D, 30D, 90D, 365D)
+- **Market Analytics**: 
+  - 24h price changes and percentages
+  - Market cap and volume data
+  - All-time high/low tracking
+  - Fear & Greed Index integration
+
+#### **3. Portfolio Management**
+- **Real-time Balances**: INR and BTC holdings with live valuations
+- **Transaction History**: Detailed records of all trading activities
+- **Portfolio Analytics**: Performance tracking and profit/loss calculations
+- **Balance Segregation**: Available vs. reserved funds for pending orders
+
+#### **4. User Security & Profile**
+- **PIN Protection**: 4-digit PIN for transaction confirmations
+- **Profile Management**: Update name, email, and security settings
+- **Secure Authentication**: JWT-based session management
+- **Password Security**: bcrypt hashing with salt rounds
+
+### 🔧 **Admin Features**
+
+#### **1. Admin Dashboard**
+- **Platform Statistics**: Total users, trades, and platform balances
+- **Real-time Monitoring**: Current prices and system health
+- **Service Status**: Monitor Bitcoin data service, limit order execution, and DCA services
+
+#### **2. User Management**
+- **User Overview**: Complete list of all platform users
+- **Balance Management**: 
+  - Deposit/withdraw INR for users
+  - Deposit/withdraw Bitcoin for users
+  - View detailed user portfolios
+- **User Creation**: Create new user accounts
+- **Admin Controls**: User search, filtering, and management tools
+
+#### **3. Transaction Monitoring**
+- **Global Transaction View**: All platform transactions across users
+- **Transaction Details**: Complete audit trail with balance snapshots
+- **Advanced Filtering**: Filter by user, type, date range, and amount
+
+#### **4. System Settings**
+- **Rate Configuration**: Adjust buy/sell multipliers
+  - Buy Rate = BTC_USD_Price × Buy_Multiplier (default: 91)
+  - Sell Rate = BTC_USD_Price × Sell_Multiplier (default: 88)
+- **Platform Parameters**: Configure trading spreads and fees
+
+## 🏗️ Technical Architecture
+
+### **Frontend Stack**
+- **React 18** with TypeScript for type safety
+- **Tailwind CSS** for modern, responsive design
+- **Lucide React** for consistent iconography
+- **Recharts** for interactive Bitcoin price charts
+- **React Router** for client-side routing
+- **Axios** for API communication
+- **Context API** for state management
+
+### **Backend Stack**
+- **Node.js** with Express.js framework
+- **MySQL** for reliable data persistence
+- **Redis** for high-performance caching
+- **JWT** for secure authentication
+- **bcrypt** for password hashing
+- **Helmet** for security headers
+- **CORS** for cross-origin requests
+- **Rate limiting** for API protection
+
+### **External Services**
+- **CoinGecko API** for real-time Bitcoin data
+- **Alternative.me API** for Fear & Greed Index
+- **PM2** for production process management
+
+### **Advanced Services**
+
+#### **1. Bitcoin Data Service**
+- Fetches comprehensive Bitcoin data every 30 seconds
+- Caches price data in Redis for optimal performance
+- Stores historical data for charts and analytics
+- Manages multiple timeframe chart data
+
+#### **2. Limit Order Execution Service**
+- Monitors pending limit orders continuously
+- Executes orders when market conditions are met
+- Handles order expiration and cancellation
+- Maintains proper balance segregation
+
+#### **3. DCA Execution Service**
+- Automated execution of Dollar-Cost Averaging plans
+- Supports multiple frequency options
+- Price threshold validation
+- Smart plan management (pause/resume/complete)
+
+## 📊 Database Schema
+
+### **Core Tables**
+
+#### **Users Table**
+- **id**: Primary key, auto-increment
+- **email**: Unique, not null
+- **password_hash**: Secure password hashing
+- **balance segregation**: INR and BTC balances, reserved funds, collateral
+
+#### **Operations Table**
+- **type**: ENUM for transaction types (e.g., MARKET_BUY, LIMIT_SELL)
+- **status**: Tracks the operation status (PENDING, EXECUTED, etc.)
+- **relationships**: Links to users and related operations
+
+#### **Active Plans Table**
+- **plan_type**: Supports 'DCA_BUY' and 'DCA_SELL'
+- **status**: Track active, paused, or completed plans
+- **execution**: Configures frequency and amount per execution
+
+#### **Loans Table**
+- **collateral management**: BTC collateral and INR borrowings
+- **status**: Tracks loan status (ACTIVE, REPAID, LIQUIDATED)
+- **interest management**: Handles interest rate and liquidation price
+
+#### **Additional Entity Tables**
+- **balance_movements**: Tracks all balance changes
+- **bitcoin_data**: Stores real-time and historical Bitcoin market data
+- **settings**: Application-wide configuration settings
+
+## 🚀 Quick Start Guide
+
+### **Prerequisites**
+
+Ensure you have the following installed on your system:
+
+- **Node.js** (v16 or higher) - [Download](https://nodejs.org/)
+- **MySQL** (v8 or higher) - [Download](https://dev.mysql.com/downloads/)
+- **Redis** (optional but recommended) - [Download](https://redis.io/download)
+- **Git** for cloning the repository
+
+### **Step 1: Clone the Repository**
+
 ```bash
+# Clone the repository
 git clone <repository-url>
 cd bittrade-trading-app
+
+# Install all dependencies (both server and client)
 npm run install-all
 ```
 
-2. **Set up the database:**
+### **Step 2: Database Setup**
+
 ```bash
-# Create MySQL database and import schema
+# Start MySQL service (varies by OS)
+# For macOS with Homebrew:
+brew services start mysql
+
+# For Ubuntu/Debian:
+sudo systemctl start mysql
+
+# Connect to MySQL
 mysql -u root -p
+
+# Create database and import schema
 CREATE DATABASE bittrade;
 USE bittrade;
 source database/schema.sql;
+
+# Seed admin user (optional)
+source database/seed_admin.sql;
 ```
 
-3. **Configure environment:**
+### **Step 3: Environment Configuration**
+
 ```bash
 # Copy environment template
 cp .env.example .env
 
-# Edit .env with your database credentials
-# Update DB_PASSWORD with your MySQL password
+# Edit the .env file with your configuration
+nano .env
 ```
 
-4. **Create React public directory (if missing):**
+**Required Environment Variables:**
+```env
+# Database Configuration
+DB_HOST=localhost
+DB_PORT=3306
+DB_USER=root
+DB_PASSWORD=your_mysql_password
+DB_NAME=bittrade
+
+# JWT Configuration
+JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
+JWT_EXPIRES_IN=24h
+
+# Redis Configuration (optional)
+REDIS_HOST=localhost
+REDIS_PORT=6379
+REDIS_PASSWORD=
+
+# Server Configuration
+PORT=3001
+NODE_ENV=development
+
+# API Configuration
+COINGECKO_API_URL=https://api.coingecko.com/api/v3
+
+# Rate Limiting
+RATE_LIMIT_WINDOW_MS=900000
+RATE_LIMIT_MAX_REQUESTS=100
+```
+
+### **Step 4: Frontend Setup**
+
 ```bash
-# If client/public directory is missing, create it:
+# Create React public directory (if missing)
 mkdir -p client/public
 
-# Create basic index.html:
+# Create basic index.html (if missing)
 cat > client/public/index.html << 'EOF'
 <!DOCTYPE html>
 <html lang="en">
@@ -87,124 +265,384 @@ cat > client/public/index.html << 'EOF'
 EOF
 ```
 
-5. **Start the application:**
+### **Step 5: Start the Application**
+
 ```bash
-# Development mode (runs both frontend and backend)
+# Option 1: Start both frontend and backend together
 npm run dev
 
-# Or run separately:
-npm run server  # Backend only
-npm run client  # Frontend only
+# Option 2: Start them separately
+# Terminal 1 - Backend
+npm run server
+
+# Terminal 2 - Frontend
+npm run client
 ```
 
-6. **Access the application:**
-- Frontend: http://localhost:3000
-- Backend API: http://localhost:3001
-- Health Check: http://localhost:3001/health
+### **Step 6: Access the Application**
 
-## Default Admin Account
+- **Frontend**: http://localhost:3000
+- **Backend API**: http://localhost:3001
+- **Health Check**: http://localhost:3001/health
 
-- **Email:** admin@bittrade.co.in
-- **Password:** admin123
+### **Step 7: Default Admin Access**
 
-## API Documentation
+Use these credentials to access the admin panel:
+- **Email**: admin@bittrade.co.in
+- **Password**: admin123
+- **Admin Panel**: http://localhost:3000/admin
 
-### Authentication Endpoints
+## 🔧 Development Commands
+
+```bash
+# Install dependencies
+npm run install-all          # Install both server and client dependencies
+
+# Development
+npm run dev                   # Start both frontend and backend
+npm run server               # Start backend only
+npm run client               # Start frontend only
+
+# Production
+npm run build                # Build frontend for production
+npm start                    # Start production server
+
+# Package Management
+npm install <package>        # Install server dependency
+cd client && npm install <package>  # Install client dependency
+```
+
+## 📡 API Documentation
+
+### **Authentication Endpoints**
 - `POST /api/auth/register` - Register new user
 - `POST /api/auth/login` - User login
 - `GET /api/auth/profile` - Get user profile
 - `POST /api/auth/logout` - Logout user
+- `POST /api/auth/verify-pin` - Verify user PIN
 
-### User Endpoints
-- `GET /api/user/dashboard` - Get dashboard data
-- `GET /api/user/balances` - Get user balances
-- `GET /api/user/prices` - Get current Bitcoin prices
-- `POST /api/user/buy` - Buy Bitcoin
-- `POST /api/user/sell` - Sell Bitcoin
-- `GET /api/user/transactions` - Get transaction history
+### **User Trading Endpoints**
+- `GET /api/user/dashboard` - Get dashboard data with balances and recent transactions
+- `GET /api/user/balances` - Get current user balances
+- `GET /api/user/prices` - Get current Bitcoin prices and rates
+- `POST /api/user/buy` - Execute market buy order
+- `POST /api/user/sell` - Execute market sell order
+- `GET /api/user/transactions` - Get transaction history with pagination
 
-### Admin Endpoints
-- `GET /api/admin/dashboard` - Admin dashboard stats
-- `GET /api/admin/users` - Get all users
+### **Advanced Trading Endpoints**
+- `POST /api/user/limit-buy` - Place limit buy order
+- `POST /api/user/limit-sell` - Place limit sell order
+- `GET /api/user/limit-orders` - Get active limit orders
+- `DELETE /api/user/limit-orders/:id` - Cancel limit order
+- `POST /api/user/dca-buy` - Create DCA buy plan
+- `POST /api/user/dca-sell` - Create DCA sell plan
+- `GET /api/user/dca-plans` - Get active DCA plans
+- `PATCH /api/user/dca-plans/:id/pause` - Pause DCA plan
+- `PATCH /api/user/dca-plans/:id/resume` - Resume DCA plan
+- `DELETE /api/user/dca-plans/:id` - Cancel DCA plan
+
+### **Profile Management Endpoints**
+- `PATCH /api/user/profile/name` - Update user name
+- `PATCH /api/user/profile/email` - Update user email
+- `PATCH /api/user/profile/password` - Change password
+- `PATCH /api/user/profile/pin` - Change user PIN
+
+### **Admin Endpoints**
+- `GET /api/admin/dashboard` - Admin dashboard statistics
+- `GET /api/admin/users` - Get all users with pagination
 - `POST /api/admin/users` - Create new user
 - `DELETE /api/admin/users/:id` - Delete user
-- `POST /api/admin/users/:id/deposit-inr` - Deposit INR to user
-- `POST /api/admin/users/:id/withdraw-inr` - Withdraw INR from user
-- `PATCH /api/admin/settings` - Update system settings
+- `POST /api/admin/users/:id/deposit-inr` - Deposit INR to user account
+- `POST /api/admin/users/:id/withdraw-inr` - Withdraw INR from user account
+- `POST /api/admin/users/:id/deposit-btc` - Deposit Bitcoin to user account
+- `POST /api/admin/users/:id/withdraw-btc` - Withdraw Bitcoin from user account
+- `GET /api/admin/transactions` - Get all platform transactions
+- `GET /api/admin/limit-orders` - Get all limit orders summary
+- `PATCH /api/admin/settings` - Update system settings (buy/sell multipliers)
 
-## Database Schema
+### **Public Endpoints**
+- `GET /api/public/prices` - Get current Bitcoin prices (no auth required)
+- `GET /api/public/chart/:timeframe` - Get chart data for timeframe
+- `GET /health` - System health check
 
-The application uses the following main tables:
+## 🏭 Production Deployment
 
-- **users** - User accounts and authentication
-- **transactions** - All trading transactions with balance snapshots
-- **settings** - System settings (buy/sell multipliers)
-- **prices** - Bitcoin price history from CoinGecko
+### **Option 1: Manual Deployment**
 
-## Business Logic
-
-1. **User Registration:** Users register and receive 0 balances
-2. **Cash Deposits:** Admin deposits physical INR cash to user accounts
-3. **Trading:** Users buy/sell Bitcoin at calculated rates:
-   - Buy Rate = BTC_USD_price × buy_multiplier (default: 91)
-   - Sell Rate = BTC_USD_price × sell_multiplier (default: 88)
-4. **Balance Tracking:** Every transaction stores updated balance snapshots
-
-## Transaction Types
-
-- `SETUP` - Initial user setup (0 balances)
-- `DEPOSIT_INR` - Admin deposits INR to user account
-- `BUY` - User buys Bitcoin with INR
-- `SELL` - User sells Bitcoin for INR
-- `WITHDRAW_INR` - Admin withdraws INR from user account
-- `DEPOSIT_BTC` - Admin deposits Bitcoin to user account
-- `WITHDRAW_BTC` - Admin withdraws Bitcoin from user account
-
-## Production Deployment
-
-1. **Build the frontend:**
 ```bash
+# 1. Build the frontend
 npm run build
-```
 
-2. **Set environment variables:**
-```bash
+# 2. Set production environment variables
 export NODE_ENV=production
-# Set all other environment variables
-```
+export DB_PASSWORD=your_production_password
+export JWT_SECRET=your_production_jwt_secret
+# ... set other environment variables
 
-3. **Start the production server:**
-```bash
+# 3. Start the production server
 npm start
 ```
 
-## Configuration
+### **Option 2: PM2 Deployment**
 
-### Environment Variables
+```bash
+# Install PM2 globally
+npm install -g pm2
 
-- `DB_HOST` - MySQL host (default: localhost)
-- `DB_PORT` - MySQL port (default: 3306)
-- `DB_USER` - MySQL username
-- `DB_PASSWORD` - MySQL password
-- `DB_NAME` - Database name (default: bittrade)
-- `JWT_SECRET` - Secret key for JWT tokens
-- `REDIS_HOST` - Redis host (optional)
-- `PORT` - Server port (default: 3001)
+# Build the application
+npm run build
 
-### System Settings
+# Start with PM2 using ecosystem config
+pm2 start ecosystem.config.js
 
-Admins can configure:
-- Buy multiplier (default: 91)
-- Sell multiplier (default: 88)
+# PM2 management commands
+pm2 status                    # Check app status
+pm2 logs bittrade            # View logs
+pm2 restart bittrade         # Restart app
+pm2 stop bittrade            # Stop app
+pm2 delete bittrade          # Delete app from PM2
+```
 
-## Contributing
+### **Production Environment Setup**
 
+1. **Create production environment file:**
+```bash
+cp .env.example .env.production
+# Edit with production values
+```
+
+2. **Set up log directory:**
+```bash
+sudo mkdir -p /var/log/bittrade
+sudo chown $USER:$USER /var/log/bittrade
+```
+
+3. **Configure reverse proxy (Nginx example):**
+```nginx
+server {
+    listen 80;
+    server_name your-domain.com;
+
+    location / {
+        proxy_pass http://localhost:3001;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+```
+
+## 🔒 Security Features
+
+### **Authentication & Authorization**
+- JWT-based authentication with configurable expiration
+- Role-based access control (Admin vs. User)
+- PIN-based transaction confirmation
+- Secure password hashing with bcrypt
+
+### **API Security**
+- Rate limiting to prevent abuse
+- Helmet.js for security headers
+- CORS configuration
+- Input validation and sanitization
+
+### **Data Protection**
+- Environment variable configuration
+- Database connection security
+- Redis password protection
+- Secure session management
+
+## 🎛️ Configuration Options
+
+### **Trading Parameters**
+- **Buy Multiplier**: Adjust the premium above USD price for buying (default: 91)
+- **Sell Multiplier**: Adjust the discount below USD price for selling (default: 88)
+- **Rate Limiting**: Configure API request limits per IP
+
+### **System Settings**
+- **Data Update Frequency**: Bitcoin price updates (default: 30 seconds)
+- **Order Execution Frequency**: Limit order checks (default: every minute)
+- **DCA Execution Frequency**: DCA plan checks (default: every minute)
+- **Cache Expiration**: Redis cache durations
+
+### **User Limits**
+- **Transaction Minimums**: Set minimum trade amounts
+- **Order Limits**: Configure maximum pending orders per user
+- **DCA Plan Limits**: Set maximum active DCA plans per user
+
+## 🔄 Business Logic
+
+### **User Registration Flow**
+1. User registers with email, name, and password
+2. System creates user with 0 INR and 0 BTC balances
+3. Admin deposits physical cash to user's INR balance
+4. User can start trading Bitcoin
+
+### **Trading Process**
+1. **Market Orders**: Execute immediately at current rates
+2. **Limit Orders**: Queue for execution when price conditions are met
+3. **DCA Plans**: Schedule recurring trades based on frequency settings
+4. **Balance Updates**: All trades update both available and reserved balances
+
+### **Transaction Types**
+- `SETUP` - Initial user account creation
+- `DEPOSIT_INR` - Admin deposits INR cash to user account
+- `WITHDRAW_INR` - Admin withdraws INR cash from user account
+- `MARKET_BUY` - User buys Bitcoin at market rate
+- `MARKET_SELL` - User sells Bitcoin at market rate
+- `LIMIT_BUY` - User places limit buy order
+- `LIMIT_SELL` - User places limit sell order
+- `DCA_BUY` - Automated DCA buy execution
+- `DCA_SELL` - Automated DCA sell execution
+- `DEPOSIT_BTC` - Admin deposits Bitcoin to user account
+- `WITHDRAW_BTC` - Admin withdraws Bitcoin from user account
+
+### **Rate Calculation**
+```javascript
+// Current rates calculation
+BTC_USD_Price = Latest price from CoinGecko API
+Buy_Rate = BTC_USD_Price × Buy_Multiplier  // Default: × 91
+Sell_Rate = BTC_USD_Price × Sell_Multiplier  // Default: × 88
+```
+
+## 🛠️ Troubleshooting
+
+### **Common Issues**
+
+#### **Database Connection Errors**
+```bash
+# Check MySQL service status
+sudo systemctl status mysql
+
+# Restart MySQL
+sudo systemctl restart mysql
+
+# Check database exists
+mysql -u root -p -e "SHOW DATABASES;"
+```
+
+#### **Redis Connection Issues**
+```bash
+# Check Redis status
+sudo systemctl status redis
+
+# Test Redis connection
+redis-cli ping
+
+# If Redis is not available, the app will work without caching
+```
+
+#### **Port Already in Use**
+```bash
+# Find process using port 3001
+lsof -i :3001
+
+# Kill the process
+kill -9 <PID>
+
+# Or change port in .env file
+PORT=3002
+```
+
+#### **Frontend Build Issues**
+```bash
+# Clear npm cache
+npm cache clean --force
+
+# Delete node_modules and reinstall
+rm -rf node_modules package-lock.json
+npm install
+
+# Rebuild frontend
+cd client
+rm -rf node_modules package-lock.json build
+npm install
+npm run build
+```
+
+### **Environment Issues**
+
+#### **Missing Environment Variables**
+```bash
+# Verify all required variables are set
+node -e "
+const required = ['DB_PASSWORD', 'JWT_SECRET'];
+required.forEach(key => {
+  if (!process.env[key]) console.error(\`Missing: \${key}\`);
+});
+"
+```
+
+#### **Database Schema Issues**
+```bash
+# Re-import schema
+mysql -u root -p bittrade < database/schema.sql
+
+# Check table structure
+mysql -u root -p -e "USE bittrade; SHOW TABLES;"
+```
+
+## 📚 Learning Resources
+
+### **Bitcoin Trading Concepts**
+- **Market Orders**: Immediate execution at current market price
+- **Limit Orders**: Conditional orders that execute when price targets are met
+- **Dollar-Cost Averaging**: Strategy of buying fixed amounts at regular intervals
+- **Spread Trading**: Profit from buy/sell price differences
+
+### **Technical Concepts**
+- **Satoshis**: Smallest unit of Bitcoin (1 BTC = 100,000,000 satoshis)
+- **Order Books**: System for matching buy and sell orders
+- **Balance Segregation**: Separating available and reserved funds
+- **Real-time Data**: Live price feeds and market updates
+
+## 🤝 Contributing
+
+### **Development Setup**
 1. Fork the repository
-2. Create your feature branch
-3. Commit your changes
-4. Push to the branch
-5. Create a Pull Request
+2. Create a feature branch: `git checkout -b feature/amazing-feature`
+3. Make your changes and test thoroughly
+4. Commit with descriptive messages: `git commit -m 'Add amazing feature'`
+5. Push to your branch: `git push origin feature/amazing-feature`
+6. Create a Pull Request
 
-## License
+### **Code Style Guidelines**
+- Follow existing TypeScript/JavaScript conventions
+- Use meaningful variable and function names
+- Add comments for complex business logic
+- Write unit tests for new features
+- Ensure all tests pass before submitting
 
-This project is licensed under the MIT License.
+### **Feature Requests**
+We welcome feature requests! Please open an issue with:
+- Clear description of the feature
+- Use case and benefits
+- Any relevant mockups or examples
+
+## 📄 License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- **CoinGecko** for providing reliable Bitcoin price data
+- **Alternative.me** for Fear & Greed Index data
+- **React** and **Node.js** communities for excellent documentation
+- **Bitcoin** community for inspiration and education
+
+---
+
+<div align="center">
+
+**₿itTrade - Empowering Bitcoin Education Through Safe Trading Practice**
+
+*Built with ❤️ for the Bitcoin community*
+
+[Report Bug](https://github.com/your-repo/issues) • [Request Feature](https://github.com/your-repo/issues) • [Documentation](https://github.com/your-repo/wiki)
+
+</div>
