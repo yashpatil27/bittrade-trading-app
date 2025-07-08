@@ -531,18 +531,27 @@ class BitcoinDataService {
     });
 
     // Initial chart data fetch for all timeframes (staggered to avoid rate limits)
-    chartTimeframes.forEach((timeframe, index) => {
+    const chartFetchSchedule = {
+      '1d': 2 * 60 * 1000,   // 2 minutes
+      '7d': 7 * 60 * 1000,   // 7 minutes
+      '30d': 12 * 60 * 1000, // 12 minutes
+      '90d': 17 * 60 * 1000, // 17 minutes
+      '365d': 22 * 60 * 1000 // 22 minutes
+    };
+    
+    chartTimeframes.forEach((timeframe) => {
       setTimeout(() => {
         this.updateChartData(timeframe).catch(error => {
           console.error(`Initial chart data fetch failed for ${timeframe}:`, error.message);
         });
-      }, index * 15000); // 15 second intervals
+      }, chartFetchSchedule[timeframe]);
     });
 
     console.log('Bitcoin data updates scheduled:');
     console.log('- Bitcoin data: every 30 seconds');
     console.log('- Sentiment data: daily at 00:05');
     console.log('- Chart data: hourly (1d) and daily (7d, 30d, 90d, 365d)');
+    console.log('- Initial chart data fetch schedule: 1d(2min), 7d(7min), 30d(12min), 90d(17min), 365d(22min)');
   }
 
   // Stop all data update services
