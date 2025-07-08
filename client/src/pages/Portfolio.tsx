@@ -340,38 +340,22 @@ const Portfolio: React.FC = () => {
           </div>
 
           <div className="grid grid-cols-2 gap-4 mb-6">
-            {/* Left side - Market data cards stacked vertically */}
-            <div className="space-y-4">
-              {/* Market Cap */}
-              <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <BarChart3 className="w-4 h-4 text-zinc-400" />
-                  <span className="text-zinc-400 text-sm">Market Cap</span>
-                </div>
-                <p className="text-lg font-bold">{formatLargeNumber(bitcoinData?.market_cap_usd)}</p>
+            {/* Market Cap */}
+            <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <BarChart3 className="w-4 h-4 text-zinc-400" />
+                <span className="text-zinc-400 text-sm">Market Cap</span>
               </div>
-
-              {/* 24h Volume */}
-              <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <Activity className="w-4 h-4 text-zinc-400" />
-                  <span className="text-zinc-400 text-sm">24h Volume</span>
-                </div>
-                <p className="text-lg font-bold">{formatLargeNumber(bitcoinData?.volume_24h_usd)}</p>
-              </div>
+              <p className="text-lg font-bold">{formatLargeNumber(bitcoinData?.market_cap_usd)}</p>
             </div>
 
-            {/* Right side - BTC Dominance */}
-            <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 flex flex-col">
-              <div className="flex items-center justify-center gap-2 mb-2">
-                <Bitcoin className="w-4 h-4 text-zinc-400" />
-                <span className="text-zinc-400 text-sm">Bitcoin Dominance</span>
+            {/* 24h Volume */}
+            <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <Activity className="w-4 h-4 text-zinc-400" />
+                <span className="text-zinc-400 text-sm">24h Volume</span>
               </div>
-              <div className="flex-1 flex items-center justify-center">
-                <p className="text-2xl font-bold">
-                  {bitcoinData.btc_dominance_pct && typeof bitcoinData.btc_dominance_pct === 'number' ? `${bitcoinData.btc_dominance_pct.toFixed(1)}%` : 'N/A'}
-                </p>
-              </div>
+              <p className="text-lg font-bold">{formatLargeNumber(bitcoinData?.volume_24h_usd)}</p>
             </div>
           </div>
 
