@@ -317,36 +317,75 @@ const TradingModal: React.FC<TradingModalProps> = ({
             
             {/* Quick Price Buttons */}
             <div className="flex gap-2 mt-3">
-              <button
-                onClick={() => setTargetPrice((rate! * 0.95).toFixed(0))}
-                className="flex-1 text-xs bg-zinc-800 hover:bg-zinc-700 px-3 py-2 rounded transition-colors"
-              >
-                -5%
-              </button>
-              <button
-                onClick={() => setTargetPrice((rate! * 0.98).toFixed(0))}
-                className="flex-1 text-xs bg-zinc-800 hover:bg-zinc-700 px-3 py-2 rounded transition-colors"
-              >
-                -2%
-              </button>
-              <button
-                onClick={() => setTargetPrice(rate?.toFixed(0) || '0')}
-                className="flex-1 text-xs bg-zinc-700 hover:bg-zinc-600 px-3 py-2 rounded transition-colors"
-              >
-                Market
-              </button>
-              <button
-                onClick={() => setTargetPrice((rate! * 1.02).toFixed(0))}
-                className="flex-1 text-xs bg-zinc-800 hover:bg-zinc-700 px-3 py-2 rounded transition-colors"
-              >
-                +2%
-              </button>
-              <button
-                onClick={() => setTargetPrice((rate! * 1.05).toFixed(0))}
-                className="flex-1 text-xs bg-zinc-800 hover:bg-zinc-700 px-3 py-2 rounded transition-colors"
-              >
-                +5%
-              </button>
+              {isBuy ? (
+                // Buy options: negative percentages (below market)
+                <>
+                  <button
+                    onClick={() => setTargetPrice((rate! * 0.85).toFixed(0))}
+                    className="flex-1 text-xs bg-zinc-800 hover:bg-zinc-700 px-3 py-2 rounded transition-colors"
+                  >
+                    -15%
+                  </button>
+                  <button
+                    onClick={() => setTargetPrice((rate! * 0.90).toFixed(0))}
+                    className="flex-1 text-xs bg-zinc-800 hover:bg-zinc-700 px-3 py-2 rounded transition-colors"
+                  >
+                    -10%
+                  </button>
+                  <button
+                    onClick={() => setTargetPrice((rate! * 0.95).toFixed(0))}
+                    className="flex-1 text-xs bg-zinc-800 hover:bg-zinc-700 px-3 py-2 rounded transition-colors"
+                  >
+                    -5%
+                  </button>
+                  <button
+                    onClick={() => setTargetPrice((rate! * 0.98).toFixed(0))}
+                    className="flex-1 text-xs bg-zinc-800 hover:bg-zinc-700 px-3 py-2 rounded transition-colors"
+                  >
+                    -2%
+                  </button>
+                  <button
+                    onClick={() => setTargetPrice(rate?.toFixed(0) || '0')}
+                    className="flex-1 text-xs bg-zinc-700 hover:bg-zinc-600 px-3 py-2 rounded transition-colors"
+                  >
+                    Market
+                  </button>
+                </>
+              ) : (
+                // Sell options: positive percentages (above market)
+                <>
+                  <button
+                    onClick={() => setTargetPrice((rate! * 1.15).toFixed(0))}
+                    className="flex-1 text-xs bg-zinc-800 hover:bg-zinc-700 px-3 py-2 rounded transition-colors"
+                  >
+                    +15%
+                  </button>
+                  <button
+                    onClick={() => setTargetPrice((rate! * 1.10).toFixed(0))}
+                    className="flex-1 text-xs bg-zinc-800 hover:bg-zinc-700 px-3 py-2 rounded transition-colors"
+                  >
+                    +10%
+                  </button>
+                  <button
+                    onClick={() => setTargetPrice((rate! * 1.05).toFixed(0))}
+                    className="flex-1 text-xs bg-zinc-800 hover:bg-zinc-700 px-3 py-2 rounded transition-colors"
+                  >
+                    +5%
+                  </button>
+                  <button
+                    onClick={() => setTargetPrice((rate! * 1.02).toFixed(0))}
+                    className="flex-1 text-xs bg-zinc-800 hover:bg-zinc-700 px-3 py-2 rounded transition-colors"
+                  >
+                    +2%
+                  </button>
+                  <button
+                    onClick={() => setTargetPrice(rate?.toFixed(0) || '0')}
+                    className="flex-1 text-xs bg-zinc-700 hover:bg-zinc-600 px-3 py-2 rounded transition-colors"
+                  >
+                    Market
+                  </button>
+                </>
+              )}
             </div>
           </div>
         )}
