@@ -5,6 +5,7 @@ const { clearUserCache } = require('../config/redis');
 const userService = require('../services/userService');
 const bitcoinDataService = require('../services/bitcoinDataService');
 const portfolioService = require('../services/portfolioService');
+const loanService = require('../services/loanService');
 
 const router = express.Router();
 
@@ -1152,6 +1153,127 @@ router.patch('/pin', async (req, res) => {
     res.status(statusCode).json({
       success: false,
       message
+    });
+  }
+});
+
+// Bitcoin-backed loan APIs
+// Deposit BTC as collateral
+router.post('/loan/deposit-collateral', async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { collateralAmount } = req.body;
+
+    // Validate input
+    if (!collateralAmount || collateralAmount <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Collateral amount must be greater than 0'
+      });
+    }
+
+    const result = await loanService.depositCollateral(userId, collateralAmount);
+
+    res.json({
+      success: true,
+      message: 'Collateral deposited successfully',
+      data: result
+    });
+
+  } catch (error) {
+    console.error('Deposit collateral error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error depositing collateral'
+    });
+  }
+});
+
+// Borrow funds against collateral
+router.post('/loan/borrow', async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { amount } = req.body;
+
+    // Validate input
+    if (!amount || amount <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Borrow amount must be greater than 0'
+      });
+    }
+
+    const result = await loanService.borrowFunds(userId, amount);
+
+    res.json({
+      success: true,
+      message: 'Funds borrowed successfully',
+      data: result
+    });
+
+  } catch (error) {
+    console.error('Borrow funds error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error borrowing funds'
+    });
+  }
+});
+
+// Repay borrowed funds
+router.post('/loan/repay', async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { amount } = req.body;
+
+    // Validate input
+    if (!amount || amount <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Repay amount must be greater than 0'
+      });
+    }
+
+    const result = await loanService.repayLoan(userId, amount);
+
+    res.json({
+      success: true,
+      message: 'Loan repaid successfully',
+      data: result
+    });
+
+  } catch (error) {
+    console.error('Repay loan error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error repaying loan'
+    });
+  }
+});
+
+// Get loan status
+router.get('/loan/status', async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const result = await loanService.getLoanStatus(userId);
+
+    if (!result) {
+      return res.status(404).json({
+        success: false,
+        message: 'No active loan found'
+      });
+    }
+
+    res.json({
+      success: true,
+      data: result
+    });
+
+  } catch (error) {
+    console.error('Loan status error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error retrieving loan status'
     });
   }
 });
