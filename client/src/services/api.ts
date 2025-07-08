@@ -70,6 +70,12 @@ export const userAPI = {
   getDashboard: (): Promise<AxiosResponse<ApiResponse<DashboardData>>> =>
     api.get('/user/dashboard'),
   
+  getBalances: (): Promise<AxiosResponse<ApiResponse<any>>> =>
+    api.get('/user/balances'),
+  
+  getPrices: (): Promise<AxiosResponse<ApiResponse<any>>> =>
+    api.get('/user/prices'),
+  
   buyBitcoin: (data: TradeRequest): Promise<AxiosResponse<ApiResponse<TradeResponse>>> =>
     api.post('/user/buy', data),
   
@@ -184,9 +190,15 @@ export const adminAPI = {
   getTransactions: (page = 1, limit = 50): Promise<AxiosResponse<ApiResponse<{ transactions: any[], pagination: any }>>> =>
     api.get(`/admin/transactions?page=${page}&limit=${limit}`),
   
+  getAllTransactions: (page = 1, limit = 50): Promise<AxiosResponse<ApiResponse<{ transactions: any[], pagination: any }>>> =>
+    api.get(`/admin/transactions?page=${page}&limit=${limit}`),
+  
   externalBuy: (userId: number, inrAmount: number, btcAmount: number): Promise<AxiosResponse<ApiResponse>> =>
     api.post(`/admin/users/${userId}/external-buy`, { inrAmount, btcAmount }),
   
+  // System health and monitoring
+  getSystemHealth: (): Promise<AxiosResponse<any>> =>
+    axios.get(`${API_BASE_URL.replace('/api', '')}/health`),
   
   // Limit order management
   getLimitOrdersSummary: (): Promise<AxiosResponse<ApiResponse<any>>> =>

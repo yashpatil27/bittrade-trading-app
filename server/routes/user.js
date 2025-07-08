@@ -49,10 +49,154 @@ router.get('/dashboard', async (req, res) => {
   }
 });
 
+// Get user balances
+router.get('/balances', async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const balances = await userService.getUserBalances(userId);
+    const formattedBalances = userService.formatBalancesForDisplay(balances);
 
+    res.json({
+      success: true,
+      data: formattedBalances
+    });
 
+  } catch (error) {
+    console.error('Balances error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching balances'
+    });
+  }
+});
 
+// Get current prices
+router.get('/prices', async (req, res) => {
+  try {
+    const rates = await bitcoinDataService.getCalculatedRates();
 
+    res.json({
+      success: true,
+      data: {
+        btc_usd: rates.btcUsdPrice,
+        buy_rate: rates.buyRate,
+        sell_rate: rates.sellRate,
+        buy_multiplier: rates.buyMultiplier,
+        sell_multiplier: rates.sellMultiplier,
+        last_update: rates.lastUpdate,
+        market_data: rates.marketData
+      }
+    });
+
+  } catch (error) {
+    console.error('Prices error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching prices'
+    });
+  }
+});
+
+// Get comprehensive Bitcoin market data
+router.get('/bitcoin/data', async (req, res) => {
+  try {
+    const bitcoinData = await bitcoinDataService.getCurrentData();
+
+    res.json({
+      success: true,
+      data: bitcoinData
+    });
+
+  } catch (error) {
+    console.error('Bitcoin data error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching Bitcoin data'
+    });
+  }
+});
+
+// Get Bitcoin sentiment data
+router.get('/bitcoin/sentiment', async (req, res) => {
+  try {
+    const sentimentData = await bitcoinDataService.getSentimentData();
+
+    res.json({
+      success: true,
+      data: sentimentData
+    });
+
+  } catch (error) {
+    console.error('Sentiment data error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching sentiment data'
+    });
+  }
+});
+
+// Get Bitcoin chart data
+router.get('/bitcoin/charts', async (req, res) => {
+  try {
+    const { timeframe } = req.query;
+    const chartData = await bitcoinDataService.getChartData(timeframe);
+
+    // If requesting specific timeframe, return single object
+    if (timeframe && chartData.length > 0) {
+      res.json({
+        success: true,
+        data: chartData[0]
+      });
+    } else if (timeframe) {
+      // If no data found for specific timeframe, return null
+      res.json({
+        success: true,
+        data: null
+      });
+    } else {
+      // If no timeframe specified, return all chart data
+      res.json({
+        success: true,
+        data: chartData
+      });
+    }
+
+  } catch (error) {
+    console.error('Chart data error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching chart data'
+    });
+  }
+});
+
+// Get Bitcoin data history
+router.get('/bitcoin/history', async (req, res) => {
+  try {
+    const limit = parseInt(req.query.limit) || 100;
+    
+    if (limit > 1000) {
+      return res.status(400).json({
+        success: false,
+        message: 'Limit cannot exceed 1000'
+      });
+    }
+
+    const dataHistory = await bitcoinDataService.getDataHistory(limit);
+
+    res.json({
+      success: true,
+      data: dataHistory
+    });
+
+  } catch (error) {
+    console.error('Bitcoin data history error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching Bitcoin data history'
+    });
+  }
+});
 
 // Buy Bitcoin
 router.post('/buy', async (req, res) => {
