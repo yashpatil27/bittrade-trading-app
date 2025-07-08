@@ -51,14 +51,10 @@ const AdminSettings: React.FC = () => {
   const checkSystemHealth = async () => {
     try {
       setIsHealthLoading(true);
-      // Static health status since endpoint is removed
-      setSystemHealth({ 
-        database: { status: 'connected' },
-        bitcoinService: { status: 'running' },
-        redis: { status: 'connected' }
-      });
+      const response = await adminAPI.getSystemHealth();
+      setSystemHealth(response.data);
     } catch (error) {
-      console.error('Error setting system health:', error);
+      console.error('Error fetching system health:', error);
       setSystemHealth(null);
     } finally {
       setIsHealthLoading(false);

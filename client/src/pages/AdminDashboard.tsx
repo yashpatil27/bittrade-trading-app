@@ -26,13 +26,14 @@ const AdminDashboard: React.FC = () => {
       setIsLoading(true);
       setError('');
       
-      const [dashboardResponse, limitOrdersResponse] = await Promise.all([
+      const [dashboardResponse, limitOrdersResponse, healthResponse] = await Promise.all([
         adminAPI.getDashboard(),
-        adminAPI.getLimitOrdersSummary().catch(() => ({ data: { data: null } })) // Don't fail if limit orders aren't available
+        adminAPI.getLimitOrdersSummary().catch(() => ({ data: { data: null } })), // Don't fail if limit orders aren't available
+        adminAPI.getSystemHealth().catch(() => ({ data: null })) // Don't fail if health endpoint isn't available
       ]);
       
       setData(dashboardResponse.data.data!);
-      setSystemHealth({ status: 'running' }); // Static health status since endpoint is removed
+      setSystemHealth(healthResponse.data);
       setLimitOrdersSummary(limitOrdersResponse.data.data);
       
     } catch (error: any) {
