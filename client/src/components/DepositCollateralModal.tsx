@@ -18,7 +18,7 @@ const DepositCollateralModal: React.FC<DepositCollateralModalProps> = ({
   onSuccess
 }) => {
   const [amount, setAmount] = useState('');
-  const [btcPrice, setBtcPrice] = useState(0);
+  const [btcSellRate, setBtcSellRate] = useState(0);
   const [availableBtc, setAvailableBtc] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -41,22 +41,22 @@ const DepositCollateralModal: React.FC<DepositCollateralModalProps> = ({
       ]);
       
       setAvailableBtc(dashboardResponse.data.data?.balances.btc || 0);
-      setBtcPrice(pricesResponse.data.data?.btc_usd || 0);
+      setBtcSellRate(pricesResponse.data.data?.sell_rate || 0);
     } catch (error) {
       console.error('Error fetching data:', error);
     }
   };
 
   const calculateMaxBorrowable = () => {
-    if (!amount || !btcPrice) return 0;
+    if (!amount || !btcSellRate) return 0;
     const btcAmount = parseFloat(amount);
-    const collateralValue = btcAmount * btcPrice;
+    const collateralValue = btcAmount * btcSellRate;
     return Math.floor(collateralValue * 0.6); // 60% LTV
   };
 
   const calculateLiquidationPrice = () => {
-    if (!btcPrice) return 0;
-    return Math.floor(btcPrice * (60 / 90)); // 90% LTV triggers liquidation
+    if (!btcSellRate) return 0;
+    return Math.floor(btcSellRate * (60 / 90)); // 90% LTV triggers liquidation
   };
 
   const handleDeposit = () => {
@@ -221,7 +221,7 @@ const DepositCollateralModal: React.FC<DepositCollateralModalProps> = ({
               <div className="flex justify-between">
                 <span className="text-zinc-400">Collateral Value:</span>
                 <span className="text-white">
-                  ₹{Math.floor(parseFloat(amount) * btcPrice).toLocaleString('en-IN')}
+                  ₹{Math.floor(parseFloat(amount) * btcSellRate).toLocaleString('en-IN')}
                 </span>
               </div>
               <div className="flex justify-between">
