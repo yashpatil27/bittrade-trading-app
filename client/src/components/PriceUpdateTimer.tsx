@@ -3,9 +3,10 @@ import { Clock, RefreshCw } from 'lucide-react';
 
 interface PriceUpdateTimerProps {
   className?: string;
+  onUpdate?: () => void; // Callback to trigger actual price update
 }
 
-const PriceUpdateTimer: React.FC<PriceUpdateTimerProps> = ({ className = '' }) => {
+const PriceUpdateTimer: React.FC<PriceUpdateTimerProps> = ({ className = '', onUpdate }) => {
   const [countdown, setCountdown] = useState(30);
   const [isUpdating, setIsUpdating] = useState(false);
 
@@ -13,8 +14,11 @@ const PriceUpdateTimer: React.FC<PriceUpdateTimerProps> = ({ className = '' }) =
     const interval = setInterval(() => {
       setCountdown((prev) => {
         if (prev <= 1) {
-          // Simulate price update
+          // Trigger actual price update
           setIsUpdating(true);
+          if (onUpdate) {
+            onUpdate();
+          }
           setTimeout(() => setIsUpdating(false), 1000);
           return 30; // Reset to 30 seconds
         }
@@ -23,7 +27,7 @@ const PriceUpdateTimer: React.FC<PriceUpdateTimerProps> = ({ className = '' }) =
     }, 1000);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [onUpdate]);
 
   const formatTime = (seconds: number) => {
     return `${seconds}s`;

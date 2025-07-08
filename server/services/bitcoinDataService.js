@@ -14,39 +14,27 @@ class BitcoinDataService {
   // Fetch comprehensive Bitcoin data from CoinGecko
   async fetchBitcoinData() {
     try {
-      // Fetch both Bitcoin data and global market data for dominance
-      const [bitcoinResponse, globalResponse] = await Promise.all([
-        axios.get(
-          `${process.env.COINGECKO_API_URL}/coins/bitcoin`,
-          {
-            params: {
-              localization: false,
-              tickers: false,
-              market_data: true,
-              community_data: false,
-              developer_data: false,
-              sparkline: false
-            },
-            timeout: 15000,
-            headers: {
-              'User-Agent': 'BitTrade-App/1.0'
-            }
+      // Fetch Bitcoin data only
+      const bitcoinResponse = await axios.get(
+        `${process.env.COINGECKO_API_URL}/coins/bitcoin`,
+        {
+          params: {
+            localization: false,
+            tickers: false,
+            market_data: true,
+            community_data: false,
+            developer_data: false,
+            sparkline: false
+          },
+          timeout: 15000,
+          headers: {
+            'User-Agent': 'BitTrade-App/1.0'
           }
-        ),
-        axios.get(
-          `${process.env.COINGECKO_API_URL}/global`,
-          {
-            timeout: 15000,
-            headers: {
-              'User-Agent': 'BitTrade-App/1.0'
-            }
-          }
-        )
-      ]);
+        }
+      );
 
       const data = bitcoinResponse.data;
       const marketData = data.market_data;
-      const globalData = globalResponse.data.data;
 
       if (!marketData || !marketData.current_price || !marketData.current_price.usd) {
         throw new Error('Invalid response format from CoinGecko API');
@@ -63,7 +51,6 @@ class BitcoinDataService {
         volume_24h_usd: marketData.total_volume ? marketData.total_volume.usd : null,
         high_24h_usd: marketData.high_24h ? Math.round(marketData.high_24h.usd) : null,
         low_24h_usd: marketData.low_24h ? Math.round(marketData.low_24h.usd) : null,
-        btc_dominance_pct: globalData && globalData.market_cap_percentage && globalData.market_cap_percentage.btc ? globalData.market_cap_percentage.btc : null,
 
         // Price changes (all timeframes)
         price_change_1h_pct: marketData.price_change_percentage_1h_in_currency ? marketData.price_change_percentage_1h_in_currency.usd : null,
@@ -181,15 +168,15 @@ class BitcoinDataService {
       await query(
         `INSERT INTO bitcoin_data (
           btc_usd_price, price_change_24h, price_change_24h_pct,
-          market_cap_usd, volume_24h_usd, high_24h_usd, low_24h_usd, btc_dominance_pct,
+          market_cap_usd, volume_24h_usd, high_24h_usd, low_24h_usd,
           price_change_1h_pct, price_change_7d_pct, price_change_30d_pct, 
           price_change_60d_pct, price_change_200d_pct, price_change_1y_pct,
           ath_usd, ath_date, ath_change_pct, atl_usd, atl_date, atl_change_pct
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           bitcoinData.btc_usd_price, bitcoinData.price_change_24h, bitcoinData.price_change_24h_pct,
           bitcoinData.market_cap_usd, bitcoinData.volume_24h_usd, bitcoinData.high_24h_usd, 
-          bitcoinData.low_24h_usd, bitcoinData.btc_dominance_pct,
+          bitcoinData.low_24h_usd,
           bitcoinData.price_change_1h_pct, bitcoinData.price_change_7d_pct, bitcoinData.price_change_30d_pct,
           bitcoinData.price_change_60d_pct, bitcoinData.price_change_200d_pct, bitcoinData.price_change_1y_pct,
           bitcoinData.ath_usd, bitcoinData.ath_date, bitcoinData.ath_change_pct,

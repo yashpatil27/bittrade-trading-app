@@ -244,7 +244,10 @@ const Home: React.FC = () => {
               <TrendingUp className="w-5 h-5 text-white" />
               Bitcoin Price
             </h2>
-            <PriceUpdateTimer className="text-zinc-400" />
+            <PriceUpdateTimer 
+              className="text-zinc-400" 
+              onUpdate={refreshData}
+            />
           </div>
           
           <div className="grid grid-cols-3 gap-4 mb-4">
