@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useImperativeHandle, forwardRef } from 'react';
 import { AreaChart, Area, XAxis, YAxis, ResponsiveContainer, Tooltip } from 'recharts';
 import { LineChart as LineChartIcon, Activity, Loader2 } from 'lucide-react';
 import axios from 'axios';
@@ -17,7 +17,15 @@ interface ChartData {
   date_to: string;
 }
 
-const BitcoinChart: React.FC = () => {
+interface BitcoinChartProps {
+  onPriceRefresh?: () => void;
+}
+
+export interface BitcoinChartRef {
+  refreshPrice: () => Promise<void>;
+}
+
+const BitcoinChart = forwardRef<BitcoinChartRef, BitcoinChartProps>(({ onPriceRefresh }, ref) => {
   const [activeTab, setActiveTab] = useState('7d');
   const [chartData, setChartData] = useState<ChartDataPoint[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -107,6 +115,11 @@ const BitcoinChart: React.FC = () => {
       console.error('Error fetching current price:', error);
     }
   };
+
+  // Expose refreshPrice function to parent component
+  useImperativeHandle(ref, () => ({
+    refreshPrice: fetchCurrentPrice
+  }));
 
   const handleTabChange = (timeframe: string) => {
     setActiveTab(timeframe);
@@ -273,6 +286,7 @@ const BitcoinChart: React.FC = () => {
 
     </div>
   );
-};
+});
 
+BitcoinChart.displayName = 'BitcoinChart';
 export default BitcoinChart;

@@ -318,7 +318,7 @@ const TradingModal: React.FC<TradingModalProps> = ({
             {/* Quick Price Buttons */}
             <div className="flex gap-2 mt-3">
               {isBuy ? (
-                // Buy options: negative percentages (below market)
+                // Buy options: -15%, -10%, -5%, -2%, Market
                 <>
                   <button
                     onClick={() => setTargetPrice((rate! * 0.85).toFixed(0))}
@@ -352,7 +352,7 @@ const TradingModal: React.FC<TradingModalProps> = ({
                   </button>
                 </>
               ) : (
-                // Sell options: positive percentages (above market)
+                // Sell options: +15%, +10%, +5%, +2%, Market
                 <>
                   <button
                     onClick={() => setTargetPrice((rate! * 1.15).toFixed(0))}
