@@ -7,7 +7,14 @@ import {
   TradeResponse,
   Transaction,
   AdminDashboardData,
-  AdminUser
+  AdminUser,
+  LoanDepositResponse,
+  LoanBorrowResponse,
+  LoanRepayResponse,
+  LoanStatus,
+  LoanHistory,
+  LiquidationRisk,
+  FullLiquidationResponse
 } from '../types';
 
 const API_BASE_URL = process.env.NODE_ENV === 'production' 
@@ -153,6 +160,28 @@ export const userAPI = {
 
   resumeDcaPlan: (planId: number): Promise<AxiosResponse<ApiResponse<any>>> =>
     api.patch(`/user/dca-plans/${planId}/resume`),
+
+  // Loan APIs
+  depositCollateral: (collateralAmount: number): Promise<AxiosResponse<ApiResponse<LoanDepositResponse>>> =>
+    api.post('/user/loan/deposit-collateral', { collateralAmount }),
+  
+  borrowFunds: (amount: number): Promise<AxiosResponse<ApiResponse<LoanBorrowResponse>>> =>
+    api.post('/user/loan/borrow', { amount }),
+  
+  repayFunds: (amount: number): Promise<AxiosResponse<ApiResponse<LoanRepayResponse>>> =>
+    api.post('/user/loan/repay', { amount }),
+  
+  getLoanStatus: (): Promise<AxiosResponse<ApiResponse<LoanStatus>>> =>
+    api.get('/user/loan/status'),
+  
+  getLoanHistory: (loanId?: number): Promise<AxiosResponse<ApiResponse<LoanHistory[]>>> =>
+    api.get(`/user/loan/history${loanId ? `?loanId=${loanId}` : ''}`),
+  
+  executeFullLiquidation: (): Promise<AxiosResponse<ApiResponse<FullLiquidationResponse>>> =>
+    api.post('/user/loan/full-liquidation'),
+  
+  getLiquidationRisk: (): Promise<AxiosResponse<ApiResponse<LiquidationRisk[]>>> =>
+    api.get('/user/loan/liquidation-risk'),
 };
 
 // Admin API

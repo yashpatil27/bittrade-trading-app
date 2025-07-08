@@ -10,6 +10,7 @@ import Home from './pages/Home';
 import Portfolio from './pages/Portfolio';
 import History from './pages/History';
 import Profile from './pages/Profile';
+import Loans from './pages/Loans';
 import AdminDashboard from './pages/AdminDashboard';
 import AdminUsers from './pages/AdminUsers';
 import AdminTransactions from './pages/AdminTransactions';
@@ -55,6 +56,14 @@ function App() {
               <ProtectedRoute>
                 <Layout>
                   <Profile />
+                </Layout>
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/loans" element={
+              <ProtectedRoute>
+                <Layout>
+                  <Loans />
                 </Layout>
               </ProtectedRoute>
             } />

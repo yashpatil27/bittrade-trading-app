@@ -101,3 +101,73 @@ export interface DcaPlan {
   min_price: number | null;
   created_at: string;
 }
+
+// Loan-related types
+export interface LoanDepositResponse {
+  loanId: number;
+  collateralAmount: number;
+  maxBorrowable: number;
+  ltvRatio: number;
+  interestRate: number;
+  liquidationPrice: number;
+  currentBtcPrice: number;
+}
+
+export interface LoanBorrowResponse {
+  loanId: number;
+  borrowAmount: number;
+  newBorrowedTotal: number;
+  availableCapacity: number;
+  currentBtcPrice: number;
+}
+
+export interface LoanRepayResponse {
+  loanId: number;
+  repayAmount: number;
+  remainingDebt: number;
+  loanStatus: 'ACTIVE' | 'REPAID';
+  collateralReturned: number;
+}
+
+export interface LoanStatus {
+  loanId: number;
+  collateralAmount: number;
+  borrowedAmount: number;
+  interestRate: number;
+  ltvRatio: number;
+  liquidationPrice: number;
+  maxBorrowable: number;
+  availableCapacity: number;
+  currentLtv: number;
+  currentBtcPrice: number;
+  riskStatus: 'SAFE' | 'WARNING' | 'LIQUIDATE';
+}
+
+export interface LoanHistory {
+  type: 'LOAN_CREATE' | 'LOAN_BORROW' | 'LOAN_REPAY' | 'INTEREST_ACCRUAL' | 'PARTIAL_LIQUIDATION' | 'FULL_LIQUIDATION';
+  inr_amount: number;
+  btc_amount: number;
+  notes: string;
+  created_at: string;
+  executed_at?: string;
+}
+
+export interface LiquidationRisk {
+  id: number;
+  user_id: number;
+  btc_collateral_amount: number;
+  inr_borrowed_amount: number;
+  ltv_ratio: number;
+  liquidation_price: number;
+  current_btc_price: number;
+  current_ltv: number;
+  risk_status: 'SAFE' | 'WARNING' | 'LIQUIDATE';
+}
+
+export interface FullLiquidationResponse {
+  loanId: number;
+  btcSold: number;
+  debtCleared: number;
+  collateralReturned: number;
+  loanStatus: 'REPAID';
+}

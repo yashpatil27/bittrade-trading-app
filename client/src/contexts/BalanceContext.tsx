@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, ReactNode } from 'react';
 
 interface BalanceContextType {
   refreshBalance: () => void;
+  updateBalance: () => void;
   balanceVersion: number;
 }
 
@@ -26,8 +27,13 @@ export const BalanceProvider: React.FC<BalanceProviderProps> = ({ children }) =>
     setBalanceVersion(prev => prev + 1);
   };
 
+  const updateBalance = () => {
+    setBalanceVersion(prev => prev + 1);
+  };
+
   const value: BalanceContextType = {
     refreshBalance,
+    updateBalance,
     balanceVersion,
   };
 

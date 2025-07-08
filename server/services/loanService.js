@@ -546,7 +546,6 @@ const LoanService = {
           l.user_id,
           l.btc_collateral_amount,
           l.inr_borrowed_amount,
-          l.ltv_ratio,
           l.liquidation_price,
           ${rates.btcUsdPrice} as current_btc_price,
           (l.inr_borrowed_amount / (l.btc_collateral_amount * ${rates.btcUsdPrice} / 100000000)) * 100 as current_ltv,
