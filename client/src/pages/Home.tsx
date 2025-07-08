@@ -367,6 +367,15 @@ const Home: React.FC = () => {
                               </p>
                             )}
                           </div>
+                        ) : transaction.type === 'LOAN_CREATE' ? (
+                          <div>
+                            <p className="font-bold text-sm text-white">
+                              {formatCurrency(transaction.btc_amount, 'BTC')}
+                            </p>
+                            <p className="text-xs text-zinc-400">
+                              Collateral Locked
+                            </p>
+                          </div>
                         ) : transaction.type.includes('LOAN') || transaction.type.includes('INTEREST') || transaction.type.includes('LIQUIDATION') ? (
                           <div>
                             {transaction.inr_amount > 0 && (
