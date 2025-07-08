@@ -38,13 +38,16 @@ export interface Prices {
 export interface Transaction {
   id: number;
   user_id: number;
-  type: 'SETUP' | 'DEPOSIT_INR' | 'MARKET_BUY' | 'BUY' | 'MARKET_SELL' | 'SELL' | 'LIMIT_BUY' | 'LIMIT_SELL' | 'WITHDRAW_INR' | 'DEPOSIT_BTC' | 'WITHDRAW_BTC' | 'DCA_BUY' | 'DCA_SELL';
+  type: 'SETUP' | 'DEPOSIT_INR' | 'MARKET_BUY' | 'BUY' | 'MARKET_SELL' | 'SELL' | 'LIMIT_BUY' | 'LIMIT_SELL' | 'WITHDRAW_INR' | 'DEPOSIT_BTC' | 'WITHDRAW_BTC' | 'DCA_BUY' | 'DCA_SELL' | 'LOAN_CREATE' | 'LOAN_BORROW' | 'LOAN_REPAY' | 'INTEREST_ACCRUAL' | 'PARTIAL_LIQUIDATION' | 'FULL_LIQUIDATION';
   status?: 'PENDING' | 'EXECUTED' | 'CANCELLED' | 'EXPIRED';
   inr_amount: number;
   btc_amount: number;
   btc_price: number;
   inr_balance?: number; // Optional for admin views
   btc_balance?: number; // Optional for admin views
+  loan_id?: number; // For loan operations
+  notes?: string; // Additional details
+  executed_at?: string; // When operation was executed
   created_at: string;
 }
 

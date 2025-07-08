@@ -11,7 +11,11 @@ import {
   Circle,
   Target,
   Trash2,
-  Repeat
+  Repeat,
+  Lock,
+  Clock,
+  AlertTriangle,
+  Zap
 } from 'lucide-react';
 import { Transaction } from '../types';
 import { getTransactionDisplayName, getTransactionIcon, formatBitcoin } from '../utils/formatters';
@@ -104,6 +108,10 @@ const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
       case 'Target': return <Target {...iconProps} />;
       case 'X': return <X {...iconProps} />;
       case 'Repeat': return <Repeat {...iconProps} />;
+      case 'Lock': return <Lock {...iconProps} />;
+      case 'Clock': return <Clock {...iconProps} />;
+      case 'AlertTriangle': return <AlertTriangle {...iconProps} />;
+      case 'Zap': return <Zap {...iconProps} />;
       default: return <Circle {...iconProps} />;
     }
   };
@@ -111,6 +119,16 @@ const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
   const formatAmount = () => {
     if (transaction.type === 'BUY' || transaction.type === 'SELL' || transaction.type === 'MARKET_BUY' || transaction.type === 'MARKET_SELL' || transaction.type === 'LIMIT_BUY' || transaction.type === 'LIMIT_SELL' || transaction.type === 'DCA_BUY' || transaction.type === 'DCA_SELL') {
       return `₹${transaction.inr_amount.toLocaleString('en-IN')} / ₿${formatBitcoin(transaction.btc_amount)}`;
+    } else if (transaction.type.includes('LOAN') || transaction.type.includes('INTEREST') || transaction.type.includes('LIQUIDATION')) {
+      // For loan transactions, show both amounts if they exist
+      if (transaction.inr_amount > 0 && transaction.btc_amount > 0) {
+        return `₹${transaction.inr_amount.toLocaleString('en-IN')} / ₿${formatBitcoin(transaction.btc_amount)}`;
+      } else if (transaction.inr_amount > 0) {
+        return `₹${transaction.inr_amount.toLocaleString('en-IN')}`;
+      } else if (transaction.btc_amount > 0) {
+        return `₿${formatBitcoin(transaction.btc_amount)}`;
+      }
+      return 'N/A';
     } else if (transaction.type.includes('INR')) {
       return `₹${transaction.inr_amount.toLocaleString('en-IN')}`;
     } else if (transaction.type.includes('BTC')) {
@@ -178,7 +196,33 @@ const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
             </div>
           </div>
 
-          {/* Price Information (for BUY/SELL/DCA) */}
+          {/* Loan Information (for LOAN operations) */}
+          {(transaction.type.includes('LOAN') || transaction.type.includes('INTEREST') || transaction.type.includes('LIQUIDATION')) 
+            
+            && (
+            <div className="bg-zinc-800/50 rounded-lg p-3">
+              <div className="space-y-1">
+                {transaction.loan_id ? (
+                  <div className="flex justify-between">
+                    <span className="text-zinc-400 text-xs">Loan ID:</span>
+                    <span className="text-white text-xs">{transaction.loan_id}</span>
+                  </div>
+                ) : null}
+                {transaction.notes ? (
+                  <div className="flex justify-between">
+                    <span className="text-zinc-400 text-xs">Notes:</span>
+                    <span className="text-white text-xs">{transaction.notes}</span>
+                  </div>
+                ) : null}
+                {transaction.executed_at ? (
+                  <div className="flex justify-between">
+                    <span className="text-zinc-400 text-xs">Executed At:</span>
+                    <span className="text-white text-xs">{transaction.executed_at}</span>
+                  </div>
+                ) : null}
+              </div>
+            </div>
+          )}
           {(transaction.type === 'BUY' || transaction.type === 'SELL' || transaction.type === 'MARKET_BUY' || transaction.type === 'MARKET_SELL' || transaction.type === 'LIMIT_BUY' || transaction.type === 'LIMIT_SELL' || transaction.type === 'DCA_BUY' || transaction.type === 'DCA_SELL') && (
             <div className="bg-zinc-800/50 rounded-lg p-3">
               <div className="space-y-1">

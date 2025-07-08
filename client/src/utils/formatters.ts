@@ -16,7 +16,13 @@ export const getTransactionDisplayName = (type: Transaction['type'], status?: st
     'DEPOSIT_BTC': 'Bitcoin Deposit',
     'WITHDRAW_BTC': 'Bitcoin Withdrawal',
     'DCA_BUY': 'DCA Bitcoin Purchase',
-    'DCA_SELL': 'DCA Bitcoin Sale'
+    'DCA_SELL': 'DCA Bitcoin Sale',
+    'LOAN_CREATE': 'Collateral Deposited',
+    'LOAN_BORROW': 'Loan Borrowed',
+    'LOAN_REPAY': 'Loan Repaid',
+    'INTEREST_ACCRUAL': 'Interest Accrued',
+    'PARTIAL_LIQUIDATION': 'Partial Liquidation',
+    'FULL_LIQUIDATION': 'Full Liquidation'
   };
   
   return displayNames[type] || type;
@@ -38,7 +44,13 @@ export const getTransactionIcon = (type: Transaction['type'], status?: string): 
     'DEPOSIT_BTC': 'Plus',
     'WITHDRAW_BTC': 'Minus',
     'DCA_BUY': 'Repeat',
-    'DCA_SELL': 'Repeat'
+    'DCA_SELL': 'Repeat',
+    'LOAN_CREATE': 'Lock',
+    'LOAN_BORROW': 'ArrowDown',
+    'LOAN_REPAY': 'ArrowUp',
+    'INTEREST_ACCRUAL': 'Clock',
+    'PARTIAL_LIQUIDATION': 'AlertTriangle',
+    'FULL_LIQUIDATION': 'Zap'
   };
   
   return icons[type] || 'Circle';
