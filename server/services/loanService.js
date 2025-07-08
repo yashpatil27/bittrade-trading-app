@@ -63,8 +63,8 @@ const LoanService = {
         // Clear user cache
         await clearUserCache(userId);
 
-        // Calculate max borrowable amount
-        const maxBorrowable = Math.floor((collateralAmount * rates.btcUsdPrice * ltvRatio) / (100 * 100000000));
+        // Calculate max borrowable amount using sell rate (what user would actually get)
+        const maxBorrowable = Math.floor((collateralAmount * rates.sellRate * ltvRatio) / (100 * 100000000));
 
         return {
           loanId: loanResult.insertId,
@@ -110,8 +110,8 @@ const LoanService = {
         // Get current BTC price
         const rates = await bitcoinDataService.getCalculatedRates();
         
-        // Calculate available borrowing capacity
-        const maxBorrowable = Math.floor((loan.btc_collateral_amount * rates.btcUsdPrice * loan.ltv_ratio) / (100 * 100000000));
+        // Calculate available borrowing capacity using sell rate (what user would actually get)
+        const maxBorrowable = Math.floor((loan.btc_collateral_amount * rates.sellRate * loan.ltv_ratio) / (100 * 100000000));
         const availableCapacity = maxBorrowable - loan.inr_borrowed_amount;
 
         if (borrowAmount > availableCapacity) {
@@ -282,12 +282,12 @@ const LoanService = {
       // Get current BTC price
       const rates = await bitcoinDataService.getCalculatedRates();
       
-      // Calculate available borrowing capacity
-      const maxBorrowable = Math.floor((loan.btc_collateral_amount * rates.btcUsdPrice * loan.ltv_ratio) / (100 * 100000000));
+      // Calculate available borrowing capacity using sell rate (what user would actually get)
+      const maxBorrowable = Math.floor((loan.btc_collateral_amount * rates.sellRate * loan.ltv_ratio) / (100 * 100000000));
       const availableCapacity = maxBorrowable - loan.inr_borrowed_amount;
       
-      // Calculate current LTV
-      const currentLtv = (loan.inr_borrowed_amount / ((loan.btc_collateral_amount * rates.btcUsdPrice) / 100000000)) * 100;
+      // Calculate current LTV using sell rate (actual liquidation value)
+      const currentLtv = (loan.inr_borrowed_amount / ((loan.btc_collateral_amount * rates.sellRate) / 100000000)) * 100;
       
       return {
         loanId: loan.id,
@@ -299,7 +299,7 @@ const LoanService = {
         maxBorrowable,
         availableCapacity,
         currentLtv,
-        currentBtcPrice: rates.btcUsdPrice,
+        currentBtcPrice: rates.sellRate, // Use sell rate for collateral display
         riskStatus: currentLtv >= 90 ? 'LIQUIDATE' : currentLtv >= 85 ? 'WARNING' : 'SAFE'
       };
     } catch (error) {
@@ -384,9 +384,9 @@ const LoanService = {
         // Get current BTC price
         const rates = await bitcoinDataService.getCalculatedRates();
         
-        // Calculate BTC to sell to restore 60% LTV
+        // Calculate BTC to sell to restore 60% LTV using sell rate
         const targetLtv = 0.60;
-        const currentCollateralValue = (loan.btc_collateral_amount * rates.btcUsdPrice) / 100000000;
+        const currentCollateralValue = (loan.btc_collateral_amount * rates.sellRate) / 100000000;
         const targetBorrowAmount = currentCollateralValue * targetLtv;
         const excessDebt = loan.inr_borrowed_amount - targetBorrowAmount;
         
@@ -395,7 +395,7 @@ const LoanService = {
         }
 
         // Calculate BTC to sell (add small buffer for slippage)
-        const btcToSell = Math.ceil((excessDebt * 1.02 * 100000000) / rates.btcUsdPrice);
+        const btcToSell = Math.ceil((excessDebt * 1.02 * 100000000) / rates.sellRate);
         const inrFromSale = Math.floor((btcToSell * rates.sellRate) / 100000000);
         const debtReduction = Math.min(inrFromSale, loan.inr_borrowed_amount);
         const remainingInr = inrFromSale - debtReduction;
@@ -429,7 +429,7 @@ const LoanService = {
           remainingInr,
           newBorrowedAmount,
           newCollateralAmount,
-          newLtv: (newBorrowedAmount / ((newCollateralAmount * rates.btcUsdPrice) / 100000000)) * 100
+          newLtv: (newBorrowedAmount / ((newCollateralAmount * rates.sellRate) / 100000000)) * 100
         };
       });
     } catch (error) {
@@ -547,11 +547,11 @@ const LoanService = {
           l.btc_collateral_amount,
           l.inr_borrowed_amount,
           l.liquidation_price,
-          ${rates.btcUsdPrice} as current_btc_price,
-          (l.inr_borrowed_amount / (l.btc_collateral_amount * ${rates.btcUsdPrice} / 100000000)) * 100 as current_ltv,
+          ${rates.sellRate} as current_btc_price,
+          (l.inr_borrowed_amount / (l.btc_collateral_amount * ${rates.sellRate} / 100000000)) * 100 as current_ltv,
           CASE 
-            WHEN (l.inr_borrowed_amount / (l.btc_collateral_amount * ${rates.btcUsdPrice} / 100000000)) >= 0.90 THEN 'LIQUIDATE'
-            WHEN (l.inr_borrowed_amount / (l.btc_collateral_amount * ${rates.btcUsdPrice} / 100000000)) >= 0.85 THEN 'WARNING'
+            WHEN (l.inr_borrowed_amount / (l.btc_collateral_amount * ${rates.sellRate} / 100000000)) >= 0.90 THEN 'LIQUIDATE'
+            WHEN (l.inr_borrowed_amount / (l.btc_collateral_amount * ${rates.sellRate} / 100000000)) >= 0.85 THEN 'WARNING'
             ELSE 'SAFE'
           END as risk_status
         FROM loans l 
