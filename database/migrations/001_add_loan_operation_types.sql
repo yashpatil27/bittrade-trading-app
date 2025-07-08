@@ -15,8 +15,6 @@ ALTER TABLE operations MODIFY type ENUM(
   'DEPOSIT_INR', 'WITHDRAW_INR', 'DEPOSIT_BTC', 'WITHDRAW_BTC'
 ) NOT NULL;
 
--- Rename collateral_ratio to ltv_ratio for better clarity
-ALTER TABLE loans CHANGE COLUMN collateral_ratio ltv_ratio DECIMAL(5,2) NOT NULL;
 
 -- Verify the changes
 SELECT COLUMN_NAME, COLUMN_TYPE 
