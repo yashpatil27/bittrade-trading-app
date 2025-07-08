@@ -63,23 +63,5 @@ router.get('/bitcoin/price', async (req, res) => {
   }
 });
 
-// Get Bitcoin sentiment data (public endpoint)
-router.get('/bitcoin/sentiment', async (req, res) => {
-  try {
-    const sentimentData = await bitcoinDataService.getSentimentData();
-
-    res.json({
-      success: true,
-      data: sentimentData
-    });
-
-  } catch (error) {
-    console.error('Public sentiment data error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error fetching sentiment data'
-    });
-  }
-});
 
 module.exports = router;
