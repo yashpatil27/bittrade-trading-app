@@ -1278,6 +1278,67 @@ router.get('/loan/status', async (req, res) => {
   }
 });
 
+// Get loan history
+router.get('/loan/history', async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { loanId } = req.query;
+    const result = await loanService.getLoanHistory(userId, loanId);
+
+    res.json({
+      success: true,
+      data: result
+    });
+
+  } catch (error) {
+    console.error('Loan history error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error retrieving loan history'
+    });
+  }
+});
+
+// Execute full liquidation
+router.post('/loan/full-liquidation', async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const result = await loanService.executeFullLiquidation(userId);
+
+    res.json({
+      success: true,
+      message: 'Full liquidation executed successfully',
+      data: result
+    });
+
+  } catch (error) {
+    console.error('Full liquidation error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error executing full liquidation'
+    });
+  }
+});
+
+// Check liquidation risk (admin-only for monitoring)
+router.get('/loan/liquidation-risk', async (req, res) => {
+  try {
+    const result = await loanService.checkLiquidationRisk();
+
+    res.json({
+      success: true,
+      data: result
+    });
+
+  } catch (error) {
+    console.error('Liquidation risk check error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error checking liquidation risk'
+    });
+  }
+});
+
 // Export trading data
 router.get('/export-data', async (req, res) => {
   try {

@@ -306,6 +306,266 @@ const LoanService = {
       console.error('Error getting loan status:', error);
       throw error;
     }
+  },
+
+  /**
+   * Accrue daily interest on all active loans
+   * @returns {Promise} - Resolves with accrual results
+   */
+  async accrueInterest() {
+    try {
+      const activeLoans = await query(
+        'SELECT * FROM loans WHERE status = "ACTIVE" AND inr_borrowed_amount > 0'
+      );
+
+      const results = [];
+      
+      for (const loan of activeLoans) {
+        // Calculate daily interest: (borrowed_amount * interest_rate) / 365
+        const dailyInterest = Math.floor((loan.inr_borrowed_amount * loan.interest_rate) / 365 / 100);
+        
+        if (dailyInterest > 0) {
+          await transaction(async (connection) => {
+            // Update user balances
+            await connection.execute(
+              'UPDATE users SET borrowed_inr = borrowed_inr + ?, interest_accrued = interest_accrued + ? WHERE id = ?',
+              [dailyInterest, dailyInterest, loan.user_id]
+            );
+
+            // Update loan amount
+            await connection.execute(
+              'UPDATE loans SET inr_borrowed_amount = inr_borrowed_amount + ? WHERE id = ?',
+              [dailyInterest, loan.id]
+            );
+
+            // Record the operation
+            await connection.execute(
+              'INSERT INTO operations (user_id, type, status, inr_amount, loan_id, notes, executed_at) VALUES (?, ?, ?, ?, ?, ?, NOW())',
+              [loan.user_id, 'INTEREST_ACCRUAL', 'EXECUTED', dailyInterest, loan.id, 'Daily interest accrual']
+            );
+          });
+
+          results.push({
+            loanId: loan.id,
+            userId: loan.user_id,
+            interestAccrued: dailyInterest,
+            newBorrowedAmount: loan.inr_borrowed_amount + dailyInterest
+          });
+        }
+      }
+
+      return results;
+    } catch (error) {
+      console.error('Error accruing interest:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Execute partial liquidation for a loan
+   * @param {number} loanId - ID of the loan to liquidate
+   * @returns {Promise} - Resolves with liquidation details
+   */
+  async executePartialLiquidation(loanId) {
+    try {
+      return await transaction(async (connection) => {
+        // Get loan details
+        const [loanRows] = await connection.execute(
+          'SELECT * FROM loans WHERE id = ? AND status = "ACTIVE"',
+          [loanId]
+        );
+
+        if (loanRows.length === 0) {
+          throw new Error('Active loan not found');
+        }
+
+        const loan = loanRows[0];
+        
+        // Get current BTC price
+        const rates = await bitcoinDataService.getCalculatedRates();
+        
+        // Calculate BTC to sell to restore 60% LTV
+        const targetLtv = 0.60;
+        const currentCollateralValue = (loan.btc_collateral_amount * rates.btcUsdPrice) / 100000000;
+        const targetBorrowAmount = currentCollateralValue * targetLtv;
+        const excessDebt = loan.inr_borrowed_amount - targetBorrowAmount;
+        
+        if (excessDebt <= 0) {
+          throw new Error('No liquidation needed - LTV is within limits');
+        }
+
+        // Calculate BTC to sell (add small buffer for slippage)
+        const btcToSell = Math.ceil((excessDebt * 1.02 * 100000000) / rates.btcUsdPrice);
+        const inrFromSale = Math.floor((btcToSell * rates.sellRate) / 100000000);
+        const debtReduction = Math.min(inrFromSale, loan.inr_borrowed_amount);
+        const remainingInr = inrFromSale - debtReduction;
+
+        // Update user balances
+        await connection.execute(
+          'UPDATE users SET borrowed_inr = borrowed_inr - ?, interest_accrued = 0, collateral_btc = collateral_btc - ?, available_inr = available_inr + ? WHERE id = ?',
+          [debtReduction, btcToSell, remainingInr, loan.user_id]
+        );
+
+        // Update loan
+        const newBorrowedAmount = loan.inr_borrowed_amount - debtReduction;
+        const newCollateralAmount = loan.btc_collateral_amount - btcToSell;
+        
+        await connection.execute(
+          'UPDATE loans SET inr_borrowed_amount = ?, btc_collateral_amount = ? WHERE id = ?',
+          [newBorrowedAmount, newCollateralAmount, loan.id]
+        );
+
+        // Record the operation
+        await connection.execute(
+          'INSERT INTO operations (user_id, type, status, inr_amount, btc_amount, loan_id, notes, executed_at) VALUES (?, ?, ?, ?, ?, ?, ?, NOW())',
+          [loan.user_id, 'PARTIAL_LIQUIDATION', 'EXECUTED', debtReduction, btcToSell, loan.id, 'Partial liquidation - LTV reduced from 90% to 60%']
+        );
+
+        return {
+          loanId: loan.id,
+          btcSold: btcToSell,
+          inrFromSale,
+          debtReduction,
+          remainingInr,
+          newBorrowedAmount,
+          newCollateralAmount,
+          newLtv: (newBorrowedAmount / ((newCollateralAmount * rates.btcUsdPrice) / 100000000)) * 100
+        };
+      });
+    } catch (error) {
+      console.error('Error executing partial liquidation:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Execute full liquidation for a loan
+   * @param {number} userId - ID of the user
+   * @returns {Promise} - Resolves with liquidation details
+   */
+  async executeFullLiquidation(userId) {
+    try {
+      return await transaction(async (connection) => {
+        // Get active loan
+        const [loanRows] = await connection.execute(
+          'SELECT * FROM loans WHERE user_id = ? AND status = "ACTIVE"',
+          [userId]
+        );
+
+        if (loanRows.length === 0) {
+          throw new Error('No active loan found');
+        }
+
+        const loan = loanRows[0];
+        
+        // Get current BTC price
+        const rates = await bitcoinDataService.getCalculatedRates();
+        
+        // Calculate BTC to sell to cover entire debt
+        const btcToSell = Math.ceil((loan.inr_borrowed_amount * 100000000) / rates.sellRate);
+        const remainingCollateral = loan.btc_collateral_amount - btcToSell;
+        
+        if (remainingCollateral < 0) {
+          throw new Error('Insufficient collateral for full liquidation');
+        }
+
+        // Update user balances
+        await connection.execute(
+          'UPDATE users SET borrowed_inr = 0, interest_accrued = 0, collateral_btc = 0, available_btc = available_btc + ? WHERE id = ?',
+          [remainingCollateral, userId]
+        );
+
+        // Update loan status
+        await connection.execute(
+          'UPDATE loans SET inr_borrowed_amount = 0, btc_collateral_amount = 0, status = "REPAID", repaid_at = NOW() WHERE id = ?',
+          [loan.id]
+        );
+
+        // Record the operation
+        await connection.execute(
+          'INSERT INTO operations (user_id, type, status, inr_amount, btc_amount, loan_id, notes, executed_at) VALUES (?, ?, ?, ?, ?, ?, ?, NOW())',
+          [userId, 'FULL_LIQUIDATION', 'EXECUTED', loan.inr_borrowed_amount, btcToSell, loan.id, 'Manual full liquidation - loan repaid, remaining collateral returned']
+        );
+
+        return {
+          loanId: loan.id,
+          btcSold: btcToSell,
+          debtCleared: loan.inr_borrowed_amount,
+          collateralReturned: remainingCollateral,
+          loanStatus: 'REPAID'
+        };
+      });
+    } catch (error) {
+      console.error('Error executing full liquidation:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Get loan history for a user
+   * @param {number} userId - ID of the user
+   * @param {number} loanId - ID of the loan (optional)
+   * @returns {Promise} - Resolves with loan history
+   */
+  async getLoanHistory(userId, loanId = null) {
+    try {
+      let query_str = `
+        SELECT type, inr_amount, btc_amount, notes, created_at, executed_at
+        FROM operations 
+        WHERE user_id = ? AND type IN ('LOAN_CREATE', 'LOAN_BORROW', 'LOAN_REPAY', 'INTEREST_ACCRUAL', 'PARTIAL_LIQUIDATION', 'FULL_LIQUIDATION')
+      `;
+      let params = [userId];
+      
+      if (loanId) {
+        query_str += ' AND loan_id = ?';
+        params.push(loanId);
+      }
+      
+      query_str += ' ORDER BY created_at DESC';
+      
+      const history = await query(query_str, params);
+      
+      return history;
+    } catch (error) {
+      console.error('Error getting loan history:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Check loans at risk of liquidation
+   * @returns {Promise} - Resolves with at-risk loans
+   */
+  async checkLiquidationRisk() {
+    try {
+      const rates = await bitcoinDataService.getCalculatedRates();
+      
+      const atRiskLoans = await query(`
+        SELECT 
+          l.id,
+          l.user_id,
+          l.btc_collateral_amount,
+          l.inr_borrowed_amount,
+          l.ltv_ratio,
+          l.liquidation_price,
+          ${rates.btcUsdPrice} as current_btc_price,
+          (l.inr_borrowed_amount / (l.btc_collateral_amount * ${rates.btcUsdPrice} / 100000000)) * 100 as current_ltv,
+          CASE 
+            WHEN (l.inr_borrowed_amount / (l.btc_collateral_amount * ${rates.btcUsdPrice} / 100000000)) >= 0.90 THEN 'LIQUIDATE'
+            WHEN (l.inr_borrowed_amount / (l.btc_collateral_amount * ${rates.btcUsdPrice} / 100000000)) >= 0.85 THEN 'WARNING'
+            ELSE 'SAFE'
+          END as risk_status
+        FROM loans l 
+        WHERE l.status = 'ACTIVE' AND l.inr_borrowed_amount > 0
+        HAVING risk_status IN ('LIQUIDATE', 'WARNING')
+        ORDER BY current_ltv DESC
+      `);
+      
+      return atRiskLoans;
+    } catch (error) {
+      console.error('Error checking liquidation risk:', error);
+      throw error;
+    }
   }
 };
 

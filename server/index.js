@@ -17,6 +17,7 @@ const { createRedisClient } = require('./config/redis');
 const bitcoinDataService = require('./services/bitcoinDataService');
 const limitOrderExecutionService = require('./services/limitOrderExecutionService');
 const dcaExecutionService = require('./services/dcaExecutionService');
+const loanMonitoringService = require('./services/loanMonitoringService');
 
 // Load environment variables
 dotenv.config();
@@ -51,6 +52,10 @@ const initializeServices = async () => {
     // Start DCA execution service
     dcaExecutionService.startService();
     console.log('✓ DCA execution service started');
+    
+    // Start loan monitoring service
+    loanMonitoringService.start();
+    console.log('✓ Loan monitoring service started');
     
     console.log('All services initialized successfully');
   } catch (error) {
@@ -101,7 +106,8 @@ app.get('/health', (req, res) => {
       database: 'connected',
       bitcoin_data_service: bitcoinDataService.isRunning ? 'running' : 'stopped',
       limit_order_execution: limitOrderExecutionService.isRunning ? 'running' : 'stopped',
-      dca_execution: dcaExecutionService.isRunning ? 'running' : 'stopped'
+      dca_execution: dcaExecutionService.isRunning ? 'running' : 'stopped',
+      loan_monitoring: loanMonitoringService.getStatus().isRunning ? 'running' : 'stopped'
     }
   });
 });
@@ -131,6 +137,7 @@ process.on('SIGINT', () => {
   bitcoinDataService.stopDataUpdates();
   limitOrderExecutionService.stopService();
   dcaExecutionService.stopService();
+  loanMonitoringService.stop();
   process.exit(0);
 });
 
@@ -139,6 +146,7 @@ process.on('SIGTERM', () => {
   bitcoinDataService.stopDataUpdates();
   limitOrderExecutionService.stopService();
   dcaExecutionService.stopService();
+  loanMonitoringService.stop();
   process.exit(0);
 });
 
