@@ -57,7 +57,14 @@ class PortfolioService {
 
   async getCurrentBalances(userId) {
     const balanceRows = await query(
-      'SELECT available_inr as inr_balance, available_btc as btc_balance FROM users WHERE id = ?',
+      `SELECT 
+        available_inr, 
+        available_btc, 
+        reserved_inr, 
+        reserved_btc,
+        (available_inr + reserved_inr) as total_inr_balance,
+        (available_btc + reserved_btc) as total_btc_balance
+      FROM users WHERE id = ?`,
       [userId]
     );
 
@@ -65,13 +72,21 @@ class PortfolioService {
       throw new Error('User not found');
     }
 
-    return balanceRows[0];
+    return {
+      inr_balance: balanceRows[0].available_inr,
+      btc_balance: balanceRows[0].available_btc,
+      reserved_inr: balanceRows[0].reserved_inr,
+      reserved_btc: balanceRows[0].reserved_btc,
+      total_inr_balance: balanceRows[0].total_inr_balance,
+      total_btc_balance: balanceRows[0].total_btc_balance
+    };
   }
 
   async calculateTotalPortfolioValue(currentBalances, sellRate) {
-    const btcInBtc = currentBalances.btc_balance / 100000000; // Convert satoshis to BTC
-    const btcValueInInr = btcInBtc * sellRate;
-    return currentBalances.inr_balance + btcValueInInr;
+    // Use total balances (available + reserved) for portfolio value calculation
+    const totalBtcInBtc = currentBalances.total_btc_balance / 100000000; // Convert satoshis to BTC
+    const totalBtcValueInInr = totalBtcInBtc * sellRate;
+    return currentBalances.total_inr_balance + totalBtcValueInInr;
   }
 
   async calculateTotalInvestment(userId) {
@@ -105,14 +120,14 @@ class PortfolioService {
   }
 
   async calculateBreakEvenPrice(userId, currentBalances, totalInvestment) {
-    const currentBtcInBtc = currentBalances.btc_balance / 100000000; // Convert satoshis to BTC
+    const totalBtcInBtc = currentBalances.total_btc_balance / 100000000; // Convert satoshis to BTC
     
-    if (currentBtcInBtc === 0) {
+    if (totalBtcInBtc === 0) {
       return 0;
     }
 
-    // Breakeven = (Total Investment - Current INR Balance) / Current BTC Balance
-    const breakeven = (totalInvestment - currentBalances.inr_balance) / currentBtcInBtc;
+    // Breakeven = (Total Investment - Total INR Balance) / Total BTC Balance
+    const breakeven = (totalInvestment - currentBalances.total_inr_balance) / totalBtcInBtc;
     return Math.max(0, breakeven); // Don't return negative breakeven prices
   }
 
@@ -121,11 +136,12 @@ class PortfolioService {
       return { inrPercentage: 0, btcPercentage: 0 };
     }
 
-    const btcInBtc = currentBalances.btc_balance / 100000000;
-    const btcValueInInr = btcInBtc * sellRate;
+    // Use total balances (available + reserved) for asset allocation
+    const totalBtcInBtc = currentBalances.total_btc_balance / 100000000;
+    const totalBtcValueInInr = totalBtcInBtc * sellRate;
     
-    const inrPercentage = (currentBalances.inr_balance / totalPortfolioValue) * 100;
-    const btcPercentage = (btcValueInInr / totalPortfolioValue) * 100;
+    const inrPercentage = (currentBalances.total_inr_balance / totalPortfolioValue) * 100;
+    const btcPercentage = (totalBtcValueInInr / totalPortfolioValue) * 100;
 
     return {
       inrPercentage: Math.round(inrPercentage * 100) / 100, // Round to 2 decimal places

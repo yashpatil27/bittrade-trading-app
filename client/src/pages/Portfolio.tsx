@@ -101,7 +101,7 @@ const Portfolio: React.FC = () => {
   };
 
   const formatPercentage = (value: number | null | undefined) => {
-    if (value === null || value === undefined || isNaN(value)) {
+    if (value === null || value === undefined || typeof value !== 'number' || isNaN(value) || !isFinite(value)) {
       return 'N/A';
     }
     const sign = value >= 0 ? '+' : '';
@@ -109,14 +109,14 @@ const Portfolio: React.FC = () => {
   };
 
   const formatCurrencyInr = (value: number | null | undefined) => {
-    if (value === null || value === undefined || isNaN(value)) {
+    if (value === null || value === undefined || typeof value !== 'number' || isNaN(value) || !isFinite(value)) {
       return '₹0';
     }
     return `₹${Math.round(value).toLocaleString('en-IN')}`;
   };
 
   const formatLargeNumber = (value: number | null | undefined) => {
-    if (value === null || value === undefined || isNaN(value)) {
+    if (value === null || value === undefined || typeof value !== 'number' || isNaN(value) || !isFinite(value)) {
       return 'N/A';
     }
     if (value >= 1e12) {
