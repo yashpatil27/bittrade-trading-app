@@ -25,7 +25,7 @@ const BorrowModal: React.FC<BorrowModalProps> = ({
   const [isPinModalOpen, setIsPinModalOpen] = useState(false);
   const { updateBalance } = useBalance();
 
-  useBodyScrollLock(isOpen);
+  useBodyScrollLock(isOpen && !isPinModalOpen);
 
   useEffect(() => {
     if (isOpen && error) {

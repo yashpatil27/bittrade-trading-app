@@ -26,7 +26,7 @@ const RepayModal: React.FC<RepayModalProps> = ({
   const [availableBalance, setAvailableBalance] = useState(0);
   const { updateBalance } = useBalance();
 
-  useBodyScrollLock(isOpen);
+  useBodyScrollLock(isOpen && !isPinModalOpen);
 
   useEffect(() => {
     if (isOpen && error) {

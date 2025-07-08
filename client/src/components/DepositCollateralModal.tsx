@@ -25,7 +25,7 @@ const DepositCollateralModal: React.FC<DepositCollateralModalProps> = ({
   const [isPinModalOpen, setIsPinModalOpen] = useState(false);
   const { updateBalance } = useBalance();
 
-  useBodyScrollLock(isOpen);
+  useBodyScrollLock(isOpen && !isPinModalOpen);
 
   useEffect(() => {
     if (isOpen) {
