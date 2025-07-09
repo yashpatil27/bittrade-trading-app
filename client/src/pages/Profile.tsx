@@ -8,7 +8,8 @@ import {
   Download,
   BookOpen,
   Shield,
-  ExternalLink
+  ExternalLink,
+  LogOut
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { userAPI } from '../services/api';
@@ -18,7 +19,7 @@ import ChangePasswordModal from '../components/ChangePasswordModal';
 import ChangePinModal from '../components/ChangePinModal';
 
 const Profile: React.FC = () => {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const [isEditNameOpen, setIsEditNameOpen] = useState(false);
   const [isEditEmailOpen, setIsEditEmailOpen] = useState(false);
   const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);
@@ -244,6 +245,26 @@ const Profile: React.FC = () => {
           ) : (
             <Download className="w-4 h-4 text-zinc-400" />
           )}
+        </button>
+
+        {/* Logout Button */}
+        <button
+          onClick={async () => {
+            clearMessages();
+            await logout();
+          }}
+          className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-4 flex items-center justify-between hover:bg-zinc-800 transition-colors"
+        >
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-zinc-800 rounded-lg">
+              <LogOut className="w-4 h-4 text-white" />
+            </div>
+            <div className="text-left">
+              <p className="font-medium">Logout</p>
+              <p className="text-zinc-400 text-sm">Sign out of your account</p>
+            </div>
+          </div>
+          <LogOut className="w-4 h-4 text-zinc-400" />
         </button>
       </div>
 
