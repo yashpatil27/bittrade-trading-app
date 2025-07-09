@@ -102,6 +102,11 @@ const Portfolio: React.FC = () => {
       setPortfolioData(portfolioResponse.data.data);
       setBitcoinData(bitcoinResponse.data.data);
       setSentimentData(sentimentResponse.data.data);
+      
+      // Debug: Check totalInvestment value
+      console.log('Portfolio API Response:', portfolioResponse.data.data);
+      console.log('Total Investment Value:', portfolioResponse.data.data?.totalInvestment);
+      console.log('Type of totalInvestment:', typeof portfolioResponse.data.data?.totalInvestment);
     } catch (error) {
       console.error('Error fetching portfolio data:', error);
       setError('Failed to load portfolio data');
@@ -231,7 +236,11 @@ const Portfolio: React.FC = () => {
         </p>
         <div className="flex items-center justify-center gap-4 text-sm">
           <span className="text-zinc-400">
-            Investment: {formatCurrencyInr(totalInvestment || 0)}
+            Investment: {(() => {
+              console.log('Rendering Investment - totalInvestment:', totalInvestment);
+              console.log('totalInvestment || 0:', totalInvestment || 0);
+              return formatCurrencyInr(totalInvestment || 0);
+            })()}
           </span>
           <span className={`flex items-center gap-1 ${(unrealizedProfit || 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
             {(unrealizedProfit || 0) >= 0 ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />}
