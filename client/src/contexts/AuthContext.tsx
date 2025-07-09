@@ -28,66 +28,33 @@ interface AuthProviderProps {
   children: ReactNode;
 }
 
-// Global flag to prevent multiple initialization attempts
-let authInitialized = false;
-
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const initializeAuth = async () => {
-      if (authInitialized) {
-        setIsLoading(false);
-        return; // Prevent multiple initializations
-      }
-      
-      authInitialized = true;
-      
-      try {
-        const storedToken = localStorage.getItem('token');
-        const storedUser = localStorage.getItem('user');
+    // Simple synchronous initialization to prevent loops
+    try {
+      const storedToken = localStorage.getItem('token');
+      const storedUser = localStorage.getItem('user');
 
-        if (storedToken && storedUser) {
-          try {
-            // Parse and set the user data first
-            const userData = JSON.parse(storedUser);
-            setToken(storedToken);
-            setUser(userData);
-            
-            // Skip token validation on mobile to prevent loops
-            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-            
-            if (!isMobile) {
-              // Verify token is still valid (do this silently in background)
-              setTimeout(() => {
-                authAPI.profile().catch(() => {
-                  // Token is invalid, clear auth state silently
-                  console.log('Token validation failed, clearing auth state');
-                  localStorage.removeItem('token');
-                  localStorage.removeItem('user');
-                  setToken(null);
-                  setUser(null);
-                });
-              }, 2000); // Delay validation to prevent blocking
-            }
-          } catch (error) {
-            console.error('Error parsing stored user data:', error);
-            localStorage.removeItem('token');
-            localStorage.removeItem('user');
-            setToken(null);
-            setUser(null);
-          }
+      if (storedToken && storedUser) {
+        try {
+          const userData = JSON.parse(storedUser);
+          setToken(storedToken);
+          setUser(userData);
+        } catch (error) {
+          console.error('Error parsing stored user data:', error);
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
         }
-      } catch (error) {
-        console.error('Auth initialization error:', error);
-      } finally {
-        setIsLoading(false);
       }
-    };
-
-    initializeAuth();
+    } catch (error) {
+      console.error('Auth initialization error:', error);
+    }
+    
+    setIsLoading(false);
   }, []);
 
   const login = async (email: string, password: string): Promise<void> => {

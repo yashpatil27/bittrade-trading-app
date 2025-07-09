@@ -44,23 +44,15 @@ api.interceptors.request.use(
   }
 );
 
-// Response interceptor to handle auth errors
+// Response interceptor to handle auth errors (simplified)
 api.interceptors.response.use(
   (response) => response,
   (error) => {
     console.log('API Error:', error.response?.status, error.response?.data?.message);
     
-    if (error.response?.status === 401) {
-      console.log('Authentication error - clearing local storage');
-      // Only clear auth if we're not already in an auth-clearing state
-      if (localStorage.getItem('token')) {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-      }
-      // Don't redirect here - let React Router handle it
-    } else if (error.response?.status === 429) {
-      console.warn('Rate limit exceeded - not logging out');
-      // Don't logout on rate limit, just show error
+    // Don't automatically clear auth on 401 - let components handle it
+    if (error.response?.status === 429) {
+      console.warn('Rate limit exceeded');
     }
     return Promise.reject(error);
   }
