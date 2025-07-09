@@ -276,7 +276,7 @@ const AddCollateralModal: React.FC<AddCollateralModalProps> = ({
         onConfirm={handlePinConfirm}
         title="Confirm Collateral Addition"
         message={`Add ₿${formatBitcoin(parseFloat(collateralAmount || '0'))} as additional collateral?`}
-        loading={loading}
+        isLoading={loading}
       />
     </>
   );
