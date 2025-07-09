@@ -18,7 +18,7 @@ const logger = winston.createLogger({
         winston.format.printf(({ timestamp, level, message, service }) => {
             const color = logLevels[level] || 'white';
             const serviceTag = service ? chalk.blue(`[${service}]`) : '';
-            return `${chalk.gray(`[${timestamp}]`)} ${serviceTag} ${chalk[color](level.toUpperCase())}: ${message}`;
+            return `${serviceTag} ${chalk[color](level.toUpperCase())}: ${message}`;
         })
     ),
     transports: [
