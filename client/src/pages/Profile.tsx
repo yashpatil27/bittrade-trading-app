@@ -9,9 +9,11 @@ import {
   BookOpen,
   Shield,
   ExternalLink,
-  LogOut
+  LogOut,
+  UserCog
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 import { userAPI } from '../services/api';
 import EditNameModal from '../components/EditNameModal';
 import EditEmailModal from '../components/EditEmailModal';
@@ -20,6 +22,7 @@ import ChangePinModal from '../components/ChangePinModal';
 
 const Profile: React.FC = () => {
   const { user, logout } = useAuth();
+  const navigate = useNavigate();
   const [isEditNameOpen, setIsEditNameOpen] = useState(false);
   const [isEditEmailOpen, setIsEditEmailOpen] = useState(false);
   const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);
@@ -182,6 +185,28 @@ const Profile: React.FC = () => {
           )}
         </div>
       </div>
+
+      {/* Admin Dashboard Access */}
+      {(user.is_admin === true || user.is_admin === 1) && (
+        <button
+          onClick={() => {
+            clearMessages();
+            navigate('/admin');
+          }}
+          className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-4 flex items-center justify-between hover:bg-zinc-800 transition-colors"
+        >
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-zinc-800 rounded-lg">
+              <UserCog className="w-4 h-4 text-white" />
+            </div>
+            <div className="text-left">
+              <p className="font-medium">Access Admin Dashboard</p>
+              <p className="text-zinc-400 text-sm">Manage users, transactions, and system settings</p>
+            </div>
+          </div>
+          <UserCog className="w-4 h-4 text-zinc-400" />
+        </button>
+      )}
 
       {/* Account Actions */}
       <div className="space-y-4">
