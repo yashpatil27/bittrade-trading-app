@@ -512,7 +512,7 @@ const LoanService = {
       let query_str = `
         SELECT type, inr_amount, btc_amount, notes, created_at, executed_at
         FROM operations 
-        WHERE user_id = ? AND type IN ('LOAN_CREATE', 'LOAN_BORROW', 'LOAN_REPAY', 'INTEREST_ACCRUAL', 'PARTIAL_LIQUIDATION', 'FULL_LIQUIDATION')
+        WHERE user_id = ? AND type IN ('LOAN_CREATE', 'LOAN_BORROW', 'LOAN_REPAY', 'LOAN_ADD_COLLATERAL', 'INTEREST_ACCRUAL', 'PARTIAL_LIQUIDATION', 'FULL_LIQUIDATION')
       `;
       let params = [userId];
       
@@ -528,6 +528,97 @@ const LoanService = {
       return history;
     } catch (error) {
       console.error('Error getting loan history:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Add more BTC collateral to existing loan
+   * @param {number} userId - ID of the user
+   * @param {number} additionalCollateral - Additional BTC amount in satoshis
+   * @returns {Promise} - Resolves with updated loan details
+   */
+  async addCollateralToLoan(userId, additionalCollateral) {
+    try {
+      if (additionalCollateral <= 0) {
+        throw new Error('Additional collateral amount must be greater than 0');
+      }
+
+      return await transaction(async (connection) => {
+        // Get active loan for user
+        const [loanRows] = await connection.execute(
+          'SELECT * FROM loans WHERE user_id = ? AND status = "ACTIVE"',
+          [userId]
+        );
+
+        if (loanRows.length === 0) {
+          throw new Error('No active loan found');
+        }
+
+        const loan = loanRows[0];
+        
+        // Get current user balances
+        const [userRows] = await connection.execute(
+          'SELECT available_btc, collateral_btc FROM users WHERE id = ?',
+          [userId]
+        );
+
+        if (userRows.length === 0) {
+          throw new Error('User not found');
+        }
+
+        const currentBalances = userRows[0];
+        
+        if (currentBalances.available_btc < additionalCollateral) {
+          throw new Error('Insufficient BTC balance');
+        }
+
+        // Get current BTC price for updated liquidation calculation
+        const rates = await bitcoinDataService.getCalculatedRates();
+        const newTotalCollateral = loan.btc_collateral_amount + additionalCollateral;
+        const liquidationPrice = Math.floor(rates.btcUsdPrice * (loan.ltv_ratio / 90)); // 90% LTV triggers liquidation
+
+        // Update user balances - move BTC from available to collateral
+        await connection.execute(
+          'UPDATE users SET available_btc = available_btc - ?, collateral_btc = collateral_btc + ? WHERE id = ?',
+          [additionalCollateral, additionalCollateral, userId]
+        );
+
+        // Update loan with new collateral amount and recalculated liquidation price
+        await connection.execute(
+          'UPDATE loans SET btc_collateral_amount = ?, liquidation_price = ? WHERE id = ?',
+          [newTotalCollateral, liquidationPrice, loan.id]
+        );
+
+        // Record the operation
+        await connection.execute(
+          'INSERT INTO operations (user_id, type, status, btc_amount, loan_id, notes, executed_at) VALUES (?, ?, ?, ?, ?, ?, NOW())',
+          [userId, 'LOAN_ADD_COLLATERAL', 'EXECUTED', additionalCollateral, loan.id, 'Additional collateral added to improve LTV ratio']
+        );
+
+        // Clear user cache
+        await clearUserCache(userId);
+
+        // Calculate new borrowing capacity using sell rate
+        const newMaxBorrowable = Math.floor((newTotalCollateral * rates.sellRate * loan.ltv_ratio) / (100 * 100000000));
+        const newAvailableCapacity = newMaxBorrowable - loan.inr_borrowed_amount;
+        
+        // Calculate new current LTV
+        const newCurrentLtv = (loan.inr_borrowed_amount / ((newTotalCollateral * rates.sellRate) / 100000000)) * 100;
+
+        return {
+          loanId: loan.id,
+          additionalCollateral,
+          newTotalCollateral,
+          newMaxBorrowable,
+          newAvailableCapacity,
+          newCurrentLtv,
+          newLiquidationPrice: liquidationPrice,
+          currentBtcPrice: rates.btcUsdPrice
+        };
+      });
+    } catch (error) {
+      console.error('Error adding collateral to loan:', error);
       throw error;
     }
   },

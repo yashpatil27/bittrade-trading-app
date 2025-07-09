@@ -177,6 +177,9 @@ export const userAPI = {
   repayFunds: (amount: number): Promise<AxiosResponse<ApiResponse<LoanRepayResponse>>> =>
     api.post('/user/loan/repay', { amount }),
   
+  addCollateralToLoan: (collateralAmount: number): Promise<AxiosResponse<ApiResponse<any>>> =>
+    api.post('/user/loan/add-collateral', { collateralAmount }),
+  
   getLoanStatus: (): Promise<AxiosResponse<ApiResponse<LoanStatus>>> =>
     api.get('/user/loan/status'),
   

@@ -1251,6 +1251,63 @@ router.post('/loan/repay', async (req, res) => {
   }
 });
 
+// Add collateral to existing loan
+router.post('/loan/add-collateral', async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { collateralAmount } = req.body;
+
+    // Validate input
+    if (!collateralAmount || collateralAmount <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Collateral amount must be greater than 0'
+      });
+    }
+
+    // Convert BTC amount to satoshis
+    const satoshiAmount = Math.floor(collateralAmount * 100000000);
+    
+    if (satoshiAmount <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Collateral amount too small'
+      });
+    }
+
+    const result = await loanService.addCollateralToLoan(userId, satoshiAmount);
+
+    res.json({
+      success: true,
+      message: 'Collateral added successfully',
+      data: {
+        ...result,
+        additionalCollateral: result.additionalCollateral / 100000000, // Convert back to BTC
+        newTotalCollateral: result.newTotalCollateral / 100000000 // Convert back to BTC
+      }
+    });
+
+  } catch (error) {
+    console.error('Add collateral error:', error);
+    
+    let statusCode = 500;
+    let message = 'Error adding collateral';
+    
+    if (error.message === 'No active loan found') {
+      statusCode = 404;
+      message = error.message;
+    } else if (error.message === 'Insufficient BTC balance') {
+      statusCode = 400;
+      message = error.message;
+    }
+
+    res.status(statusCode).json({
+      success: false,
+      message
+    });
+  }
+});
+
 // Get loan status
 router.get('/loan/status', async (req, res) => {
   try {

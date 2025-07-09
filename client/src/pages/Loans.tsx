@@ -16,6 +16,7 @@ import { formatBitcoin } from '../utils/formatters';
 import DepositCollateralModal from '../components/DepositCollateralModal';
 import BorrowModal from '../components/BorrowModal';
 import RepayModal from '../components/RepayModal';
+import AddCollateralModal from '../components/AddCollateralModal';
 
 const Loans: React.FC = () => {
   const [loanStatus, setLoanStatus] = useState<LoanStatus | null>(null);
@@ -25,6 +26,7 @@ const Loans: React.FC = () => {
   const [showDepositModal, setShowDepositModal] = useState(false);
   const [showBorrowModal, setShowBorrowModal] = useState(false);
   const [showRepayModal, setShowRepayModal] = useState(false);
+  const [showAddCollateralModal, setShowAddCollateralModal] = useState(false);
   const [showFullLiquidationModal, setShowFullLiquidationModal] = useState(false);
 
   useEffect(() => {
@@ -106,6 +108,8 @@ const Loans: React.FC = () => {
         return <ArrowDown className="w-4 h-4 text-green-400" />;
       case 'LOAN_REPAY':
         return <ArrowUp className="w-4 h-4 text-red-400" />;
+      case 'LOAN_ADD_COLLATERAL':
+        return <Plus className="w-4 h-4 text-blue-400" />;
       case 'INTEREST_ACCRUAL':
         return <TrendingUp className="w-4 h-4 text-yellow-400" />;
       case 'PARTIAL_LIQUIDATION':
@@ -124,6 +128,8 @@ const Loans: React.FC = () => {
         return 'Funds Borrowed';
       case 'LOAN_REPAY':
         return 'Loan Repaid';
+      case 'LOAN_ADD_COLLATERAL':
+        return 'Collateral Added';
       case 'INTEREST_ACCRUAL':
         return 'Interest Accrued';
       case 'PARTIAL_LIQUIDATION':
@@ -248,11 +254,11 @@ const Loans: React.FC = () => {
           )}
 
           {/* Action Buttons */}
-          <div className="flex gap-3">
+          <div className="grid grid-cols-2 gap-3">
             <button
               onClick={() => setShowBorrowModal(true)}
               disabled={loanStatus.availableCapacity <= 0}
-              className="flex-1 bg-white text-black hover:bg-zinc-200 disabled:opacity-50 disabled:cursor-not-allowed py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
+              className="bg-white text-black hover:bg-zinc-200 disabled:opacity-50 disabled:cursor-not-allowed py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
             >
               <ArrowDown className="w-4 h-4" />
               Borrow
@@ -261,15 +267,23 @@ const Loans: React.FC = () => {
             <button
               onClick={() => setShowRepayModal(true)}
               disabled={loanStatus.borrowedAmount <= 0}
-              className="flex-1 bg-zinc-700 text-white hover:bg-zinc-600 disabled:opacity-50 disabled:cursor-not-allowed py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
+              className="bg-zinc-700 text-white hover:bg-zinc-600 disabled:opacity-50 disabled:cursor-not-allowed py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
             >
               <ArrowUp className="w-4 h-4" />
               Repay
             </button>
             
             <button
+              onClick={() => setShowAddCollateralModal(true)}
+              className="bg-green-700 text-white hover:bg-green-600 py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
+            >
+              <Plus className="w-4 h-4" />
+              Add Collateral
+            </button>
+            
+            <button
               onClick={() => setShowFullLiquidationModal(true)}
-              className="flex-1 bg-red-700 text-white hover:bg-red-600 py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
+              className="bg-red-700 text-white hover:bg-red-600 py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
             >
               <Zap className="w-4 h-4" />
               Close Loan
@@ -360,6 +374,16 @@ const Loans: React.FC = () => {
         loanStatus={loanStatus}
         onSuccess={() => {
           setShowRepayModal(false);
+          fetchLoanData();
+        }}
+      />
+
+      <AddCollateralModal
+        isOpen={showAddCollateralModal}
+        onClose={() => setShowAddCollateralModal(false)}
+        loanStatus={loanStatus}
+        onSuccess={() => {
+          setShowAddCollateralModal(false);
           fetchLoanData();
         }}
       />
