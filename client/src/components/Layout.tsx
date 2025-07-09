@@ -74,9 +74,12 @@ const Layout: React.FC<LayoutProps> = ({ children, isAdmin = false }) => {
       {/* Header */}
       <header className="bg-black border-b border-zinc-800 px-4 py-1">
         <div className="flex items-center justify-between max-w-md mx-auto">
-          <h1 className="text-xl font-bold text-white">
+          <button
+            onClick={() => navigate(isAdmin ? '/admin' : '/')}
+            className="text-xl font-bold text-white hover:text-zinc-200 transition-colors cursor-pointer"
+          >
             ₿itTrade {isAdmin && <span className="text-sm text-zinc-400">Admin</span>}
-          </h1>
+          </button>
           <div className="flex items-center gap-3">
             {(user?.is_admin === true || user?.is_admin === 1) && (
               <button
