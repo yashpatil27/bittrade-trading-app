@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Home, History, LogOut, Settings, Users, BarChart3, Bitcoin, UserCog, PieChart, User, Wallet } from 'lucide-react';
+import { Home, History, Settings, Users, BarChart3, Bitcoin, UserCog, PieChart, User, Wallet } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useBalance } from '../contexts/BalanceContext';
 import { userAPI } from '../services/api';
@@ -12,7 +12,7 @@ interface LayoutProps {
 }
 
 const Layout: React.FC<LayoutProps> = ({ children, isAdmin = false }) => {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const { balanceVersion } = useBalance();
   const location = useLocation();
   const navigate = useNavigate();
@@ -51,13 +51,6 @@ const Layout: React.FC<LayoutProps> = ({ children, isAdmin = false }) => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, [isAdmin, balanceVersion, fetchBalance]);
 
-  const handleLogout = async () => {
-    try {
-      await logout();
-    } catch (error) {
-      console.error('Logout failed:', error);
-    }
-  };
 
   const userNavItems = [
     { name: 'Home', path: '/', icon: Home },
@@ -95,10 +88,17 @@ const Layout: React.FC<LayoutProps> = ({ children, isAdmin = false }) => {
               </button>
             )}
             <button
-              onClick={handleLogout}
+              onClick={() => {
+                if (location.pathname === '/profile') {
+                  navigate('/');
+                } else {
+                  navigate('/profile');
+                }
+              }}
               className="p-2 text-zinc-400 hover:text-white transition-colors"
+              title={location.pathname === '/profile' ? 'Go to Home' : 'Go to Profile'}
             >
-              <LogOut size={20} />
+              <User size={20} />
             </button>
           </div>
         </div>
