@@ -4,6 +4,7 @@ const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const dotenv = require('dotenv');
 const path = require('path');
+const { systemLogger } = require('./utils/beautifulLogger');
 
 // Import routes
 const authRoutes = require('./routes/auth');
@@ -29,47 +30,60 @@ const app = express();
 // Initialize services
 const initializeServices = async () => {
   try {
-    console.log('Initializing services...');
+    systemLogger.startupBanner();
+    systemLogger.info('Initializing services...');
     
     // Initialize database
     createPool();
-    console.log('✓ Database pool created');
+    systemLogger.serviceStarted('Database pool created');
     
     // Initialize Redis (optional - app will work without it)
     try {
       await createRedisClient();
-      console.log('✓ Redis connected');
+      systemLogger.serviceStarted('Redis connected');
     } catch (error) {
-      console.warn('⚠ Redis connection failed - continuing without caching:', error.message);
+      systemLogger.warn('Redis connection failed - continuing without caching', { error: error.message });
     }
     
     // Start Bitcoin data updates
     bitcoinDataService.startDataUpdates();
-    console.log('✓ Bitcoin data service started');
+    systemLogger.serviceStarted('Bitcoin data service', { updateInterval: '30s' });
     
     // Start limit order execution service
     limitOrderExecutionService.startService();
-    console.log('✓ Limit order execution service started');
+    systemLogger.serviceStarted('Limit order execution service', { checkInterval: '30s' });
 
     // Start DCA execution service
     dcaExecutionService.startService();
-    console.log('✓ DCA execution service started');
+    systemLogger.serviceStarted('DCA execution service', { checkInterval: '60s' });
     
     // Start loan monitoring service
     loanMonitoringService.start();
-    console.log('✓ Loan monitoring service started');
+    systemLogger.serviceStarted('Loan monitoring service');
     
     // Start liquidation monitoring service
     liquidationMonitoringService.start();
-    console.log('✓ Liquidation monitoring service started');
+    systemLogger.serviceStarted('Liquidation monitoring service', { checkInterval: '30s', ltvThreshold: '90%' });
     
     // Start job scheduler for daily tasks
     JobScheduler.start();
-    console.log('✓ Job scheduler started');
+    systemLogger.serviceStarted('Job scheduler', { interestAccrual: 'Daily at 12:01 AM IST' });
     
-    console.log('All services initialized successfully');
+    // Show service status
+    const services = {
+      database: 'running',
+      bitcoin_data_service: 'running',
+      limit_order_execution: 'running',
+      dca_execution: 'running',
+      loan_monitoring: 'running',
+      liquidation_monitoring: 'running',
+      job_scheduler: 'running'
+    };
+    
+    systemLogger.serviceStatus(services);
+    systemLogger.success('All services initialized successfully');
   } catch (error) {
-    console.error('Failed to initialize services:', error);
+    systemLogger.error('Failed to initialize services', { error: error.message, stack: error.stack });
     process.exit(1);
   }
 };
@@ -144,22 +158,46 @@ const PORT = process.env.PORT || 3001;
 
 // Graceful shutdown
 process.on('SIGINT', () => {
-  console.log('\nReceived SIGINT. Graceful shutdown...');
+  systemLogger.warn('Received SIGINT. Graceful shutdown...');
+  
+  systemLogger.info('Stopping Bitcoin data service...');
   bitcoinDataService.stopDataUpdates();
+  
+  systemLogger.info('Stopping limit order execution service...');
   limitOrderExecutionService.stopService();
+  
+  systemLogger.info('Stopping DCA execution service...');
   dcaExecutionService.stopService();
+  
+  systemLogger.info('Stopping loan monitoring service...');
   loanMonitoringService.stop();
+  
+  systemLogger.info('Stopping liquidation monitoring service...');
   liquidationMonitoringService.stop();
+  
+  systemLogger.success('All services stopped gracefully');
   process.exit(0);
 });
 
 process.on('SIGTERM', () => {
-  console.log('\nReceived SIGTERM. Graceful shutdown...');
+  systemLogger.warn('Received SIGTERM. Graceful shutdown...');
+  
+  systemLogger.info('Stopping Bitcoin data service...');
   bitcoinDataService.stopDataUpdates();
+  
+  systemLogger.info('Stopping limit order execution service...');
   limitOrderExecutionService.stopService();
+  
+  systemLogger.info('Stopping DCA execution service...');
   dcaExecutionService.stopService();
+  
+  systemLogger.info('Stopping loan monitoring service...');
   loanMonitoringService.stop();
+  
+  systemLogger.info('Stopping liquidation monitoring service...');
   liquidationMonitoringService.stop();
+  
+  systemLogger.success('All services stopped gracefully');
   process.exit(0);
 });
 
@@ -168,18 +206,20 @@ const startServer = async () => {
   await initializeServices();
   
   app.listen(PORT, () => {
-    console.log(`\n🚀 ₿itTrade Server running on port ${PORT}`);
-    console.log(`📊 API Base URL: http://localhost:${PORT}/api`);
-    console.log(`🏥 Health Check: http://localhost:${PORT}/health`);
-    if (process.env.NODE_ENV === 'development') {
-      console.log(`🔧 Environment: Development`);
-    }
-    console.log('\n📈 Ready to trade Bitcoin!\n');
+    systemLogger.table('Server Information', [
+      { icon: '🚀', label: 'Server Status', value: 'Running' },
+      { icon: '🌐', label: 'Port', value: PORT },
+      { icon: '📊', label: 'API Base URL', value: `http://localhost:${PORT}/api` },
+      { icon: '🏥', label: 'Health Check', value: `http://localhost:${PORT}/health` },
+      { icon: '🔧', label: 'Environment', value: process.env.NODE_ENV || 'development' }
+    ]);
+    
+    systemLogger.success('₿itTrade Server is ready to trade Bitcoin!');
   });
 };
 
 startServer().catch(error => {
-  console.error('Failed to start server:', error);
+  systemLogger.error('Failed to start server', { error: error.message, stack: error.stack });
   process.exit(1);
 });
 

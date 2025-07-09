@@ -2,6 +2,7 @@ const cron = require('node-cron');
 const { query, transaction } = require('../config/database');
 const { clearUserCache } = require('../config/redis');
 const bitcoinDataService = require('./bitcoinDataService');
+const { limitOrderLogger } = require('../utils/logger');
 
 class LimitOrderExecutionService {
   constructor() {
@@ -13,7 +14,7 @@ class LimitOrderExecutionService {
   // Execute pending limit orders based on current market price
   async executePendingOrders() {
     if (this.executionInProgress) {
-      console.log('Order execution already in progress, skipping...');
+      limitOrderLogger.warn('Order execution already in progress, skipping...');
       return;
     }
 
@@ -25,7 +26,7 @@ class LimitOrderExecutionService {
       const currentBuyPrice = rates.buyRate;   // Current buy rate (what users pay)
       const currentSellPrice = rates.sellRate; // Current sell rate (what users receive)
       
-      console.log(`Checking pending orders - Current Buy: ₹${currentBuyPrice.toLocaleString()}, Sell: ₹${currentSellPrice.toLocaleString()}`);
+      limitOrderLogger.info(`Checking pending orders - Current Buy: ₹${currentBuyPrice.toLocaleString()}, Sell: ₹${currentSellPrice.toLocaleString()}`);
       
       // Get all pending orders
       const pendingOrders = await query(`
@@ -38,11 +39,11 @@ class LimitOrderExecutionService {
       `);
 
       if (pendingOrders.length === 0) {
-        console.log('No pending limit orders to process');
+        limitOrderLogger.debug('No pending limit orders to process');
         return;
       }
 
-      console.log(`Found ${pendingOrders.length} pending limit orders`);
+      limitOrderLogger.info(`Found ${pendingOrders.length} pending limit orders`);
 
       // Process each pending order
       const executedOrders = [];
@@ -57,22 +58,22 @@ class LimitOrderExecutionService {
             expiredOrders.push(order);
           }
         } catch (error) {
-          console.error(`Error processing order ${order.id}:`, error.message);
+          limitOrderLogger.error(`Error processing order ${order.id}`, error);
           // Continue processing other orders even if one fails
         }
       }
 
       // Log execution summary
       if (executedOrders.length > 0) {
-        console.log(`✅ Executed ${executedOrders.length} limit orders:`);
+        limitOrderLogger.success(`Executed ${executedOrders.length} limit orders`);
         executedOrders.forEach(order => {
           const btcAmount = (order.btc_amount / 100000000).toFixed(8);
-          console.log(`  - ${order.type} Order ${order.id}: ${btcAmount} BTC at ₹${order.executionPrice.toLocaleString()} for user ${order.email}`);
+          limitOrderLogger.info(`  - ${order.type} Order ${order.id}: ${btcAmount} BTC at ₹${order.executionPrice.toLocaleString()} for user ${order.email}`);
         });
       }
 
       if (expiredOrders.length > 0) {
-        console.log(`⏰ Cancelled ${expiredOrders.length} expired orders`);
+        limitOrderLogger.warn(`Cancelled ${expiredOrders.length} expired orders`);
       }
 
       return {
@@ -82,7 +83,7 @@ class LimitOrderExecutionService {
       };
 
     } catch (error) {
-      console.error('Error in limit order execution:', error.message);
+      limitOrderLogger.error('Error in limit order execution', error);
       throw error;
     } finally {
       this.executionInProgress = false;
@@ -165,7 +166,7 @@ class LimitOrderExecutionService {
       // Clear user cache
       await clearUserCache(order.user_id);
 
-      console.log(`✅ Limit buy order ${order.id} executed: ${(actualBtcAmount/100000000).toFixed(8)} BTC at ₹${executionPrice.toLocaleString()}`);
+      limitOrderLogger.success(`Limit buy order ${order.id} executed: ${(actualBtcAmount/100000000).toFixed(8)} BTC at ₹${executionPrice.toLocaleString()}`);
     });
   }
 
@@ -215,7 +216,7 @@ class LimitOrderExecutionService {
       // Clear user cache
       await clearUserCache(order.user_id);
 
-      console.log(`✅ Limit sell order ${order.id} executed: ${(actualBtcAmount/100000000).toFixed(8)} BTC at ₹${executionPrice.toLocaleString()}`);
+      limitOrderLogger.success(`Limit sell order ${order.id} executed: ${(actualBtcAmount/100000000).toFixed(8)} BTC at ₹${executionPrice.toLocaleString()}`);
     });
   }
 
@@ -245,7 +246,7 @@ class LimitOrderExecutionService {
       // Clear user cache
       await clearUserCache(order.user_id);
 
-      console.log(`⏰ Expired order ${order.id} cancelled and funds released`);
+      limitOrderLogger.warn(`Expired order ${order.id} cancelled and funds released`);
     });
   }
 
@@ -272,7 +273,7 @@ class LimitOrderExecutionService {
         total_sell_btc: 0
       };
     } catch (error) {
-      console.error('Error getting pending orders summary:', error.message);
+      limitOrderLogger.error('Error getting pending orders summary', error);
       throw error;
     }
   }
@@ -280,16 +281,16 @@ class LimitOrderExecutionService {
   // Start the limit order execution service
   startService() {
     if (this.isRunning) {
-      console.log('Limit order execution service already running');
+      limitOrderLogger.warn('Limit order execution service already running');
       return;
     }
 
-    console.log('Starting limit order execution service...');
+    limitOrderLogger.info('Starting limit order execution service...');
     this.isRunning = true;
 
     // Run immediately on startup
     this.executePendingOrders().catch(error => {
-      console.error('Initial limit order execution failed:', error.message);
+      limitOrderLogger.error('Initial limit order execution failed', error);
     });
 
     // Schedule to run every 30 seconds
@@ -298,27 +299,30 @@ class LimitOrderExecutionService {
         try {
           await this.executePendingOrders();
         } catch (error) {
-          console.error('Scheduled limit order execution failed:', error.message);
+          limitOrderLogger.error('Scheduled limit order execution failed', error);
         }
       }
     });
 
-    console.log('✅ Limit order execution service started (runs every 30 seconds)');
+    limitOrderLogger.serviceStarted('Limit Order Execution Service', {
+      interval: 'Every 30 seconds',
+      expiration: '24 hours after placement'
+    });
   }
 
   // Stop the service
   stopService() {
     this.isRunning = false;
     if (this.cronJob) {
-      this.cronJob.destroy();
+      this.cronJob.stop();
       this.cronJob = null;
     }
-    console.log('Limit order execution service stopped');
+    limitOrderLogger.info('Limit order execution service stopped');
   }
 
   // Manual execution trigger (for testing/admin)
   async executeNow() {
-    console.log('Manual limit order execution triggered...');
+    limitOrderLogger.info('Manual limit order execution triggered...');
     return await this.executePendingOrders();
   }
 }

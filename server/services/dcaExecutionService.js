@@ -2,6 +2,7 @@ const cron = require('node-cron');
 const { query, transaction } = require('../config/database');
 const { clearUserCache } = require('../config/redis');
 const bitcoinDataService = require('./bitcoinDataService');
+const { dcaLogger } = require('../utils/logger');
 
 class DcaExecutionService {
   constructor() {
@@ -13,7 +14,7 @@ class DcaExecutionService {
   // Execute pending DCA plans
   async executePendingPlans() {
     if (this.executionInProgress) {
-      console.log('DCA execution already in progress, skipping...');
+      dcaLogger.warn('DCA execution already in progress, skipping...');
       return;
     }
 
@@ -25,7 +26,7 @@ class DcaExecutionService {
       const currentBuyPrice = rates.buyRate;   // Current buy rate (what users pay)
       const currentSellPrice = rates.sellRate; // Current sell rate (what users receive)
       
-      console.log(`Checking DCA plans - Current Buy: ₹${currentBuyPrice.toLocaleString()}, Sell: ₹${currentSellPrice.toLocaleString()}`);
+      dcaLogger.info(`Checking DCA plans - Current Buy: ₹${currentBuyPrice.toLocaleString()}, Sell: ₹${currentSellPrice.toLocaleString()}`);
       
       // Get all active DCA plans that are due for execution
       const pendingPlans = await query(`
@@ -39,11 +40,11 @@ class DcaExecutionService {
       `);
 
       if (pendingPlans.length === 0) {
-        console.log('No DCA plans ready for execution');
+        dcaLogger.debug('No DCA plans ready for execution');
         return;
       }
 
-      console.log(`Found ${pendingPlans.length} DCA plans ready for execution`);
+      dcaLogger.info(`Found ${pendingPlans.length} DCA plans ready for execution`);
 
       // Process each pending plan
       const executedPlans = [];
@@ -63,28 +64,28 @@ class DcaExecutionService {
             pausedPlans.push(plan);
           }
         } catch (error) {
-          console.error(`Error executing DCA plan ${plan.id}:`, error.message);
+          dcaLogger.error(`Error executing DCA plan ${plan.id}`, error);
           // Continue processing other plans even if one fails
         }
       }
 
       // Log execution summary
       if (executedPlans.length > 0) {
-        console.log(`✅ Executed ${executedPlans.length} DCA plans:`);
+        dcaLogger.success(`Executed ${executedPlans.length} DCA plans`);
         executedPlans.forEach(plan => {
           const amount = plan.plan_type === 'DCA_BUY' ? 
             `₹${plan.amount_per_execution.toLocaleString()}` : 
             `${(plan.amount_per_execution / 100000000).toFixed(8)} BTC`;
-          console.log(`  - ${plan.plan_type} Plan ${plan.id}: ${amount} at ₹${plan.executionPrice.toLocaleString()} for user ${plan.email}`);
+          dcaLogger.info(`  - ${plan.plan_type} Plan ${plan.id}: ${amount} at ₹${plan.executionPrice.toLocaleString()} for user ${plan.email}`);
         });
       }
 
       if (completedPlans.length > 0) {
-        console.log(`🏁 Completed ${completedPlans.length} DCA plans`);
+        dcaLogger.success(`Completed ${completedPlans.length} DCA plans`);
       }
 
       if (pausedPlans.length > 0) {
-        console.log(`⏸️ Paused ${pausedPlans.length} DCA plans (insufficient balance)`);
+        dcaLogger.warn(`Paused ${pausedPlans.length} DCA plans (insufficient balance)`);
       }
 
       return {
@@ -95,7 +96,7 @@ class DcaExecutionService {
       };
 
     } catch (error) {
-      console.error('Error in DCA execution:', error.message);
+      dcaLogger.error('Error in DCA execution', error);
       throw error;
     } finally {
       this.executionInProgress = false;
@@ -107,23 +108,23 @@ class DcaExecutionService {
     // Check price limits if set
     if (plan.plan_type === 'DCA_BUY') {
       if (plan.max_price && currentBuyPrice > plan.max_price) {
-        console.log(`DCA Buy Plan ${plan.id} skipped: price too high (${currentBuyPrice} > ${plan.max_price})`);
+        dcaLogger.debug(`DCA Buy Plan ${plan.id} skipped: price too high (${currentBuyPrice} > ${plan.max_price})`);
         await this.scheduleNextExecution(plan);
         return { executed: false, completed: false, paused: false };
       }
       if (plan.min_price && currentBuyPrice < plan.min_price) {
-        console.log(`DCA Buy Plan ${plan.id} skipped: price too low (${currentBuyPrice} < ${plan.min_price})`);
+        dcaLogger.debug(`DCA Buy Plan ${plan.id} skipped: price too low (${currentBuyPrice} < ${plan.min_price})`);
         await this.scheduleNextExecution(plan);
         return { executed: false, completed: false, paused: false };
       }
     } else if (plan.plan_type === 'DCA_SELL') {
       if (plan.max_price && currentSellPrice > plan.max_price) {
-        console.log(`DCA Sell Plan ${plan.id} skipped: price too high (${currentSellPrice} > ${plan.max_price})`);
+        dcaLogger.debug(`DCA Sell Plan ${plan.id} skipped: price too high (${currentSellPrice} > ${plan.max_price})`);
         await this.scheduleNextExecution(plan);
         return { executed: false, completed: false, paused: false };
       }
       if (plan.min_price && currentSellPrice < plan.min_price) {
-        console.log(`DCA Sell Plan ${plan.id} skipped: price too low (${currentSellPrice} < ${plan.min_price})`);
+        dcaLogger.debug(`DCA Sell Plan ${plan.id} skipped: price too low (${currentSellPrice} < ${plan.min_price})`);
         await this.scheduleNextExecution(plan);
         return { executed: false, completed: false, paused: false };
       }
@@ -155,7 +156,7 @@ class DcaExecutionService {
 
       // Check if user has sufficient balance
       if (user.available_inr < plan.amount_per_execution) {
-        console.log(`DCA Buy Plan ${plan.id} paused: insufficient INR balance`);
+        dcaLogger.warn(`DCA Buy Plan ${plan.id} paused: insufficient INR balance`);
         await connection.execute(
           'UPDATE active_plans SET status = ? WHERE id = ?',
           ['PAUSED', plan.id]
@@ -196,14 +197,14 @@ class DcaExecutionService {
           ['COMPLETED', newTotalExecutions, newRemainingExecutions, plan.id]
         );
         
-        console.log(`✅ DCA Buy Plan ${plan.id} completed after ${newTotalExecutions} executions`);
+        dcaLogger.success(`DCA Buy Plan ${plan.id} completed after ${newTotalExecutions} executions`);
         await clearUserCache(plan.user_id);
         return { executed: true, completed: true, paused: false, executionPrice };
       } else {
         // Schedule next execution
         await this.updatePlanForNextExecution(connection, plan, newTotalExecutions, newRemainingExecutions);
         
-        console.log(`✅ DCA Buy Plan ${plan.id} executed: ${(btcAmount/100000000).toFixed(8)} BTC at ₹${executionPrice.toLocaleString()}`);
+        dcaLogger.success(`DCA Buy Plan ${plan.id} executed: ${(btcAmount/100000000).toFixed(8)} BTC at ₹${executionPrice.toLocaleString()}`);
         await clearUserCache(plan.user_id);
         return { executed: true, completed: false, paused: false, executionPrice };
       }
@@ -227,7 +228,7 @@ class DcaExecutionService {
 
       // Check if user has sufficient balance
       if (user.available_btc < plan.amount_per_execution) {
-        console.log(`DCA Sell Plan ${plan.id} paused: insufficient BTC balance`);
+        dcaLogger.warn(`DCA Sell Plan ${plan.id} paused: insufficient BTC balance`);
         await connection.execute(
           'UPDATE active_plans SET status = ? WHERE id = ?',
           ['PAUSED', plan.id]
@@ -268,14 +269,14 @@ class DcaExecutionService {
           ['COMPLETED', newTotalExecutions, newRemainingExecutions, plan.id]
         );
         
-        console.log(`✅ DCA Sell Plan ${plan.id} completed after ${newTotalExecutions} executions`);
+        dcaLogger.success(`DCA Sell Plan ${plan.id} completed after ${newTotalExecutions} executions`);
         await clearUserCache(plan.user_id);
         return { executed: true, completed: true, paused: false, executionPrice };
       } else {
         // Schedule next execution
         await this.updatePlanForNextExecution(connection, plan, newTotalExecutions, newRemainingExecutions);
         
-        console.log(`✅ DCA Sell Plan ${plan.id} executed: ${(plan.amount_per_execution/100000000).toFixed(8)} BTC at ₹${executionPrice.toLocaleString()}`);
+        dcaLogger.success(`DCA Sell Plan ${plan.id} executed: ${(plan.amount_per_execution/100000000).toFixed(8)} BTC at ₹${executionPrice.toLocaleString()}`);
         await clearUserCache(plan.user_id);
         return { executed: true, completed: false, paused: false, executionPrice };
       }
@@ -345,7 +346,7 @@ class DcaExecutionService {
         paused_plans: 0
       };
     } catch (error) {
-      console.error('Error getting DCA plans summary:', error.message);
+      dcaLogger.error('Error getting DCA plans summary', error);
       throw error;
     }
   }
@@ -353,16 +354,16 @@ class DcaExecutionService {
   // Start the DCA execution service
   startService() {
     if (this.isRunning) {
-      console.log('DCA execution service already running');
+      dcaLogger.warn('DCA execution service already running');
       return;
     }
 
-    console.log('Starting DCA execution service...');
+    dcaLogger.info('Starting DCA execution service...');
     this.isRunning = true;
 
     // Run immediately on startup
     this.executePendingPlans().catch(error => {
-      console.error('Initial DCA execution failed:', error.message);
+      dcaLogger.error('Initial DCA execution failed', error);
     });
 
     // Schedule to run every 2 minutes (same as price updates)
@@ -371,27 +372,30 @@ class DcaExecutionService {
         try {
           await this.executePendingPlans();
         } catch (error) {
-          console.error('Scheduled DCA execution failed:', error.message);
+          dcaLogger.error('Scheduled DCA execution failed', error);
         }
       }
     });
 
-    console.log('✅ DCA execution service started (runs every 2 minutes)');
+    dcaLogger.serviceStarted('DCA Execution Service', {
+      interval: 'Every 2 minutes',
+      priceSync: 'Synchronized with market data'
+    });
   }
 
   // Stop the service
   stopService() {
     this.isRunning = false;
     if (this.cronJob) {
-      this.cronJob.destroy();
+      this.cronJob.stop();
       this.cronJob = null;
     }
-    console.log('DCA execution service stopped');
+    dcaLogger.info('DCA execution service stopped');
   }
 
   // Manual execution trigger (for testing/admin)
   async executeNow() {
-    console.log('Manual DCA execution triggered...');
+    dcaLogger.info('Manual DCA execution triggered...');
     return await this.executePendingPlans();
   }
 }

@@ -1,5 +1,6 @@
 const loanService = require('./loanService');
 const bitcoinDataService = require('./bitcoinDataService');
+const { loanLogger } = require('../utils/logger');
 
 /**
  * LoanMonitoringService - Background service for interest accrual and liquidation monitoring
@@ -16,12 +17,12 @@ class LoanMonitoringService {
    */
   start() {
     if (this.isRunning) {
-      console.log('Loan monitoring service is already running');
+      loanLogger.warn('Loan monitoring service is already running');
       return;
     }
 
     this.isRunning = true;
-    console.log('Starting loan monitoring service...');
+    loanLogger.info('Starting loan monitoring service...');
 
     // Run interest accrual daily at midnight
     this.scheduleInterestAccrual();
@@ -29,7 +30,10 @@ class LoanMonitoringService {
     // Check for liquidations every 30 seconds
     this.scheduleLiquidationCheck();
     
-    console.log('Loan monitoring service started successfully');
+    loanLogger.serviceStarted('Loan Monitoring Service', {
+      interestAccrual: 'Daily at midnight',
+      liquidationChecks: 'Every 30 seconds'
+    });
   }
 
   /**
@@ -37,7 +41,7 @@ class LoanMonitoringService {
    */
   stop() {
     if (!this.isRunning) {
-      console.log('Loan monitoring service is not running');
+      loanLogger.warn('Loan monitoring service is not running');
       return;
     }
 
@@ -53,7 +57,7 @@ class LoanMonitoringService {
       this.liquidationCheckInterval = null;
     }
     
-    console.log('Loan monitoring service stopped');
+    loanLogger.info('Loan monitoring service stopped');
   }
 
   /**
@@ -77,7 +81,7 @@ class LoanMonitoringService {
       }, 24 * 60 * 60 * 1000); // 24 hours
     }, msUntilMidnight);
 
-    console.log(`Interest accrual scheduled to run at midnight (${tomorrow.toISOString()})`);
+    loanLogger.info(`Interest accrual scheduled to run at midnight (${tomorrow.toISOString()})`);
   }
 
   /**
@@ -88,7 +92,7 @@ class LoanMonitoringService {
       this.checkAndExecuteLiquidations();
     }, 30 * 1000); // 30 seconds
 
-    console.log('Liquidation monitoring scheduled every 30 seconds');
+    loanLogger.info('Liquidation monitoring scheduled every 30 seconds');
   }
 
   /**
@@ -96,16 +100,16 @@ class LoanMonitoringService {
    */
   async runInterestAccrual() {
     try {
-      console.log('Running daily interest accrual...');
+      loanLogger.info('Running daily interest accrual...');
       const results = await loanService.accrueInterest();
       
       if (results.length > 0) {
-        console.log(`Interest accrued for ${results.length} loans:`, results);
+        loanLogger.interestAccrual(`Interest accrued for ${results.length} loans`, results);
       } else {
-        console.log('No active loans requiring interest accrual');
+        loanLogger.info('No active loans requiring interest accrual');
       }
     } catch (error) {
-      console.error('Error during interest accrual:', error);
+      loanLogger.error('Error during interest accrual', error);
     }
   }
 
@@ -118,21 +122,21 @@ class LoanMonitoringService {
       
       for (const loan of atRiskLoans) {
         if (loan.risk_status === 'LIQUIDATE') {
-          console.log(`Executing partial liquidation for loan ${loan.id} (User: ${loan.user_id}, LTV: ${loan.current_ltv}%)`);
+          loanLogger.info(`Executing partial liquidation for loan ${loan.id} (User: ${loan.user_id}, LTV: ${loan.current_ltv}%)`);
           
           try {
             const result = await loanService.executePartialLiquidation(loan.id);
-            console.log(`Partial liquidation completed for loan ${loan.id}:`, result);
+            loanLogger.liquidation(`Partial liquidation completed for loan ${loan.id}`, result);
           } catch (liquidationError) {
-            console.error(`Failed to liquidate loan ${loan.id}:`, liquidationError);
+            loanLogger.error(`Failed to liquidate loan ${loan.id}`, liquidationError);
           }
         } else if (loan.risk_status === 'WARNING') {
-          console.log(`Warning: Loan ${loan.id} (User: ${loan.user_id}) is at ${loan.current_ltv}% LTV - approaching liquidation threshold`);
+          loanLogger.warn(`Loan ${loan.id} (User: ${loan.user_id}) is at ${loan.current_ltv}% LTV - approaching liquidation threshold`);
           // Here you could send notifications to users
         }
       }
     } catch (error) {
-      console.error('Error during liquidation check:', error);
+      loanLogger.error('Error during liquidation check', error);
     }
   }
 

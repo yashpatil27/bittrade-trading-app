@@ -2,6 +2,7 @@ const { query, transaction } = require('../config/database');
 const { clearUserCache } = require('../config/redis');
 const bitcoinDataService = require('./bitcoinDataService');
 const settingsService = require('./settingsService');
+const { liquidationLogger } = require('../utils/beautifulLogger');
 
 /**
  * Liquidation Monitoring Service
@@ -20,7 +21,7 @@ class LiquidationMonitoringService {
    */
   start() {
     if (this.isRunning) {
-      console.log('Liquidation monitoring service is already running');
+      liquidationLogger.warn('Liquidation monitoring service is already running');
       return;
     }
 
@@ -29,7 +30,11 @@ class LiquidationMonitoringService {
       this.checkAndExecuteLiquidations();
     }, this.intervalMs);
 
-    console.log('✓ Liquidation monitoring service started (checking every 30 seconds)');
+    liquidationLogger.serviceStarted('Liquidation monitoring service', { 
+      checkInterval: '30 seconds',
+      liquidationThreshold: '90% LTV',
+      targetLTV: '60%'
+    });
   }
 
   /**
@@ -37,7 +42,7 @@ class LiquidationMonitoringService {
    */
   stop() {
     if (!this.isRunning) {
-      console.log('Liquidation monitoring service is not running');
+      liquidationLogger.warn('Liquidation monitoring service is not running');
       return;
     }
 
@@ -47,7 +52,7 @@ class LiquidationMonitoringService {
       this.monitoringInterval = null;
     }
 
-    console.log('✓ Liquidation monitoring service stopped');
+    liquidationLogger.info('Liquidation monitoring service stopped');
   }
 
   /**

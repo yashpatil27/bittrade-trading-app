@@ -2,6 +2,7 @@ const axios = require('axios');
 const cron = require('node-cron');
 const { query } = require('../config/database');
 const { setCache, getCache } = require('../config/redis');
+const { bitcoinDataLogger } = require('../utils/logger');
 
 class BitcoinDataService {
   constructor() {
@@ -69,7 +70,7 @@ class BitcoinDataService {
         atl_change_pct: marketData.atl_change_percentage ? marketData.atl_change_percentage.usd : null
       };
     } catch (error) {
-      console.error('Error fetching Bitcoin data from CoinGecko:', error.message);
+      bitcoinDataLogger.error('Error fetching Bitcoin data from CoinGecko', error);
       throw error;
     }
   }
@@ -98,7 +99,7 @@ class BitcoinDataService {
         throw new Error('Invalid response format from Alternative.me API');
       }
     } catch (error) {
-      console.error('Error fetching Fear & Greed Index:', error.message);
+      bitcoinDataLogger.error('Error fetching Fear & Greed Index', error);
       throw error;
     }
   }
@@ -153,7 +154,7 @@ class BitcoinDataService {
         throw new Error('Invalid chart data response from CoinGecko API');
       }
     } catch (error) {
-      console.error(`Error fetching chart data for ${timeframe}:`, error.message);
+      bitcoinDataLogger.error('Error fetching chart data for 1d', error);
       throw error;
     }
   }
@@ -161,7 +162,7 @@ class BitcoinDataService {
   // Update Bitcoin data in database
   async updateBitcoinData() {
     try {
-      console.log('Fetching comprehensive Bitcoin data...');
+      bitcoinDataLogger.info('Fetching comprehensive Bitcoin data...');
       const bitcoinData = await this.fetchBitcoinData();
       
       // Store in database
@@ -195,16 +196,16 @@ class BitcoinDataService {
       this.currentData = bitcoinData;
       this.lastUpdate = new Date();
       
-      console.log(`Bitcoin data updated: $${bitcoinData.btc_usd_price.toLocaleString()}`);
+      bitcoinDataLogger.info(`Bitcoin data updated: $${bitcoinData.btc_usd_price.toLocaleString()}`);
       
       return bitcoinData;
     } catch (error) {
-      console.error('Error updating Bitcoin data:', error.message);
+      bitcoinDataLogger.error('Error updating Bitcoin data', error);
       
       // If update fails, try to get last known data from cache or database
       const cachedData = await this.getCurrentData();
       if (cachedData) {
-        console.log(`Using cached/last known data: $${cachedData.btc_usd_price.toLocaleString()}`);
+        bitcoinDataLogger.debug(`Using cached/last known data: $${cachedData.btc_usd_price.toLocaleString()}`);
         return cachedData;
       }
       
@@ -215,7 +216,7 @@ class BitcoinDataService {
   // Update Fear & Greed sentiment data
   async updateSentimentData() {
     try {
-      console.log('Fetching Fear & Greed Index...');
+      bitcoinDataLogger.info('Fetching Fear & Greed Index...');
       const sentimentData = await this.fetchFearGreedIndex();
       
       // Upsert sentiment data (update if exists for the date, insert if not)
@@ -234,11 +235,11 @@ class BitcoinDataService {
         'DELETE FROM bitcoin_sentiment WHERE id NOT IN (SELECT id FROM (SELECT id FROM bitcoin_sentiment ORDER BY data_date DESC LIMIT 10) as t)'
       );
 
-      console.log(`Fear & Greed Index updated: ${sentimentData.fear_greed_value} (${sentimentData.fear_greed_classification})`);
+      bitcoinDataLogger.info(`Fear & Greed Index updated: ${sentimentData.fear_greed_value} (${sentimentData.fear_greed_classification})`);
       
       return sentimentData;
     } catch (error) {
-      console.error('Error updating sentiment data:', error.message);
+      bitcoinDataLogger.error('Error updating sentiment data', error);
       throw error;
     }
   }
@@ -246,7 +247,7 @@ class BitcoinDataService {
   // Update chart data for specific timeframe
   async updateChartData(timeframe) {
     try {
-      console.log(`Fetching chart data for ${timeframe}...`);
+      bitcoinDataLogger.info(`Fetching chart data for ${timeframe}...`);
       const chartData = await this.fetchChartData(timeframe);
       
       // Insert new chart data (always create new record)
@@ -271,13 +272,13 @@ class BitcoinDataService {
         [timeframe, timeframe]
       );
 
-      console.log(`Chart data updated for ${timeframe}: ${chartData.data_points_count} data points (keeping 2 records for fallback)`);
+      bitcoinDataLogger.info(`Chart data updated for ${timeframe}: ${chartData.data_points_count} data points (keeping 2 records for fallback)`);
       
       return chartData;
     } catch (error) {
-      console.error(`Error updating chart data for ${timeframe}:`, error.message);
+      bitcoinDataLogger.error(`Error updating chart data for ${timeframe}`, error);
       // Don't throw error to prevent stopping other timeframe updates
-      console.log(`Retaining existing chart data for ${timeframe} as fallback`);
+      bitcoinDataLogger.warn(`Retaining existing chart data for ${timeframe} as fallback`);
       return null;
     }
   }
@@ -310,7 +311,7 @@ class BitcoinDataService {
       // If no data in database, fetch fresh data
       return await this.updateBitcoinData();
     } catch (error) {
-      console.error('Error getting current Bitcoin data:', error.message);
+      bitcoinDataLogger.error('Error getting current Bitcoin data', error);
       
       // Return last known data if available
       if (this.currentData) {
@@ -327,7 +328,7 @@ class BitcoinDataService {
       const data = await this.getCurrentData();
       return data.btc_usd_price;
     } catch (error) {
-      console.error('Error getting current BTC price:', error.message);
+      bitcoinDataLogger.error('Error getting current BTC price', error);
       throw error;
     }
   }
@@ -373,7 +374,7 @@ class BitcoinDataService {
         }
       };
     } catch (error) {
-      console.error('Error calculating rates:', error.message);
+      bitcoinDataLogger.error('Error calculating rates', error);
       throw error;
     }
   }
@@ -387,7 +388,7 @@ class BitcoinDataService {
 
       return sentimentRows.length > 0 ? sentimentRows[0] : null;
     } catch (error) {
-      console.error('Error getting sentiment data:', error.message);
+      bitcoinDataLogger.error('Error getting sentiment data', error);
       throw error;
     }
   }
@@ -433,9 +434,9 @@ class BitcoinDataService {
             price_data: JSON.parse(row.price_data)
           };
         } catch (parseError) {
-          console.error(`Error parsing price_data for timeframe ${row.timeframe}:`, parseError.message);
-          console.error('Raw price_data type:', typeof row.price_data);
-          console.error('Raw price_data (first 200 chars):', JSON.stringify(row.price_data).substring(0, 200));
+          bitcoinDataLogger.error(`Error parsing price_data for timeframe ${row.timeframe}`, parseError);
+          bitcoinDataLogger.debug('Raw price_data type:', typeof row.price_data);
+          bitcoinDataLogger.debug('Raw price_data (first 200 chars):', JSON.stringify(row.price_data).substring(0, 200));
           // Return row with empty array if JSON parsing fails
           return {
             ...row,
@@ -451,7 +452,7 @@ class BitcoinDataService {
       
       return processedRows;
     } catch (error) {
-      console.error('Error getting chart data:', error.message);
+      bitcoinDataLogger.error('Error getting chart data', error);
       throw error;
     }
   }
@@ -459,21 +460,21 @@ class BitcoinDataService {
   // Start all data update services
   startDataUpdates() {
     if (this.isRunning) {
-      console.log('Bitcoin data updates already running');
+      bitcoinDataLogger.warn('Bitcoin data updates already running');
       return;
     }
 
-    console.log('Starting Bitcoin data update services...');
+    bitcoinDataLogger.info('Starting Bitcoin data update services...');
     this.isRunning = true;
 
     // Initial data fetch
     this.updateBitcoinData().catch(error => {
-      console.error('Initial Bitcoin data fetch failed:', error.message);
+      bitcoinDataLogger.error('Initial Bitcoin data fetch failed', error);
     });
 
     // Initial sentiment data fetch
     this.updateSentimentData().catch(error => {
-      console.error('Initial sentiment data fetch failed:', error.message);
+      bitcoinDataLogger.error('Initial sentiment data fetch failed', error);
     });
 
     // Schedule Bitcoin data updates every 30 seconds for real-time trading
@@ -482,7 +483,7 @@ class BitcoinDataService {
         try {
           await this.updateBitcoinData();
         } catch (error) {
-          console.error('Scheduled Bitcoin data update failed:', error.message);
+          bitcoinDataLogger.error('Scheduled Bitcoin data update failed', error);
         }
       }
     });
@@ -493,7 +494,7 @@ class BitcoinDataService {
         try {
           await this.updateSentimentData();
         } catch (error) {
-          console.error('Scheduled sentiment data update failed:', error.message);
+          bitcoinDataLogger.error('Scheduled sentiment data update failed', error);
         }
       }
     });
@@ -509,7 +510,7 @@ class BitcoinDataService {
             try {
               await this.updateChartData(timeframe);
             } catch (error) {
-              console.error(`Scheduled chart data update failed for ${timeframe}:`, error.message);
+              bitcoinDataLogger.error(`Scheduled chart data update failed for ${timeframe}`, error);
             }
           }
         });
@@ -522,7 +523,7 @@ class BitcoinDataService {
             try {
               await this.updateChartData(timeframe);
             } catch (error) {
-              console.error(`Scheduled chart data update failed for ${timeframe}:`, error.message);
+              bitcoinDataLogger.error(`Scheduled chart data update failed for ${timeframe}`, error);
             }
           }
         });
@@ -542,16 +543,17 @@ class BitcoinDataService {
     chartTimeframes.forEach((timeframe) => {
       setTimeout(() => {
         this.updateChartData(timeframe).catch(error => {
-          console.error(`Initial chart data fetch failed for ${timeframe}:`, error.message);
+          bitcoinDataLogger.error(`Initial chart data fetch failed for ${timeframe}`, error);
         });
       }, chartFetchSchedule[timeframe]);
     });
 
-    console.log('Bitcoin data updates scheduled:');
-    console.log('- Bitcoin data: every 30 seconds');
-    console.log('- Sentiment data: daily at 00:05');
-    console.log('- Chart data: hourly (1d) and daily (7d, 30d, 90d, 365d)');
-    console.log('- Initial chart data fetch schedule: 1d(2min), 7d(7min), 30d(12min), 90d(17min), 365d(22min)');
+    bitcoinDataLogger.serviceStarted('Bitcoin Data Service', {
+      priceUpdates: 'Every 30 seconds',
+      sentimentUpdates: 'Daily at 00:05',
+      chartUpdates: 'Hourly (1d) and daily (7d, 30d, 90d, 365d)',
+      initialFetch: 'Staggered: 1d(2min), 7d(7min), 30d(12min), 90d(17min), 365d(22min)'
+    });
   }
 
   // Stop all data update services
@@ -563,7 +565,7 @@ class BitcoinDataService {
       }
     });
     this.chartUpdateJobs = [];
-    console.log('Bitcoin data updates stopped');
+    bitcoinDataLogger.info('Bitcoin data updates stopped');
   }
 
   // Get comprehensive data history
@@ -575,7 +577,7 @@ class BitcoinDataService {
       );
       return dataHistory;
     } catch (error) {
-      console.error('Error fetching Bitcoin data history:', error.message);
+      bitcoinDataLogger.error('Error fetching Bitcoin data history', error);
       throw error;
     }
   }
