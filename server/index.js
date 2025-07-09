@@ -155,6 +155,7 @@ app.use('*', (req, res) => {
 });
 
 const PORT = process.env.PORT || 3001;
+const HOST = process.env.HOST || '0.0.0.0';
 
 // Graceful shutdown
 process.on('SIGINT', () => {
@@ -205,12 +206,12 @@ process.on('SIGTERM', () => {
 const startServer = async () => {
   await initializeServices();
   
-  app.listen(PORT, () => {
+  app.listen(PORT, HOST, () => {
     systemLogger.table('Server Information', [
       { icon: '🚀', label: 'Server Status', value: 'Running' },
       { icon: '🌐', label: 'Port', value: PORT },
-      { icon: '📊', label: 'API Base URL', value: `http://localhost:${PORT}/api` },
-      { icon: '🏥', label: 'Health Check', value: `http://localhost:${PORT}/health` },
+      { icon: '📊', label: 'API Base URL', value: `http://${HOST}:${PORT}/api` },
+      { icon: '🏥', label: 'Health Check', value: `http://${HOST}:${PORT}/health` },
       { icon: '🔧', label: 'Environment', value: process.env.NODE_ENV || 'development' }
     ]);
     

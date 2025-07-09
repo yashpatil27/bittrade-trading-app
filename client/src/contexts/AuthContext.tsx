@@ -40,13 +40,22 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       if (storedToken && storedUser) {
         try {
+          // Parse and set the user data first
+          const userData = JSON.parse(storedUser);
           setToken(storedToken);
-          setUser(JSON.parse(storedUser));
+          setUser(userData);
           
-          // Verify token is still valid
-          await authAPI.profile();
+          // Verify token is still valid (non-blocking)
+          authAPI.profile().catch(() => {
+            // Token is invalid, clear auth state
+            console.log('Token validation failed, clearing auth state');
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            setToken(null);
+            setUser(null);
+          });
         } catch (error) {
-          console.error('Token validation failed:', error);
+          console.error('Error parsing stored user data:', error);
           localStorage.removeItem('token');
           localStorage.removeItem('user');
           setToken(null);

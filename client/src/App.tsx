@@ -5,6 +5,7 @@ import { BalanceProvider } from './contexts/BalanceContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import Layout from './components/Layout';
 import LoadingSpinner from './components/LoadingSpinner';
+import ErrorBoundary from './components/ErrorBoundary';
 
 // Lazy load components
 const Login = React.lazy(() => import('./pages/Login'));
@@ -21,12 +22,13 @@ const AdminSettings = React.lazy(() => import('./pages/AdminSettings'));
 
 function App() {
   return (
-    <AuthProvider>
-      <BalanceProvider>
-        <Router>
-          <div className="min-h-screen bg-black text-white">
-          <Suspense fallback={<LoadingSpinner message="Loading page..." size="lg" className="min-h-screen" />}>
-            <Routes>
+    <ErrorBoundary>
+      <AuthProvider>
+        <BalanceProvider>
+          <Router>
+            <div className="min-h-screen bg-black text-white">
+            <Suspense fallback={<LoadingSpinner message="Loading page..." size="lg" className="min-h-screen" />}>
+              <Routes>
               {/* Public routes */}
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
@@ -105,14 +107,15 @@ function App() {
               </ProtectedRoute>
             } />
             
-            {/* Catch all route */}
-            <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
-          </Suspense>
-          </div>
-        </Router>
-      </BalanceProvider>
-    </AuthProvider>
+              {/* Catch all route */}
+              <Route path="*" element={<Navigate to="/" replace />} />
+              </Routes>
+            </Suspense>
+            </div>
+          </Router>
+        </BalanceProvider>
+      </AuthProvider>
+    </ErrorBoundary>
   );
 }
 

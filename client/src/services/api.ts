@@ -19,7 +19,7 @@ import {
 
 const API_BASE_URL = process.env.NODE_ENV === 'production' 
   ? '/api' 
-  : 'http://localhost:3001/api';
+  : process.env.REACT_APP_API_URL || 'http://localhost:3001/api';
 
 // Create axios instance
 const api = axios.create({
@@ -51,10 +51,10 @@ api.interceptors.response.use(
     console.log('API Error:', error.response?.status, error.response?.data?.message);
     
     if (error.response?.status === 401) {
-      console.log('Authentication error - logging out');
+      console.log('Authentication error - clearing local storage');
       localStorage.removeItem('token');
       localStorage.removeItem('user');
-      window.location.href = '/login';
+      // Don't redirect here - let React Router handle it
     } else if (error.response?.status === 429) {
       console.warn('Rate limit exceeded - not logging out');
       // Don't logout on rate limit, just show error
