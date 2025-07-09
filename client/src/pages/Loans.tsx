@@ -16,7 +16,8 @@ import {
   X,
   Repeat,
   Lock,
-  Clock
+  Clock,
+  DollarSign
 } from 'lucide-react';
 import { userAPI } from '../services/api';
 import { LoanStatus, LoanHistory, Transaction } from '../types';
@@ -86,16 +87,7 @@ const Loans: React.FC = () => {
   };
 
   const getRiskColor = (riskStatus: string) => {
-    switch (riskStatus) {
-      case 'SAFE':
-        return 'text-green-400';
-      case 'WARNING':
-        return 'text-yellow-400';
-      case 'LIQUIDATE':
-        return 'text-red-400';
-      default:
-        return 'text-zinc-400';
-    }
+    return 'text-white';
   };
 
   const getRiskIcon = (riskStatus: string) => {
@@ -190,114 +182,287 @@ const Loans: React.FC = () => {
 
       {/* Loan Status */}
       {loanStatus ? (
-        <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold">Active Loan</h2>
-            <div className={`flex items-center gap-2 ${getRiskColor(loanStatus.riskStatus)}`}>
-              {getRiskIcon(loanStatus.riskStatus)}
-              <span className="text-sm font-medium">{loanStatus.riskStatus}</span>
+        <div className="space-y-6">
+          {/* Loan Overview Header */}
+          <div className="bg-gradient-to-br from-zinc-900 to-zinc-800 border border-zinc-700 rounded-xl p-4">
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-zinc-700 rounded-lg">
+                  <Lock className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold">Active Loan</h2>
+                  <p className="text-zinc-400 text-sm">Loan ID: #{loanStatus.loanId || 'N/A'}</p>
+                </div>
+              </div>
+              <div className={`flex items-center gap-2 ${getRiskColor(loanStatus.riskStatus)}`}>
+                {getRiskIcon(loanStatus.riskStatus)}
+                <span className="text-sm font-medium">{loanStatus.riskStatus}</span>
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              <div>
+                <p className="text-zinc-400">Loan Duration</p>
+                <p className="text-white font-medium">
+                  Active loan
+                </p>
+              </div>
+              <div>
+                <p className="text-zinc-400">Next Interest</p>
+                <p className="text-white font-medium">
+                  Daily at 12:00 AM (+₹{Math.floor((loanStatus.borrowedAmount * loanStatus.interestRate) / 365).toLocaleString('en-IN')})
+                </p>
+              </div>
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4 mb-6">
-            <div className="bg-zinc-800/50 rounded-lg p-4">
-              <p className="text-zinc-400 text-sm">Collateral</p>
-              <p className="text-white font-semibold">
+          {/* Financial Summary - Reordered 6 boxes */}
+          <div className="grid grid-cols-2 gap-4">
+            {/* Row 1: Collateral Value, Total Due */}
+            <div className="bg-gradient-to-br from-zinc-900 to-zinc-800 border border-zinc-700 rounded-xl p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <Shield className="w-4 h-4 text-white" />
+                <p className="text-zinc-400 text-sm">Collateral Value</p>
+              </div>
+              <p className="text-white font-bold text-lg">
                 ₿{formatBitcoin(loanStatus.collateralAmount / 100000000)}
               </p>
               <p className="text-zinc-500 text-xs">
                 ₹{Math.floor((loanStatus.collateralAmount * loanStatus.currentBtcPrice) / 100000000).toLocaleString('en-IN')}
               </p>
+              <p className="text-zinc-400 text-xs mt-1 mb-3">
+                @ ₹{loanStatus.currentBtcPrice.toLocaleString('en-IN')}/BTC
+              </p>
+              <button
+                onClick={() => setShowAddCollateralModal(true)}
+                className="w-full bg-white text-black hover:bg-zinc-200 py-2 rounded-lg font-medium transition-colors text-sm flex items-center justify-center gap-2"
+              >
+                <Plus className="w-4 h-4" />
+                Add Collateral
+              </button>
             </div>
 
-            <div className="bg-zinc-800/50 rounded-lg p-4">
-              <p className="text-zinc-400 text-sm">Borrowed</p>
-              <p className="text-white font-semibold">
+            <div className="bg-gradient-to-br from-zinc-900 to-zinc-800 border border-zinc-700 rounded-xl p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <DollarSign className="w-4 h-4 text-white" />
+                <p className="text-zinc-400 text-sm">Total Due</p>
+              </div>
+              <p className="text-white font-bold text-lg">
                 ₹{loanStatus.borrowedAmount.toLocaleString('en-IN')}
               </p>
               <p className="text-zinc-500 text-xs">
-                {loanStatus.currentLtv.toFixed(1)}% LTV
+                Principal + Interest
               </p>
+              <p className="text-zinc-400 text-xs mt-1 mb-3">
+                To fully repay
+              </p>
+              <button
+                onClick={() => setShowRepayModal(true)}
+                disabled={loanStatus.borrowedAmount <= 0}
+                className="w-full bg-white text-black hover:bg-zinc-200 disabled:opacity-50 disabled:cursor-not-allowed py-2 rounded-lg font-medium transition-colors text-sm flex items-center justify-center gap-2"
+              >
+                <ArrowUp className="w-4 h-4" />
+                Repay Loan
+              </button>
             </div>
 
-            <div className="bg-zinc-800/50 rounded-lg p-4">
-              <p className="text-zinc-400 text-sm">Available to Borrow</p>
-              <p className="text-white font-semibold">
+            {/* Row 2: Available to Borrow, Liquidation Health */}
+            <div className="bg-gradient-to-br from-zinc-900 to-zinc-800 border border-zinc-700 rounded-xl p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <Plus className="w-4 h-4 text-white" />
+                <p className="text-zinc-400 text-sm">Available to Borrow</p>
+              </div>
+              <p className="text-white font-bold text-lg">
                 ₹{loanStatus.availableCapacity.toLocaleString('en-IN')}
               </p>
               <p className="text-zinc-500 text-xs">
                 Max {loanStatus.ltvRatio}% LTV
               </p>
+              <p className="text-zinc-400 text-xs mt-1 mb-3">
+                {((loanStatus.availableCapacity / ((loanStatus.collateralAmount * loanStatus.currentBtcPrice) / 100000000)) * 100).toFixed(1)}% capacity used
+              </p>
+              <button
+                onClick={() => setShowBorrowModal(true)}
+                disabled={loanStatus.availableCapacity <= 0}
+                className="w-full bg-white text-black hover:bg-zinc-200 disabled:opacity-50 disabled:cursor-not-allowed py-2 rounded-lg font-medium transition-colors text-sm flex items-center justify-center gap-2"
+              >
+                <ArrowDown className="w-4 h-4" />
+                Borrow More
+              </button>
             </div>
 
-            <div className="bg-zinc-800/50 rounded-lg p-4">
-              <p className="text-zinc-400 text-sm">Interest Rate</p>
-              <p className="text-white font-semibold">
-                {loanStatus.interestRate}% APR
+            <div className="bg-gradient-to-br from-zinc-900 to-zinc-800 border border-zinc-700 rounded-xl p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <AlertTriangle className="w-4 h-4 text-white" />
+                <p className="text-zinc-400 text-sm">Liquidation Health</p>
+              </div>
+              <p className="text-white font-bold text-lg">
+                {((loanStatus.currentBtcPrice - loanStatus.liquidationPrice) / loanStatus.currentBtcPrice * 100).toFixed(1)}% buffer
               </p>
               <p className="text-zinc-500 text-xs">
-                Daily compound
+                ₹{(loanStatus.currentBtcPrice - loanStatus.liquidationPrice).toLocaleString('en-IN')} margin
               </p>
+              <p className="text-zinc-400 text-xs mt-1 mb-3">
+                Liquidation @ ₹{loanStatus.liquidationPrice.toLocaleString('en-IN')}
+              </p>
+              <button
+                onClick={() => setShowFullLiquidationModal(true)}
+                className="w-full bg-white text-black hover:bg-zinc-200 py-2 rounded-lg font-medium transition-colors text-sm flex items-center justify-center gap-2"
+              >
+                <Zap className="w-4 h-4" />
+                Close Loan
+              </button>
+            </div>
+
+            {/* Row 3: Interest Accrued, Principal Borrowed (no buttons) */}
+            <div className="bg-gradient-to-br from-zinc-900 to-zinc-800 border border-zinc-700 rounded-xl p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <Clock className="w-4 h-4 text-white" />
+                <p className="text-zinc-400 text-sm">Interest Accrued</p>
+              </div>
+              <p className="text-white font-bold text-lg">
+                ₹0
+              </p>
+              <p className="text-zinc-500 text-xs">
+                ₹{Math.floor((loanStatus.borrowedAmount * loanStatus.interestRate) / 365).toLocaleString('en-IN')}/day
+              </p>
+              <p className="text-zinc-400 text-xs mt-1">
+                {loanStatus.interestRate}% APR
+              </p>
+            </div>
+
+            <div className="bg-gradient-to-br from-zinc-900 to-zinc-800 border border-zinc-700 rounded-xl p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <ArrowDown className="w-4 h-4 text-white" />
+                <p className="text-zinc-400 text-sm">Principal Borrowed</p>
+              </div>
+              <p className="text-white font-bold text-lg">
+                ₹{loanStatus.borrowedAmount.toLocaleString('en-IN')}
+              </p>
+              <p className="text-zinc-500 text-xs">
+                {loanStatus.currentLtv.toFixed(1)}% LTV
+              </p>
+              <div className="w-full bg-zinc-700 rounded-full h-2 mt-2">
+                <div 
+                  className="bg-white h-2 rounded-full transition-all duration-300" 
+                  style={{ width: `${(loanStatus.currentLtv / loanStatus.ltvRatio) * 100}%` }}
+                ></div>
+              </div>
             </div>
           </div>
 
-          {/* Liquidation Warning */}
-          {loanStatus.riskStatus !== 'SAFE' && (
-            <div className="bg-yellow-900/20 border border-yellow-600 rounded-lg p-4 mb-6">
-              <div className="flex items-center gap-2 mb-2">
-                <AlertTriangle className="w-5 h-5 text-yellow-400" />
-                <span className="text-yellow-400 font-medium">
-                  {loanStatus.riskStatus === 'WARNING' ? 'Liquidation Warning' : 'Liquidation Risk'}
+          {/* Enhanced Risk Visualization */}
+          <div className="bg-gradient-to-br from-zinc-900 to-zinc-800 border border-zinc-700 rounded-xl p-4">
+            <div className="flex items-center gap-2 mb-3">
+              <TrendingUp className="w-5 h-5 text-white" />
+              <h3 className="text-lg font-semibold">Liquidation Risk Monitor</h3>
+            </div>
+            
+            <div className="space-y-3">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-zinc-400">Current Price</span>
+                <span className="text-white font-medium">₹{loanStatus.currentBtcPrice.toLocaleString('en-IN')}</span>
+              </div>
+              
+              <div className="relative">
+                <div className="w-full bg-zinc-700 rounded-full h-3">
+                  <div 
+                    className={`h-3 rounded-full transition-all duration-300 ${
+                      loanStatus.riskStatus === 'SAFE' ? 'bg-green-500' :
+                      loanStatus.riskStatus === 'WARNING' ? 'bg-yellow-500' : 'bg-red-500'
+                    }`}
+                    style={{ width: `${Math.min((loanStatus.currentLtv / 90) * 100, 100)}%` }}
+                  ></div>
+                </div>
+                <div className="flex justify-between text-xs text-zinc-400 mt-1">
+                  <span>Safe</span>
+                  <span>Warning</span>
+                  <span>Liquidation</span>
+                </div>
+              </div>
+              
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-zinc-400">Liquidation Price</span>
+                <span className="text-white font-medium">₹{loanStatus.liquidationPrice.toLocaleString('en-IN')}</span>
+              </div>
+              
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-zinc-400">Safety Margin</span>
+                <span className="text-white font-medium">
+                  ₹{(loanStatus.currentBtcPrice - loanStatus.liquidationPrice).toLocaleString('en-IN')} 
+                  ({((loanStatus.currentBtcPrice - loanStatus.liquidationPrice) / loanStatus.currentBtcPrice * 100).toFixed(1)}%)
                 </span>
               </div>
-              <p className="text-yellow-200 text-sm">
-                {loanStatus.riskStatus === 'WARNING' 
-                  ? 'Your loan is approaching liquidation threshold. Consider repaying or adding collateral.'
-                  : 'Your loan is at risk of liquidation. Take immediate action to avoid losing collateral.'
-                }
-              </p>
-              <p className="text-yellow-300 text-xs mt-1">
-                Liquidation Price: ₹{loanStatus.liquidationPrice.toLocaleString('en-IN')} per BTC
-              </p>
             </div>
-          )}
-
-          {/* Action Buttons */}
-          <div className="grid grid-cols-2 gap-3">
-            <button
-              onClick={() => setShowBorrowModal(true)}
-              disabled={loanStatus.availableCapacity <= 0}
-              className="bg-white text-black hover:bg-zinc-200 disabled:opacity-50 disabled:cursor-not-allowed py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
-            >
-              <ArrowDown className="w-4 h-4" />
-              Borrow
-            </button>
-            
-            <button
-              onClick={() => setShowRepayModal(true)}
-              disabled={loanStatus.borrowedAmount <= 0}
-              className="bg-zinc-700 text-white hover:bg-zinc-600 disabled:opacity-50 disabled:cursor-not-allowed py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
-            >
-              <ArrowUp className="w-4 h-4" />
-              Repay
-            </button>
-            
-            <button
-              onClick={() => setShowAddCollateralModal(true)}
-              className="bg-green-700 text-white hover:bg-green-600 py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
-            >
-              <Plus className="w-4 h-4" />
-              Add Collateral
-            </button>
-            
-            <button
-              onClick={() => setShowFullLiquidationModal(true)}
-              className="bg-red-700 text-white hover:bg-red-600 py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
-            >
-              <Zap className="w-4 h-4" />
-              Close Loan
-            </button>
           </div>
+
+          {/* Performance Tracking */}
+          <div className="bg-gradient-to-br from-zinc-900 to-zinc-800 border border-zinc-700 rounded-xl p-4">
+            <div className="flex items-center gap-2 mb-3">
+              <TrendingUp className="w-5 h-5 text-white" />
+              <h3 className="text-lg font-semibold">Loan Performance</h3>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <p className="text-zinc-400 text-sm">Interest Paid to Date</p>
+                <p className="text-white font-semibold">
+                  ₹0
+                </p>
+                <p className="text-zinc-500 text-xs">
+                  0% of principal
+                </p>
+              </div>
+              
+              <div>
+                <p className="text-zinc-400 text-sm">Effective Interest Rate</p>
+                <p className="text-white font-semibold">
+                  {loanStatus.interestRate}% APR
+                </p>
+                <p className="text-zinc-500 text-xs">
+                  {(loanStatus.interestRate / 365).toFixed(3)}% daily
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Smart Suggestions */}
+          <div className="bg-gradient-to-br from-zinc-900 to-zinc-800 border border-zinc-700 rounded-xl p-4">
+            <div className="flex items-center gap-2 mb-3">
+              <User className="w-5 h-5 text-white" />
+              <h3 className="text-lg font-semibold">Smart Suggestions</h3>
+            </div>
+            
+            <div className="space-y-2">
+              {loanStatus.currentLtv > 70 && (
+                <div className="bg-zinc-800/50 rounded-lg p-3">
+                  <p className="text-white text-sm font-medium mb-1">💡 Reduce Risk</p>
+                  <p className="text-zinc-300 text-xs">
+                    Consider repaying ₹{Math.floor(loanStatus.borrowedAmount * 0.2).toLocaleString('en-IN')} to reduce your LTV to {(loanStatus.currentLtv * 0.8).toFixed(1)}%
+                  </p>
+                </div>
+              )}
+              
+              {loanStatus.availableCapacity > 0 && (
+                <div className="bg-zinc-800/50 rounded-lg p-3">
+                  <p className="text-white text-sm font-medium mb-1">📈 Opportunity</p>
+                  <p className="text-zinc-300 text-xs">
+                    You can borrow ₹{loanStatus.availableCapacity.toLocaleString('en-IN')} more at current prices
+                  </p>
+                </div>
+              )}
+              
+              <div className="bg-zinc-800/50 rounded-lg p-3">
+                <p className="text-white text-sm font-medium mb-1">💰 Cost Analysis</p>
+                <p className="text-zinc-300 text-xs">
+                  Daily interest cost: ₹{Math.floor((loanStatus.borrowedAmount * loanStatus.interestRate) / 365).toLocaleString('en-IN')} 
+                  • Monthly: ₹{Math.floor((loanStatus.borrowedAmount * loanStatus.interestRate) / 12).toLocaleString('en-IN')}
+                </p>
+              </div>
+            </div>
+          </div>
+
         </div>
       ) : (
         /* No Active Loan */
@@ -445,8 +610,8 @@ const Loans: React.FC = () => {
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-zinc-900 rounded-2xl border border-zinc-800 p-6 w-full max-w-md">
             <div className="flex items-center gap-3 mb-4">
-              <div className="p-2 bg-red-900/50 rounded-lg">
-                <Zap className="w-6 h-6 text-red-400" />
+              <div className="p-2 bg-zinc-800 rounded-lg">
+                <Zap className="w-6 h-6 text-white" />
               </div>
               <div>
                 <h2 className="text-xl font-bold">Close Loan</h2>
@@ -454,8 +619,8 @@ const Loans: React.FC = () => {
               </div>
             </div>
 
-            <div className="bg-red-900/20 border border-red-700 rounded-lg p-4 mb-6">
-              <p className="text-red-200 text-sm">
+            <div className="bg-zinc-800/50 border border-zinc-700 rounded-lg p-4 mb-6">
+              <p className="text-zinc-300 text-sm">
                 This will sell enough of your Bitcoin collateral to repay the loan completely. 
                 Any remaining Bitcoin will be returned to your available balance.
               </p>
@@ -470,7 +635,7 @@ const Loans: React.FC = () => {
               </button>
               <button
                 onClick={handleFullLiquidation}
-                className="flex-1 bg-red-700 text-white hover:bg-red-600 py-3 rounded-lg font-medium transition-colors"
+                className="flex-1 bg-zinc-700 text-white hover:bg-zinc-600 py-3 rounded-lg font-medium transition-colors"
               >
                 Close Loan
               </button>
