@@ -211,7 +211,7 @@ const Loans: React.FC = () => {
               <div>
                 <p className="text-zinc-400">Next Interest</p>
                 <p className="text-white font-medium">
-                  Daily at 12:00 AM (+₹{Math.floor((loanStatus.borrowedAmount * loanStatus.interestRate) / 365).toLocaleString('en-IN')})
+                  Daily at 12:00 AM (+₹{Math.floor((loanStatus.borrowedAmount * loanStatus.interestRate / 100) / 365).toLocaleString('en-IN')})
                 </p>
               </div>
             </div>
@@ -325,7 +325,7 @@ const Loans: React.FC = () => {
                 ₹0
               </p>
               <p className="text-zinc-500 text-xs">
-                ₹{Math.floor((loanStatus.borrowedAmount * loanStatus.interestRate) / 365).toLocaleString('en-IN')}/day
+                ₹{Math.floor((loanStatus.borrowedAmount * loanStatus.interestRate / 100) / 365).toLocaleString('en-IN')}/day
               </p>
               <p className="text-zinc-400 text-xs mt-1">
                 {loanStatus.interestRate}% APR
@@ -421,7 +421,7 @@ const Loans: React.FC = () => {
                   {loanStatus.interestRate}% APR
                 </p>
                 <p className="text-zinc-500 text-xs">
-                  {(loanStatus.interestRate / 365).toFixed(3)}% daily
+                  {(loanStatus.interestRate / 100 / 365).toFixed(3)}% daily
                 </p>
               </div>
             </div>
@@ -456,8 +456,8 @@ const Loans: React.FC = () => {
               <div className="bg-zinc-800/50 rounded-lg p-3">
                 <p className="text-white text-sm font-medium mb-1">💰 Cost Analysis</p>
                 <p className="text-zinc-300 text-xs">
-                  Daily interest cost: ₹{Math.floor((loanStatus.borrowedAmount * loanStatus.interestRate) / 365).toLocaleString('en-IN')} 
-                  • Monthly: ₹{Math.floor((loanStatus.borrowedAmount * loanStatus.interestRate) / 12).toLocaleString('en-IN')}
+                  Daily interest cost: ₹{Math.floor((loanStatus.borrowedAmount * loanStatus.interestRate / 100) / 365).toLocaleString('en-IN')} 
+                  • Monthly: ₹{Math.floor((loanStatus.borrowedAmount * loanStatus.interestRate / 100) / 12).toLocaleString('en-IN')}
                 </p>
               </div>
             </div>
