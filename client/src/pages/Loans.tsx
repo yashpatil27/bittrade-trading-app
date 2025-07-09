@@ -223,7 +223,7 @@ const Loans: React.FC = () => {
           {/* Financial Summary - Reordered 6 boxes */}
           <div className="grid grid-cols-2 gap-4">
             {/* Row 1: Collateral Value, Total Due */}
-            <div className="bg-gradient-to-br from-zinc-900 to-zinc-800 border border-zinc-700 rounded-xl p-4">
+            <div className="bg-gradient-to-br from-zinc-900 to-zinc-800 border border-zinc-700 rounded-xl p-4 flex flex-col">
               <div className="flex items-center gap-2 mb-2">
                 <Shield className="w-4 h-4 text-white" />
                 <p className="text-zinc-400 text-sm">Collateral Value</p>
@@ -234,19 +234,19 @@ const Loans: React.FC = () => {
               <p className="text-zinc-500 text-xs">
                 ₹{Math.floor((loanStatus.collateralAmount * loanStatus.currentBtcPrice) / 100000000).toLocaleString('en-IN')}
               </p>
-              <p className="text-zinc-400 text-xs mt-1 mb-3">
+              <p className="text-zinc-400 text-xs mt-1">
                 @ ₹{loanStatus.currentBtcPrice.toLocaleString('en-IN')}/BTC
               </p>
               <button
                 onClick={() => setShowAddCollateralModal(true)}
-                className="w-full bg-white text-black hover:bg-zinc-200 py-2 rounded-lg font-medium transition-colors text-sm flex items-center justify-center gap-2"
+                className="w-full bg-white text-black hover:bg-zinc-200 py-2 rounded-lg font-medium transition-colors text-sm flex items-center justify-center gap-2 mt-auto"
               >
                 <Plus className="w-4 h-4" />
                 Add Collateral
               </button>
             </div>
 
-            <div className="bg-gradient-to-br from-zinc-900 to-zinc-800 border border-zinc-700 rounded-xl p-4">
+            <div className="bg-gradient-to-br from-zinc-900 to-zinc-800 border border-zinc-700 rounded-xl p-4 flex flex-col">
               <div className="flex items-center gap-2 mb-2">
                 <DollarSign className="w-4 h-4 text-white" />
                 <p className="text-zinc-400 text-sm">Total Due</p>
@@ -257,13 +257,13 @@ const Loans: React.FC = () => {
               <p className="text-zinc-500 text-xs">
                 Principal + Minimum Interest
               </p>
-              <p className="text-zinc-400 text-xs mt-1 mb-3">
+              <p className="text-zinc-400 text-xs mt-1">
                 To fully repay (30-day minimum)
               </p>
               <button
                 onClick={() => setShowRepayModal(true)}
                 disabled={loanStatus.borrowedAmount <= 0}
-                className="w-full bg-white text-black hover:bg-zinc-200 disabled:opacity-50 disabled:cursor-not-allowed py-2 rounded-lg font-medium transition-colors text-sm flex items-center justify-center gap-2"
+                className="w-full bg-white text-black hover:bg-zinc-200 disabled:opacity-50 disabled:cursor-not-allowed py-2 rounded-lg font-medium transition-colors text-sm flex items-center justify-center gap-2 mt-auto"
               >
                 <ArrowUp className="w-4 h-4" />
                 Repay Loan
@@ -271,7 +271,7 @@ const Loans: React.FC = () => {
             </div>
 
             {/* Row 2: Available to Borrow, Liquidation Health */}
-            <div className="bg-gradient-to-br from-zinc-900 to-zinc-800 border border-zinc-700 rounded-xl p-4">
+            <div className="bg-gradient-to-br from-zinc-900 to-zinc-800 border border-zinc-700 rounded-xl p-4 flex flex-col">
               <div className="flex items-center gap-2 mb-2">
                 <Plus className="w-4 h-4 text-white" />
                 <p className="text-zinc-400 text-sm">Available to Borrow</p>
@@ -282,20 +282,20 @@ const Loans: React.FC = () => {
               <p className="text-zinc-500 text-xs">
                 Max {loanStatus.ltvRatio}% LTV
               </p>
-              <p className="text-zinc-400 text-xs mt-1 mb-3">
+              <p className="text-zinc-400 text-xs mt-1">
                 {((loanStatus.availableCapacity / ((loanStatus.collateralAmount * loanStatus.currentBtcPrice) / 100000000)) * 100).toFixed(1)}% capacity used
               </p>
               <button
                 onClick={() => setShowBorrowModal(true)}
                 disabled={loanStatus.availableCapacity <= 0}
-                className="w-full bg-white text-black hover:bg-zinc-200 disabled:opacity-50 disabled:cursor-not-allowed py-2 rounded-lg font-medium transition-colors text-sm flex items-center justify-center gap-2"
+                className="w-full bg-white text-black hover:bg-zinc-200 disabled:opacity-50 disabled:cursor-not-allowed py-2 rounded-lg font-medium transition-colors text-sm flex items-center justify-center gap-2 mt-auto"
               >
                 <ArrowDown className="w-4 h-4" />
                 Borrow More
               </button>
             </div>
 
-            <div className="bg-gradient-to-br from-zinc-900 to-zinc-800 border border-zinc-700 rounded-xl p-4">
+            <div className="bg-gradient-to-br from-zinc-900 to-zinc-800 border border-zinc-700 rounded-xl p-4 flex flex-col">
               <div className="flex items-center gap-2 mb-2">
                 <AlertTriangle className="w-4 h-4 text-white" />
                 <p className="text-zinc-400 text-sm">Liquidation Health</p>
@@ -306,12 +306,12 @@ const Loans: React.FC = () => {
               <p className="text-zinc-500 text-xs">
                 ₹{(loanStatus.currentBtcPrice - loanStatus.liquidationPrice).toLocaleString('en-IN')} margin
               </p>
-              <p className="text-zinc-400 text-xs mt-1 mb-3">
+              <p className="text-zinc-400 text-xs mt-1">
                 Liquidation @ ₹{loanStatus.liquidationPrice.toLocaleString('en-IN')}
               </p>
               <button
                 onClick={() => setShowFullLiquidationModal(true)}
-                className="w-full bg-white text-black hover:bg-zinc-200 py-2 rounded-lg font-medium transition-colors text-sm flex items-center justify-center gap-2"
+                className="w-full bg-white text-black hover:bg-zinc-200 py-2 rounded-lg font-medium transition-colors text-sm flex items-center justify-center gap-2 mt-auto"
               >
                 <Zap className="w-4 h-4" />
                 Close Loan
