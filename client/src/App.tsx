@@ -1,20 +1,23 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import { BalanceProvider } from './contexts/BalanceContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import Layout from './components/Layout';
-import Login from './pages/Login';
-import Register from './pages/Register';
-import Home from './pages/Home';
-import Portfolio from './pages/Portfolio';
-import History from './pages/History';
-import Profile from './pages/Profile';
-import Loans from './pages/Loans';
-import AdminDashboard from './pages/AdminDashboard';
-import AdminUsers from './pages/AdminUsers';
-import AdminTransactions from './pages/AdminTransactions';
-import AdminSettings from './pages/AdminSettings';
+import LoadingSpinner from './components/LoadingSpinner';
+
+// Lazy load components
+const Login = React.lazy(() => import('./pages/Login'));
+const Register = React.lazy(() => import('./pages/Register'));
+const Home = React.lazy(() => import('./pages/Home'));
+const Portfolio = React.lazy(() => import('./pages/Portfolio'));
+const History = React.lazy(() => import('./pages/History'));
+const Profile = React.lazy(() => import('./pages/Profile'));
+const Loans = React.lazy(() => import('./pages/Loans'));
+const AdminDashboard = React.lazy(() => import('./pages/AdminDashboard'));
+const AdminUsers = React.lazy(() => import('./pages/AdminUsers'));
+const AdminTransactions = React.lazy(() => import('./pages/AdminTransactions'));
+const AdminSettings = React.lazy(() => import('./pages/AdminSettings'));
 
 function App() {
   return (
@@ -22,10 +25,11 @@ function App() {
       <BalanceProvider>
         <Router>
           <div className="min-h-screen bg-black text-white">
-          <Routes>
-            {/* Public routes */}
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
+          <Suspense fallback={<LoadingSpinner message="Loading page..." size="lg" className="min-h-screen" />}>
+            <Routes>
+              {/* Public routes */}
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
             
             {/* Protected routes */}
             <Route path="/" element={
@@ -103,7 +107,8 @@ function App() {
             
             {/* Catch all route */}
             <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
+            </Routes>
+          </Suspense>
           </div>
         </Router>
       </BalanceProvider>
