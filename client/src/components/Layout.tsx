@@ -57,7 +57,6 @@ const Layout: React.FC<LayoutProps> = ({ children, isAdmin = false }) => {
     { name: 'Portfolio', path: '/portfolio', icon: PieChart },
     { name: 'Loans', path: '/loans', icon: Wallet },
     { name: 'History', path: '/history', icon: History },
-    { name: 'Profile', path: '/profile', icon: User },
   ];
 
   const adminNavItems = [
@@ -118,39 +117,41 @@ const Layout: React.FC<LayoutProps> = ({ children, isAdmin = false }) => {
       )}
 
       {/* Main Content */}
-      <main className="pb-20 px-4 py-6">
+      <main className={`px-4 py-6 ${location.pathname === '/profile' ? 'pb-6' : 'pb-20'}`}>
         <div className="max-w-md mx-auto">
           {children}
         </div>
       </main>
 
       {/* Bottom Navigation */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-black border-t border-zinc-800">
-        <div className="flex max-w-md mx-auto">
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            const isActive = location.pathname === item.path;
-            
-            return (
-              <Link
-                key={item.path}
-                to={item.path}
-                className={`flex-1 flex flex-col items-center py-3 px-2 transition-colors relative ${
-                  isActive 
-                    ? 'text-white' 
-                    : 'text-zinc-400 hover:text-white'
-                }`}
-              >
-                <Icon size={20} />
-                <span className="text-xs mt-1">{item.name}</span>
-                {isActive && (
-                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-white" />
-                )}
-              </Link>
-            );
-          })}
-        </div>
-      </nav>
+      {location.pathname !== '/profile' && (
+        <nav className="fixed bottom-0 left-0 right-0 bg-black border-t border-zinc-800">
+          <div className="flex max-w-md mx-auto">
+            {navItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = location.pathname === item.path;
+              
+              return (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  className={`flex-1 flex flex-col items-center py-3 px-2 transition-colors relative ${
+                    isActive 
+                      ? 'text-white' 
+                      : 'text-zinc-400 hover:text-white'
+                  }`}
+                >
+                  <Icon size={20} />
+                  <span className="text-xs mt-1">{item.name}</span>
+                  {isActive && (
+                    <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-white" />
+                  )}
+                </Link>
+              );
+            })}
+          </div>
+        </nav>
+      )}
     </div>
   );
 };
