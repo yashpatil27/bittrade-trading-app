@@ -25,7 +25,9 @@ import {
   Settings,
   Calendar,
   DollarSign,
-  RotateCcw
+  RotateCcw,
+  Lock,
+  Zap
 } from 'lucide-react';
 import { adminAPI } from '../services/api';
 import { Transaction, DcaPlan } from '../types';
@@ -38,7 +40,7 @@ import {
   formatCurrency
 } from '../utils/formatters';
 
-type TransactionType = 'ALL' | 'BUY' | 'SELL' | 'LIMIT_BUY' | 'LIMIT_SELL' | 'DEPOSIT_INR' | 'DEPOSIT_BTC' | 'WITHDRAW_INR' | 'WITHDRAW_BTC';
+type TransactionType = 'ALL' | 'BUY' | 'SELL' | 'LIMIT_BUY' | 'LIMIT_SELL' | 'DEPOSIT_INR' | 'DEPOSIT_BTC' | 'WITHDRAW_INR' | 'WITHDRAW_BTC' | 'LOAN_CREATE' | 'LOAN_BORROW' | 'LOAN_REPAY' | 'LOAN_ADD_COLLATERAL';
 type DateFilter = 'ALL' | 'TODAY' | 'WEEK' | 'MONTH' | 'CUSTOM';
 type SortOption = 'NEWEST' | 'OLDEST' | 'HIGHEST' | 'LOWEST';
 
@@ -273,6 +275,16 @@ const AdminTransactions: React.FC = () => {
       return `₹${transaction.inr_amount.toLocaleString('en-IN')}`;
     } else if (transaction.type.includes('BTC')) {
       return `₿${formatBitcoin(transaction.btc_amount)}`;
+    } else if (transaction.type.includes('LOAN') || transaction.type.includes('INTEREST') || transaction.type.includes('LIQUIDATION')) {
+      // For loan transactions, show both amounts if they exist
+      if (transaction.inr_amount > 0 && transaction.btc_amount > 0) {
+        return `₹${transaction.inr_amount.toLocaleString('en-IN')} / ₿${formatBitcoin(transaction.btc_amount)}`;
+      } else if (transaction.inr_amount > 0) {
+        return `₹${transaction.inr_amount.toLocaleString('en-IN')}`;
+      } else if (transaction.btc_amount > 0) {
+        return `₿${formatBitcoin(transaction.btc_amount)}`;
+      }
+      return 'N/A';
     }
     return '';
   };
@@ -589,7 +601,11 @@ const AdminTransactions: React.FC = () => {
                           {getTransactionIcon(transaction.type, transaction.status) === 'Target' && <Target className="w-3 h-3 text-white" />}
                           {getTransactionIcon(transaction.type, transaction.status) === 'X' && <X className="w-3 h-3 text-white" />}
                           {getTransactionIcon(transaction.type, transaction.status) === 'Repeat' && <Repeat className="w-3 h-3 text-white" />}
-                          {!['User', 'ArrowUp', 'TrendingUp', 'TrendingDown', 'ArrowDown', 'Plus', 'Minus', 'Target', 'X', 'Repeat'].includes(getTransactionIcon(transaction.type, transaction.status)) && <Circle className="w-3 h-3 text-white" />}
+                          {getTransactionIcon(transaction.type, transaction.status) === 'Lock' && <Lock className="w-3 h-3 text-white" />}
+                          {getTransactionIcon(transaction.type, transaction.status) === 'Clock' && <Clock className="w-3 h-3 text-white" />}
+                          {getTransactionIcon(transaction.type, transaction.status) === 'AlertTriangle' && <AlertTriangle className="w-3 h-3 text-white" />}
+                          {getTransactionIcon(transaction.type, transaction.status) === 'Zap' && <Zap className="w-3 h-3 text-white" />}
+                          {!['User', 'ArrowUp', 'TrendingUp', 'TrendingDown', 'ArrowDown', 'Plus', 'Minus', 'Target', 'X', 'Repeat', 'Lock', 'Clock', 'AlertTriangle', 'Zap'].includes(getTransactionIcon(transaction.type, transaction.status)) && <Circle className="w-3 h-3 text-white" />}
                         </div>
                         <div>
                           <div className="flex items-center gap-2">
@@ -838,7 +854,11 @@ const AdminTransactions: React.FC = () => {
                     { key: 'DEPOSIT_INR', label: 'Deposit INR', icon: Plus },
                     { key: 'DEPOSIT_BTC', label: 'Deposit BTC', icon: Plus },
                     { key: 'WITHDRAW_INR', label: 'Withdraw INR', icon: Minus },
-                    { key: 'WITHDRAW_BTC', label: 'Withdraw BTC', icon: Minus }
+                    { key: 'WITHDRAW_BTC', label: 'Withdraw BTC', icon: Minus },
+                    { key: 'LOAN_CREATE', label: 'Loan Create', icon: Lock },
+                    { key: 'LOAN_BORROW', label: 'Loan Borrow', icon: ArrowDown },
+                    { key: 'LOAN_REPAY', label: 'Loan Repay', icon: ArrowUp },
+                    { key: 'LOAN_ADD_COLLATERAL', label: 'Add Collateral', icon: Plus }
                   ].map(({ key, label, icon: Icon }) => (
                     <button
                       key={key}

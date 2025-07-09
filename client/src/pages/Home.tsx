@@ -376,6 +376,15 @@ const Home: React.FC = () => {
                               Collateral Locked
                             </p>
                           </div>
+                        ) : transaction.type === 'LOAN_ADD_COLLATERAL' ? (
+                          <div>
+                            <p className="font-bold text-sm text-white">
+                              {formatCurrency(transaction.btc_amount, 'BTC')}
+                            </p>
+                            <p className="text-xs text-zinc-400">
+                              Collateral Added
+                            </p>
+                          </div>
                         ) : transaction.type.includes('LOAN') || transaction.type.includes('INTEREST') || transaction.type.includes('LIQUIDATION') ? (
                           <div>
                             {transaction.inr_amount > 0 && (

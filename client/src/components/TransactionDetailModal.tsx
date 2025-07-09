@@ -155,6 +155,13 @@ const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
       case 'DEPOSIT_BTC': return 'text-blue-400';
       case 'WITHDRAW_INR': 
       case 'WITHDRAW_BTC': return 'text-orange-400';
+      case 'LOAN_CREATE':
+      case 'LOAN_ADD_COLLATERAL': return 'text-blue-400';
+      case 'LOAN_BORROW': return 'text-green-400';
+      case 'LOAN_REPAY': return 'text-red-400';
+      case 'INTEREST_ACCRUAL': return 'text-yellow-400';
+      case 'PARTIAL_LIQUIDATION':
+      case 'FULL_LIQUIDATION': return 'text-red-400';
       default: return 'text-white';
     }
   };

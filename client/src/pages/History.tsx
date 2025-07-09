@@ -35,7 +35,7 @@ import {
   formatCurrency
 } from '../utils/formatters';
 
-type TransactionType = 'ALL' | 'BUY' | 'SELL' | 'LIMIT_BUY' | 'LIMIT_SELL' | 'DEPOSIT_INR' | 'DEPOSIT_BTC' | 'WITHDRAW_INR' | 'WITHDRAW_BTC' | 'DCA_BUY' | 'DCA_SELL' | 'LOAN_CREATE' | 'LOAN_BORROW' | 'LOAN_REPAY' | 'INTEREST_ACCRUAL' | 'PARTIAL_LIQUIDATION' | 'FULL_LIQUIDATION';
+type TransactionType = 'ALL' | 'BUY' | 'SELL' | 'LIMIT_BUY' | 'LIMIT_SELL' | 'DEPOSIT_INR' | 'DEPOSIT_BTC' | 'WITHDRAW_INR' | 'WITHDRAW_BTC' | 'DCA_BUY' | 'DCA_SELL' | 'LOAN_CREATE' | 'LOAN_BORROW' | 'LOAN_REPAY' | 'LOAN_ADD_COLLATERAL' | 'INTEREST_ACCRUAL' | 'PARTIAL_LIQUIDATION' | 'FULL_LIQUIDATION';
 type DateFilter = 'ALL' | 'TODAY' | 'WEEK' | 'MONTH' | 'CUSTOM';
 type SortOption = 'NEWEST' | 'OLDEST' | 'HIGHEST' | 'LOWEST';
 
@@ -191,6 +191,16 @@ const History: React.FC = () => {
       return `₹${transaction.inr_amount.toLocaleString('en-IN')}`;
     } else if (transaction.type.includes('BTC')) {
       return formatCurrency(transaction.btc_amount, 'BTC');
+    } else if (transaction.type.includes('LOAN') || transaction.type.includes('INTEREST') || transaction.type.includes('LIQUIDATION')) {
+      // For loan transactions, show both amounts if they exist
+      if (transaction.inr_amount > 0 && transaction.btc_amount > 0) {
+        return `₹${transaction.inr_amount.toLocaleString('en-IN')} / ${formatCurrency(transaction.btc_amount, 'BTC')}`;
+      } else if (transaction.inr_amount > 0) {
+        return `₹${transaction.inr_amount.toLocaleString('en-IN')}`;
+      } else if (transaction.btc_amount > 0) {
+        return formatCurrency(transaction.btc_amount, 'BTC');
+      }
+      return 'N/A';
     }
     return '';
   };
@@ -356,6 +366,15 @@ const History: React.FC = () => {
                               Collateral Locked
                             </p>
                           </div>
+                        ) : transaction.type === 'LOAN_ADD_COLLATERAL' ? (
+                          <div>
+                            <p className="font-bold text-sm text-white">
+                              {formatCurrency(transaction.btc_amount, 'BTC')}
+                            </p>
+                            <p className="text-xs text-zinc-400">
+                              Collateral Added
+                            </p>
+                          </div>
                         ) : transaction.type.includes('LOAN') || transaction.type.includes('INTEREST') || transaction.type.includes('LIQUIDATION') ? (
                           <div>
                             {transaction.inr_amount > 0 && (
@@ -465,7 +484,11 @@ const History: React.FC = () => {
                     { key: 'DEPOSIT_INR', label: 'Deposit INR', icon: Plus },
                     { key: 'DEPOSIT_BTC', label: 'Deposit BTC', icon: Plus },
                     { key: 'WITHDRAW_INR', label: 'Withdraw INR', icon: Minus },
-                    { key: 'WITHDRAW_BTC', label: 'Withdraw BTC', icon: Minus }
+                    { key: 'WITHDRAW_BTC', label: 'Withdraw BTC', icon: Minus },
+                    { key: 'LOAN_CREATE', label: 'Loan Create', icon: Lock },
+                    { key: 'LOAN_BORROW', label: 'Loan Borrow', icon: ArrowDown },
+                    { key: 'LOAN_REPAY', label: 'Loan Repay', icon: ArrowUp },
+                    { key: 'LOAN_ADD_COLLATERAL', label: 'Add Collateral', icon: Plus }
                   ].map(({ key, label, icon: Icon }) => (
                     <button
                       key={key}

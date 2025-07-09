@@ -20,6 +20,7 @@ export const getTransactionDisplayName = (type: Transaction['type'], status?: st
     'LOAN_CREATE': 'Collateral Deposited',
     'LOAN_BORROW': 'Loan Borrowed',
     'LOAN_REPAY': 'Loan Repaid',
+    'LOAN_ADD_COLLATERAL': 'Collateral Added',
     'INTEREST_ACCRUAL': 'Interest Accrued',
     'PARTIAL_LIQUIDATION': 'Partial Liquidation',
     'FULL_LIQUIDATION': 'Full Liquidation'
@@ -48,6 +49,7 @@ export const getTransactionIcon = (type: Transaction['type'], status?: string): 
     'LOAN_CREATE': 'Lock',
     'LOAN_BORROW': 'ArrowDown',
     'LOAN_REPAY': 'ArrowUp',
+    'LOAN_ADD_COLLATERAL': 'Plus',
     'INTEREST_ACCRUAL': 'Clock',
     'PARTIAL_LIQUIDATION': 'AlertTriangle',
     'FULL_LIQUIDATION': 'Zap'
