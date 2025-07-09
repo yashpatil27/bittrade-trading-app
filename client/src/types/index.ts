@@ -144,6 +144,7 @@ export interface LoanStatus {
   currentLtv: number;
   currentBtcPrice: number;
   riskStatus: 'SAFE' | 'WARNING' | 'LIQUIDATE';
+  minimumInterestDue?: number;
 }
 
 export interface LoanHistory {

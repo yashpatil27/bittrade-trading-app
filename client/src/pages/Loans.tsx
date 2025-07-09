@@ -252,13 +252,13 @@ const Loans: React.FC = () => {
                 <p className="text-zinc-400 text-sm">Total Due</p>
               </div>
               <p className="text-white font-bold text-lg">
-                ₹{loanStatus.borrowedAmount.toLocaleString('en-IN')}
+                ₹{(loanStatus.borrowedAmount + (loanStatus.minimumInterestDue || 0)).toLocaleString('en-IN')}
               </p>
               <p className="text-zinc-500 text-xs">
-                Principal + Interest
+                Principal + Minimum Interest
               </p>
               <p className="text-zinc-400 text-xs mt-1 mb-3">
-                To fully repay
+                To fully repay (30-day minimum)
               </p>
               <button
                 onClick={() => setShowRepayModal(true)}
@@ -325,13 +325,13 @@ const Loans: React.FC = () => {
                 <p className="text-zinc-400 text-sm">Interest Accrued</p>
               </div>
               <p className="text-white font-bold text-lg">
-                ₹0
+                ₹{(loanStatus.minimumInterestDue || 0).toLocaleString('en-IN')}
               </p>
               <p className="text-zinc-500 text-xs">
                 ₹{Math.round((loanStatus.borrowedAmount * loanStatus.interestRate / 100) / 365).toLocaleString('en-IN')}/day
               </p>
               <p className="text-zinc-400 text-xs mt-1">
-                {loanStatus.interestRate}% APR
+                {loanStatus.interestRate}% APR (30-day minimum)
               </p>
             </div>
 
@@ -463,7 +463,7 @@ const Loans: React.FC = () => {
                   • Monthly: ₹{Math.round((loanStatus.borrowedAmount * loanStatus.interestRate / 100) / 12).toLocaleString('en-IN')}
                 </p>
                 <p className="text-yellow-300 text-xs mt-1">
-                  💡 Minimum charge: ₹{Math.round((loanStatus.borrowedAmount * loanStatus.interestRate / 100) * 30 / 365).toLocaleString('en-IN')} (30 days)
+                  💡 Minimum charge: ₹{(loanStatus.minimumInterestDue || 0).toLocaleString('en-IN')} (30 days)
                 </p>
               </div>
             </div>
