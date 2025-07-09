@@ -152,7 +152,7 @@ const DcaPlansSection = forwardRef<DcaPlansSectionRef, DcaPlansSectionProps>(({ 
 
   if (loading) {
     return (
-      <div className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden">
+      <div className="bg-gradient-to-br from-zinc-950 to-zinc-900 border border-zinc-700 rounded-xl overflow-hidden">
         <div className="p-4 border-b border-zinc-800">
           <h2 className="text-lg font-semibold flex items-center gap-2">
             <Repeat className="w-5 h-5 text-white" />
@@ -168,7 +168,7 @@ const DcaPlansSection = forwardRef<DcaPlansSectionRef, DcaPlansSectionProps>(({ 
   }
 
   return (
-    <div className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden">
+    <div className="bg-gradient-to-br from-zinc-950 to-zinc-900 border border-zinc-700 rounded-xl overflow-hidden">
       <div className="p-4 border-b border-zinc-800">
         <h2 className="text-lg font-semibold flex items-center gap-2">
           <Repeat className="w-5 h-5 text-white" />

@@ -278,12 +278,12 @@ const History: React.FC = () => {
 
       {/* Summary Stats */}
       <div className="grid grid-cols-2 gap-4">
-        <div className="bg-gradient-to-br from-zinc-900 to-zinc-800 border border-zinc-700 rounded-xl p-4 text-center">
+        <div className="bg-gradient-to-br from-zinc-950 to-zinc-900 border border-zinc-800 rounded-xl p-4 text-center">
           <Activity className="w-8 h-8 text-zinc-400 mx-auto mb-2" />
           <p className="text-zinc-400 text-sm">Total Transactions</p>
           <p className="text-2xl font-bold">{allTransactions.length}</p>
         </div>
-        <div className="bg-gradient-to-br from-zinc-900 to-zinc-800 border border-zinc-700 rounded-xl p-4 text-center">
+        <div className="bg-gradient-to-br from-zinc-950 to-zinc-900 border border-zinc-800 rounded-xl p-4 text-center">
           <Activity className="w-8 h-8 text-white mx-auto mb-2" />
           <p className="text-zinc-400 text-sm">Filtered Results</p>
           <p className="text-2xl font-bold">
@@ -293,7 +293,7 @@ const History: React.FC = () => {
       </div>
 
       {/* Transactions List */}
-      <div className="bg-gradient-to-br from-zinc-900 to-zinc-800 border border-zinc-700 rounded-xl overflow-hidden">
+      <div className="bg-gradient-to-br from-zinc-950 to-zinc-900 border border-zinc-800 rounded-xl overflow-hidden">
         <div className="p-4 border-b border-zinc-800">
           <h2 className="text-lg font-semibold">All Transactions</h2>
         </div>
@@ -496,7 +496,7 @@ const History: React.FC = () => {
                       className={`p-2 rounded-lg border transition-all text-xs flex items-center gap-1 ${
                         filters.types.includes(key as TransactionType)
                           ? 'bg-white text-black border-white'
-                          : 'bg-zinc-800 text-zinc-300 border-zinc-700 hover:border-zinc-600'
+                          : 'bg-zinc-800 text-zinc-300 border-zinc-800 hover:border-zinc-600'
                       }`}
                     >
                       <Icon className="w-3 h-3" />
@@ -525,7 +525,7 @@ const History: React.FC = () => {
                       className={`p-2 rounded-lg border transition-all text-xs ${
                         filters.dateFilter === key
                           ? 'bg-white text-black border-white'
-                          : 'bg-zinc-800 text-zinc-300 border-zinc-700 hover:border-zinc-600'
+                          : 'bg-zinc-800 text-zinc-300 border-zinc-800 hover:border-zinc-600'
                       }`}
                     >
                       {label}
@@ -539,7 +539,7 @@ const History: React.FC = () => {
                   className={`w-full p-2 rounded-lg border transition-all text-xs mb-3 ${
                     filters.dateFilter === 'CUSTOM'
                       ? 'bg-white text-black border-white'
-                      : 'bg-zinc-800 text-zinc-300 border-zinc-700 hover:border-zinc-600'
+                      : 'bg-zinc-800 text-zinc-300 border-zinc-800 hover:border-zinc-600'
                   }`}
                 >
                   Custom Range
@@ -553,7 +553,7 @@ const History: React.FC = () => {
                         type="date"
                         value={filters.customDateFrom}
                         onChange={(e) => handleFilterChange({ customDateFrom: e.target.value })}
-                        className="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2 text-white text-xs focus:outline-none focus:border-white"
+                        className="w-full bg-zinc-800 border border-zinc-800 rounded-lg p-2 text-white text-xs focus:outline-none focus:border-white"
                       />
                     </div>
                     <div>
@@ -562,7 +562,7 @@ const History: React.FC = () => {
                         type="date"
                         value={filters.customDateTo}
                         onChange={(e) => handleFilterChange({ customDateTo: e.target.value })}
-                        className="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2 text-white text-xs focus:outline-none focus:border-white"
+                        className="w-full bg-zinc-800 border border-zinc-800 rounded-lg p-2 text-white text-xs focus:outline-none focus:border-white"
                       />
                     </div>
                   </div>
@@ -585,7 +585,7 @@ const History: React.FC = () => {
                       value={filters.minAmount}
                       onChange={(e) => handleFilterChange({ minAmount: e.target.value })}
                       placeholder="0"
-                      className="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2 text-white text-xs focus:outline-none focus:border-white"
+                      className="w-full bg-zinc-800 border border-zinc-800 rounded-lg p-2 text-white text-xs focus:outline-none focus:border-white"
                     />
                   </div>
                   <div>
@@ -597,7 +597,7 @@ const History: React.FC = () => {
                       value={filters.maxAmount}
                       onChange={(e) => handleFilterChange({ maxAmount: e.target.value })}
                       placeholder="No limit"
-                      className="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2 text-white text-xs focus:outline-none focus:border-white"
+                      className="w-full bg-zinc-800 border border-zinc-800 rounded-lg p-2 text-white text-xs focus:outline-none focus:border-white"
                     />
                   </div>
                 </div>
@@ -619,7 +619,7 @@ const History: React.FC = () => {
                       className={`p-2 rounded-lg border transition-all text-xs ${
                         filters.sortBy === key
                           ? 'bg-white text-black border-white'
-                          : 'bg-zinc-800 text-zinc-300 border-zinc-700 hover:border-zinc-600'
+                          : 'bg-zinc-800 text-zinc-300 border-zinc-800 hover:border-zinc-600'
                       }`}
                     >
                       {label}

@@ -112,7 +112,7 @@ const Profile: React.FC = () => {
       )}
 
       {/* Profile Information */}
-      <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6">
+      <div className="bg-gradient-to-br from-zinc-950 to-zinc-900 border border-zinc-800 rounded-xl p-6">
         <h2 className="text-lg font-semibold mb-6 flex items-center gap-2">
           <User className="w-5 h-5 text-white" />
           Account Information
@@ -193,7 +193,7 @@ const Profile: React.FC = () => {
             clearMessages();
             navigate('/admin');
           }}
-          className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-4 flex items-center justify-between hover:bg-zinc-800 transition-colors"
+          className="w-full bg-gradient-to-br from-zinc-950 to-zinc-900 border border-zinc-800 rounded-xl p-4 flex items-center justify-between hover:from-zinc-900 hover:to-zinc-800 transition-colors"
         >
           <div className="flex items-center gap-3">
             <div className="p-2 bg-zinc-800 rounded-lg">
@@ -216,7 +216,7 @@ const Profile: React.FC = () => {
             clearMessages();
             setIsChangePasswordOpen(true);
           }}
-          className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-4 flex items-center justify-between hover:bg-zinc-800 transition-colors"
+          className="w-full bg-gradient-to-br from-zinc-950 to-zinc-900 border border-zinc-800 rounded-xl p-4 flex items-center justify-between hover:from-zinc-900 hover:to-zinc-800 transition-colors"
         >
           <div className="flex items-center gap-3">
             <div className="p-2 bg-zinc-800 rounded-lg">
@@ -236,7 +236,7 @@ const Profile: React.FC = () => {
             clearMessages();
             setIsChangePinOpen(true);
           }}
-          className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-4 flex items-center justify-between hover:bg-zinc-800 transition-colors"
+          className="w-full bg-gradient-to-br from-zinc-950 to-zinc-900 border border-zinc-800 rounded-xl p-4 flex items-center justify-between hover:from-zinc-900 hover:to-zinc-800 transition-colors"
         >
           <div className="flex items-center gap-3">
             <div className="p-2 bg-zinc-800 rounded-lg">
@@ -254,7 +254,7 @@ const Profile: React.FC = () => {
         <button
           onClick={handleExportData}
           disabled={isExporting}
-          className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-4 flex items-center justify-between hover:bg-zinc-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full bg-gradient-to-br from-zinc-950 to-zinc-900 border border-zinc-800 rounded-xl p-4 flex items-center justify-between hover:from-zinc-900 hover:to-zinc-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <div className="flex items-center gap-3">
             <div className="p-2 bg-zinc-800 rounded-lg">
@@ -278,7 +278,7 @@ const Profile: React.FC = () => {
             clearMessages();
             await logout();
           }}
-          className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-4 flex items-center justify-between hover:bg-zinc-800 transition-colors"
+          className="w-full bg-gradient-to-br from-zinc-950 to-zinc-900 border border-zinc-800 rounded-xl p-4 flex items-center justify-between hover:from-zinc-900 hover:to-zinc-800 transition-colors"
         >
           <div className="flex items-center gap-3">
             <div className="p-2 bg-zinc-800 rounded-lg">

@@ -221,7 +221,7 @@ const AdminSettings: React.FC = () => {
       )}
 
       {/* Trading Multipliers */}
-      <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6">
+      <div className="bg-gradient-to-br from-zinc-950 to-zinc-900 border border-zinc-800 rounded-xl p-4">
         <div className="flex items-center gap-2 mb-6">
           <Percent className="w-5 h-5 text-white" />
           <h2 className="text-lg font-semibold">USD/INR Exchange Rates</h2>
@@ -312,7 +312,7 @@ const AdminSettings: React.FC = () => {
       </div>
 
       {/* System Health */}
-      <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6">
+      <div className="bg-gradient-to-br from-zinc-950 to-zinc-900 border border-zinc-800 rounded-xl p-4">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-2">
             <Activity className="w-5 h-5 text-white" />

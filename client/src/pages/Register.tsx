@@ -170,7 +170,7 @@ const Register: React.FC = () => {
                       pinInputRefs.current[index - 1]?.focus();
                     }
                   }}
-                  className="w-12 h-12 text-center text-xl font-bold bg-zinc-900 border border-zinc-700 rounded-lg focus:outline-none focus:border-white transition-colors"
+                  className="w-12 h-12 text-center text-xl font-bold bg-zinc-900 border border-zinc-800 rounded-lg focus:outline-none focus:border-white transition-colors"
                   maxLength={1}
                   disabled={isLoading}
                 />

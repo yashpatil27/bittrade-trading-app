@@ -184,7 +184,7 @@ const Loans: React.FC = () => {
       {loanStatus ? (
         <div className="space-y-6">
           {/* Loan Overview Header */}
-          <div className="bg-gradient-to-br from-zinc-900 to-zinc-800 border border-zinc-700 rounded-xl p-4">
+      <div className="bg-gradient-to-br from-zinc-950 to-zinc-900 border border-zinc-800 rounded-xl p-4">
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-zinc-700 rounded-lg">
@@ -223,7 +223,7 @@ const Loans: React.FC = () => {
           {/* Financial Summary - Reordered 6 boxes */}
           <div className="grid grid-cols-2 gap-4">
             {/* Row 1: Collateral Value, Total Due */}
-            <div className="bg-gradient-to-br from-zinc-900 to-zinc-800 border border-zinc-700 rounded-xl p-4 flex flex-col">
+            <div className="bg-gradient-to-br from-zinc-950 to-zinc-900 border border-zinc-700 rounded-xl p-4 flex flex-col">
               <div className="flex items-center gap-2 mb-2">
                 <Shield className="w-4 h-4 text-white" />
                 <p className="text-zinc-400 text-sm">Collateral Value</p>
@@ -248,7 +248,7 @@ const Loans: React.FC = () => {
               </div>
             </div>
 
-            <div className="bg-gradient-to-br from-zinc-900 to-zinc-800 border border-zinc-700 rounded-xl p-4 flex flex-col">
+            <div className="bg-gradient-to-br from-zinc-950 to-zinc-900 border border-zinc-700 rounded-xl p-4 flex flex-col">
               <div className="flex items-center gap-2 mb-2">
                 <DollarSign className="w-4 h-4 text-white" />
                 <p className="text-zinc-400 text-sm">Total Due</p>
@@ -275,7 +275,7 @@ const Loans: React.FC = () => {
             </div>
 
             {/* Row 2: Available to Borrow, Liquidation Health */}
-            <div className="bg-gradient-to-br from-zinc-900 to-zinc-800 border border-zinc-700 rounded-xl p-4 flex flex-col">
+            <div className="bg-gradient-to-br from-zinc-950 to-zinc-900 border border-zinc-700 rounded-xl p-4 flex flex-col">
               <div className="flex items-center gap-2 mb-2">
                 <Plus className="w-4 h-4 text-white" />
                 <p className="text-zinc-400 text-sm">Available to Borrow</p>
@@ -301,7 +301,7 @@ const Loans: React.FC = () => {
               </div>
             </div>
 
-            <div className="bg-gradient-to-br from-zinc-900 to-zinc-800 border border-zinc-700 rounded-xl p-4 flex flex-col">
+            <div className="bg-gradient-to-br from-zinc-950 to-zinc-900 border border-zinc-700 rounded-xl p-4 flex flex-col">
               <div className="flex items-center gap-2 mb-2">
                 <AlertTriangle className="w-4 h-4 text-white" />
                 <p className="text-zinc-400 text-sm">Liquidation Health</p>
@@ -327,7 +327,7 @@ const Loans: React.FC = () => {
             </div>
 
             {/* Row 3: Interest Accrued, Principal Borrowed (no buttons) */}
-            <div className="bg-gradient-to-br from-zinc-900 to-zinc-800 border border-zinc-700 rounded-xl p-4">
+      <div className="bg-gradient-to-br from-zinc-950 to-zinc-900 border border-zinc-800 rounded-xl p-4">
               <div className="flex items-center gap-2 mb-2">
                 <Clock className="w-4 h-4 text-white" />
                 <p className="text-zinc-400 text-sm">Interest Accrued</p>
@@ -343,7 +343,7 @@ const Loans: React.FC = () => {
               </p>
             </div>
 
-            <div className="bg-gradient-to-br from-zinc-900 to-zinc-800 border border-zinc-700 rounded-xl p-4">
+      <div className="bg-gradient-to-br from-zinc-950 to-zinc-900 border border-zinc-800 rounded-xl p-4">
               <div className="flex items-center gap-2 mb-2">
                 <ArrowDown className="w-4 h-4 text-white" />
                 <p className="text-zinc-400 text-sm">Principal Borrowed</p>
@@ -364,7 +364,7 @@ const Loans: React.FC = () => {
           </div>
 
           {/* Enhanced Risk Visualization */}
-          <div className="bg-gradient-to-br from-zinc-900 to-zinc-800 border border-zinc-700 rounded-xl p-4">
+      <div className="bg-gradient-to-br from-zinc-950 to-zinc-900 border border-zinc-800 rounded-xl p-4">
             <div className="flex items-center gap-2 mb-3">
               <TrendingUp className="w-5 h-5 text-white" />
               <h3 className="text-lg font-semibold">Liquidation Risk Monitor</h3>
@@ -409,7 +409,7 @@ const Loans: React.FC = () => {
           </div>
 
           {/* Performance Tracking */}
-          <div className="bg-gradient-to-br from-zinc-900 to-zinc-800 border border-zinc-700 rounded-xl p-4">
+      <div className="bg-gradient-to-br from-zinc-950 to-zinc-900 border border-zinc-800 rounded-xl p-4">
             <div className="flex items-center gap-2 mb-3">
               <TrendingUp className="w-5 h-5 text-white" />
               <h3 className="text-lg font-semibold">Loan Performance</h3>
@@ -442,7 +442,7 @@ const Loans: React.FC = () => {
       ) : (
         /* No Active Loan */
         <div className="space-y-4">
-          <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-6 text-center">
+          <div className="bg-gradient-to-br from-zinc-950 to-zinc-900 border border-zinc-700 rounded-lg p-6 text-center">
             <Wallet className="w-12 h-12 text-zinc-400 mx-auto mb-4" />
             <h2 className="text-xl font-semibold mb-2">No Active Loan</h2>
             <p className="text-zinc-400 mb-6">
@@ -482,7 +482,7 @@ const Loans: React.FC = () => {
 
       {/* Loan History */}
       {loanHistory.length > 0 && (
-        <div className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden">
+      <div className="bg-gradient-to-br from-zinc-950 to-zinc-900 border border-zinc-800 rounded-xl overflow-hidden">
           <div className="p-4 border-b border-zinc-800">
             <h2 className="text-lg font-semibold">Loan History</h2>
           </div>

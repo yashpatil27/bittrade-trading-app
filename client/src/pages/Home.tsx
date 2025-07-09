@@ -212,7 +212,7 @@ const Home: React.FC = () => {
         {/* Wallet Balance Cards */}
         <div className="grid grid-cols-2 gap-4">
           {/* INR Balance */}
-          <div className="bg-gradient-to-br from-zinc-900 to-zinc-800 border border-zinc-700 rounded-xl p-4 hover:border-zinc-600 transition-all duration-200">
+          <div className="bg-gradient-to-br from-zinc-950 to-zinc-900 border border-zinc-800 rounded-xl p-4 hover:border-zinc-600 transition-all duration-200">
             <div className="flex items-center justify-between mb-2">
               <div className="p-2 bg-zinc-700 rounded-lg">
                 <DollarSign className="w-5 h-5 text-white" />
@@ -226,7 +226,7 @@ const Home: React.FC = () => {
           </div>
 
           {/* BTC Balance */}
-          <div className="bg-gradient-to-br from-zinc-900 to-zinc-800 border border-zinc-700 rounded-xl p-4 hover:border-zinc-600 transition-all duration-200">
+          <div className="bg-gradient-to-br from-zinc-950 to-zinc-900 border border-zinc-800 rounded-xl p-4 hover:border-zinc-600 transition-all duration-200">
             <div className="flex items-center justify-between mb-2">
               <div className="p-2 bg-zinc-700 rounded-lg">
                 <Bitcoin className="w-5 h-5 text-white" />
@@ -246,7 +246,7 @@ const Home: React.FC = () => {
         </div>
 
         {/* Bitcoin Price Card with Trading Actions */}
-        <div className="bg-gradient-to-br from-zinc-900 to-zinc-800 border border-zinc-700 rounded-xl p-4">
+        <div className="bg-gradient-to-br from-zinc-950 to-zinc-900 border border-zinc-800 rounded-xl p-4">
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-lg font-semibold flex items-center gap-2">
               <TrendingUp className="w-5 h-5 text-white" />
@@ -300,7 +300,7 @@ const Home: React.FC = () => {
         <DcaPlansSection ref={dcaPlansSectionRef} onUpdate={refreshData} />
 
         {/* Recent Activity */}
-        <div className="bg-gradient-to-br from-zinc-900 to-zinc-800 border border-zinc-700 rounded-xl overflow-hidden">
+        <div className="bg-gradient-to-br from-zinc-950 to-zinc-900 border border-zinc-800 rounded-xl overflow-hidden">
           <div className="p-4 border-b border-zinc-800">
             <h2 className="text-lg font-semibold flex items-center gap-2">
               <Activity className="w-5 h-5 text-white" />
