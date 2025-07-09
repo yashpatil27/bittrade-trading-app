@@ -222,7 +222,10 @@ export const adminAPI = {
   withdrawBTC: (userId: number, amount: number): Promise<AxiosResponse<ApiResponse>> =>
     api.post(`/admin/users/${userId}/withdraw-btc`, { amount }),
   
-  updateSettings: (settings: { buy_multiplier?: number, sell_multiplier?: number }): Promise<AxiosResponse<ApiResponse>> =>
+  getSettings: (): Promise<AxiosResponse<ApiResponse<any>>> =>
+    api.get('/admin/settings'),
+  
+  updateSettings: (settings: { buy_multiplier?: number, sell_multiplier?: number, loan_interest_rate?: number }): Promise<AxiosResponse<ApiResponse>> =>
     api.patch('/admin/settings', settings),
   
   getTransactions: (page = 1, limit = 50): Promise<AxiosResponse<ApiResponse<{ transactions: any[], pagination: any }>>> =>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, Wallet, Bitcoin, Calculator, Info } from 'lucide-react';
-import { userAPI } from '../services/api';
+import { userAPI, adminAPI } from '../services/api';
 import { useBalance } from '../contexts/BalanceContext';
 import { formatBitcoin } from '../utils/formatters';
 import PinConfirmationModal from './PinConfirmationModal';
@@ -20,6 +20,7 @@ const DepositCollateralModal: React.FC<DepositCollateralModalProps> = ({
   const [amount, setAmount] = useState('');
   const [btcSellRate, setBtcSellRate] = useState(0);
   const [availableBtc, setAvailableBtc] = useState(0);
+  const [interestRate, setInterestRate] = useState(15);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [isPinModalOpen, setIsPinModalOpen] = useState(false);
@@ -35,15 +36,19 @@ const DepositCollateralModal: React.FC<DepositCollateralModalProps> = ({
 
   const fetchData = async () => {
     try {
-      const [dashboardResponse, pricesResponse] = await Promise.all([
+      const [dashboardResponse, pricesResponse, settingsResponse] = await Promise.all([
         userAPI.getDashboard(),
-        userAPI.getPrices()
+        userAPI.getPrices(),
+        adminAPI.getSettings()
       ]);
       
       setAvailableBtc(dashboardResponse.data.data?.balances.btc || 0);
       setBtcSellRate(pricesResponse.data.data?.sell_rate || 0);
+      setInterestRate(settingsResponse.data.data?.loan_interest_rate || 15);
     } catch (error) {
       console.error('Error fetching data:', error);
+      // Fallback to default interest rate if settings fetch fails
+      setInterestRate(15);
     }
   };
 
@@ -233,7 +238,7 @@ const DepositCollateralModal: React.FC<DepositCollateralModalProps> = ({
               </div>
               <div className="flex justify-between">
                 <span className="text-zinc-400">Interest Rate:</span>
-                <span className="text-white">12% APR</span>
+                <span className="text-white">{interestRate}% APR</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-zinc-400">Liquidation Price:</span>

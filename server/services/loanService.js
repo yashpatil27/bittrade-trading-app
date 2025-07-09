@@ -1,6 +1,7 @@
 const { query, transaction } = require('../config/database');
 const { clearUserCache } = require('../config/redis');
 const bitcoinDataService = require('./bitcoinDataService');
+const settingsService = require('./settingsService');
 
 /**
  * LoanService - Manages Bitcoin-backed loans with collateral management
@@ -11,15 +12,17 @@ const LoanService = {
    * @param {number} userId - ID of the user
    * @param {number} collateralAmount - Amount of BTC in satoshis
    * @param {number} ltvRatio - Loan-to-value ratio (e.g., 60.00 for 60%)
-   * @param {number} interestRate - Annual interest rate (e.g., 12.00 for 12%)
    * @returns {Promise} - Resolves with loan details
    */
-  async depositCollateral(userId, collateralAmount, ltvRatio = 60.00, interestRate = 12.00) {
+  async depositCollateral(userId, collateralAmount, ltvRatio = 60.00) {
     try {
       if (collateralAmount <= 0) {
         throw new Error('Collateral amount must be greater than 0');
       }
 
+      // Get interest rate from settings
+      const interestRate = await settingsService.getLoanInterestRate();
+      
       return await transaction(async (connection) => {
         // Get current user balances
         const [userRows] = await connection.execute(

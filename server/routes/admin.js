@@ -585,15 +585,15 @@ router.post('/users/:userId/withdraw-btc', async (req, res) => {
   }
 });
 
-// Update system settings (buy/sell multipliers)
+// Update system settings (buy/sell multipliers and loan interest rate)
 router.patch('/settings', async (req, res) => {
   try {
-    const { buy_multiplier, sell_multiplier } = req.body;
+    const { buy_multiplier, sell_multiplier, loan_interest_rate } = req.body;
 
-    if (!buy_multiplier && !sell_multiplier) {
+    if (!buy_multiplier && !sell_multiplier && !loan_interest_rate) {
       return res.status(400).json({
         success: false,
-        message: 'At least one multiplier must be provided'
+        message: 'At least one setting must be provided'
       });
     }
 
@@ -618,6 +618,16 @@ router.patch('/settings', async (req, res) => {
       updates.push(['sell_multiplier', sell_multiplier]);
     }
 
+    if (loan_interest_rate !== undefined) {
+      if (loan_interest_rate <= 0 || loan_interest_rate > 100) {
+        return res.status(400).json({
+          success: false,
+          message: 'Loan interest rate must be between 0 and 100'
+        });
+      }
+      updates.push(['loan_interest_rate', loan_interest_rate]);
+    }
+
     // Update settings
     for (const [key, value] of updates) {
       await query(
@@ -639,6 +649,30 @@ router.patch('/settings', async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Error updating settings'
+    });
+  }
+});
+
+// Get current system settings
+router.get('/settings', async (req, res) => {
+  try {
+    const settingsRows = await query('SELECT `key`, value FROM settings');
+    
+    const settings = {};
+    settingsRows.forEach(row => {
+      settings[row.key] = parseInt(row.value);
+    });
+    
+    res.json({
+      success: true,
+      data: settings
+    });
+    
+  } catch (error) {
+    console.error('Get settings error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error retrieving settings'
     });
   }
 });

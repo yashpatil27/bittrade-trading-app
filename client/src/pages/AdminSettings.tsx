@@ -21,6 +21,7 @@ import PinConfirmationModal from '../components/PinConfirmationModal';
 const AdminSettings: React.FC = () => {
   const [buyMultiplier, setBuyMultiplier] = useState('');
   const [sellMultiplier, setSellMultiplier] = useState('');
+  const [loanInterestRate, setLoanInterestRate] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
@@ -29,7 +30,7 @@ const AdminSettings: React.FC = () => {
   
   // PIN confirmation state
   const [isPinModalOpen, setIsPinModalOpen] = useState(false);
-  const [pendingSettings, setPendingSettings] = useState<{ buy_multiplier: number; sell_multiplier: number } | null>(null);
+  const [pendingSettings, setPendingSettings] = useState<{ buy_multiplier: number; sell_multiplier: number; loan_interest_rate: number } | null>(null);
 
   useEffect(() => {
     fetchCurrentSettings();
@@ -38,12 +39,19 @@ const AdminSettings: React.FC = () => {
 
   const fetchCurrentSettings = async () => {
     try {
-      const response = await adminAPI.getDashboard();
-      const data = response.data.data!;
-      setBuyMultiplier(data.current_prices.buy_multiplier?.toString() || '91');
-      setSellMultiplier(data.current_prices.sell_multiplier?.toString() || '88');
+      // Get settings from admin settings endpoint
+      const settingsResponse = await adminAPI.getSettings();
+      const settings = settingsResponse.data.data;
+      
+      setBuyMultiplier(settings.buy_multiplier?.toString() || '91');
+      setSellMultiplier(settings.sell_multiplier?.toString() || '88');
+      setLoanInterestRate(settings.loan_interest_rate?.toString() || '15');
     } catch (error) {
       console.error('Error fetching settings:', error);
+      // Fallback to default values
+      setBuyMultiplier('91');
+      setSellMultiplier('88');
+      setLoanInterestRate('15');
     }
   };
 
@@ -61,16 +69,22 @@ const AdminSettings: React.FC = () => {
   };
 
   const validateAndPrepareSettings = () => {
-    if (!buyMultiplier || !sellMultiplier) {
-      setError('Please enter both buy and sell multipliers');
+    if (!buyMultiplier || !sellMultiplier || !loanInterestRate) {
+      setError('Please enter all required settings');
       return null;
     }
 
     const buyValue = parseFloat(buyMultiplier);
     const sellValue = parseFloat(sellMultiplier);
+    const interestValue = parseFloat(loanInterestRate);
 
     if (buyValue <= 0 || buyValue > 200 || sellValue <= 0 || sellValue > 200) {
       setError('Exchange rates must be between 1 and 200 INR per USD');
+      return null;
+    }
+
+    if (interestValue <= 0 || interestValue > 100) {
+      setError('Loan interest rate must be between 0 and 100%');
       return null;
     }
 
@@ -79,7 +93,7 @@ const AdminSettings: React.FC = () => {
       return null;
     }
 
-    return { buy_multiplier: buyValue, sell_multiplier: sellValue };
+    return { buy_multiplier: buyValue, sell_multiplier: sellValue, loan_interest_rate: interestValue };
   };
 
   const handleUpdateSettings = async () => {
@@ -135,6 +149,7 @@ const AdminSettings: React.FC = () => {
   const handleReset = () => {
     setBuyMultiplier('91');
     setSellMultiplier('88');
+    setLoanInterestRate('15');
     setMessage('');
     setError('');
   };
@@ -253,6 +268,27 @@ const AdminSettings: React.FC = () => {
               </div>
               <p className="text-zinc-500 text-xs mt-1">Exchange rate when users sell Bitcoin (INR per USD)</p>
             </div>
+          </div>
+
+          {/* Loan Interest Rate */}
+          <div className="pt-4 border-t border-zinc-700">
+            <label className="block text-zinc-400 text-sm mb-2">Loan Interest Rate</label>
+            <div className="relative">
+              <Percent className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-zinc-400" />
+              <input
+                type="number"
+                inputMode="decimal"
+                pattern="[0-9]*[.]?[0-9]*"
+                value={loanInterestRate}
+                onChange={(e) => setLoanInterestRate(e.target.value)}
+                placeholder="15"
+                min="0.1"
+                max="100"
+                step="0.1"
+                className="w-full bg-zinc-800 border border-zinc-700 rounded-lg py-3 pl-10 pr-4 text-white placeholder-zinc-400 focus:outline-none focus:border-white"
+              />
+            </div>
+            <p className="text-zinc-500 text-xs mt-1">Annual interest rate for Bitcoin-backed loans (%)</p>
           </div>
 
           <div className="flex gap-3">
@@ -395,7 +431,7 @@ const AdminSettings: React.FC = () => {
         onClose={handlePinModalClose}
         onConfirm={handlePinConfirm}
         title="Confirm Rate Changes"
-        message={pendingSettings ? `Update USD/INR rates:\nBuy: ${pendingSettings.buy_multiplier}\nSell: ${pendingSettings.sell_multiplier}` : ''}
+        message={pendingSettings ? `Update settings:\nBuy Rate: ${pendingSettings.buy_multiplier}\nSell Rate: ${pendingSettings.sell_multiplier}\nLoan Interest Rate: ${pendingSettings.loan_interest_rate}%` : ''}
         isLoading={isLoading}
       />
     </div>
