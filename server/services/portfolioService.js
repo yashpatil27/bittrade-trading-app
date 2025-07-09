@@ -121,7 +121,7 @@ class PortfolioService {
       WHERE user_id = ? AND status = 'EXECUTED' AND type IN ('DEPOSIT_INR', 'DEPOSIT_BTC', 'WITHDRAW_INR', 'WITHDRAW_BTC')
     `, [userId]);
 
-    return investmentRows[0].total_investment || 0;
+    return parseFloat(investmentRows[0].total_investment) || 0;
   }
 
   async calculateAverageBuyPrice(userId) {
@@ -134,12 +134,15 @@ class PortfolioService {
     `, [userId]);
 
     const result = buyRows[0];
-    if (!result.total_btc_bought || result.total_btc_bought === 0) {
+    const totalBtcBought = parseFloat(result.total_btc_bought) || 0;
+    const totalInrSpent = parseFloat(result.total_inr_spent) || 0;
+    
+    if (!totalBtcBought || totalBtcBought === 0) {
       return 0;
     }
 
-    const totalBtcInBtc = result.total_btc_bought / 100000000; // Convert satoshis to BTC
-    return result.total_inr_spent / totalBtcInBtc;
+    const totalBtcInBtc = totalBtcBought / 100000000; // Convert satoshis to BTC
+    return totalInrSpent / totalBtcInBtc;
   }
 
   async calculateBreakEvenPrice(userId, currentBalances, totalInvestment) {
@@ -223,11 +226,11 @@ class PortfolioService {
     const daysInProfit = 0;
 
     return {
-      tradingDays: tradingDaysRows[0].trading_days || 0,
-      totalTrades: totalTradesRows[0].total_trades || 0,
-      tradesThisMonth: tradesThisMonthRows[0].trades_this_month || 0,
-      averageTradeSize: Math.round(volumeRows[0].avg_trade_size || 0),
-      totalVolume: volumeRows[0].total_volume || 0,
+      tradingDays: parseInt(tradingDaysRows[0].trading_days) || 0,
+      totalTrades: parseInt(totalTradesRows[0].total_trades) || 0,
+      tradesThisMonth: parseInt(tradesThisMonthRows[0].trades_this_month) || 0,
+      averageTradeSize: Math.round(parseFloat(volumeRows[0].avg_trade_size) || 0),
+      totalVolume: parseFloat(volumeRows[0].total_volume) || 0,
       daysInProfit // TODO: Implement proper calculation
     };
   }

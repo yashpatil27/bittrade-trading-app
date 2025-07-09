@@ -102,11 +102,6 @@ const Portfolio: React.FC = () => {
       setPortfolioData(portfolioResponse.data.data);
       setBitcoinData(bitcoinResponse.data.data);
       setSentimentData(sentimentResponse.data.data);
-      
-      // Debug: Check totalInvestment value
-      console.log('Portfolio API Response:', portfolioResponse.data.data);
-      console.log('Total Investment Value:', portfolioResponse.data.data?.totalInvestment);
-      console.log('Type of totalInvestment:', typeof portfolioResponse.data.data?.totalInvestment);
     } catch (error) {
       console.error('Error fetching portfolio data:', error);
       setError('Failed to load portfolio data');
