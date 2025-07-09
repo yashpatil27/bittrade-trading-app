@@ -48,10 +48,16 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
+    console.log('API Error:', error.response?.status, error.response?.data?.message);
+    
     if (error.response?.status === 401) {
+      console.log('Authentication error - logging out');
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       window.location.href = '/login';
+    } else if (error.response?.status === 429) {
+      console.warn('Rate limit exceeded - not logging out');
+      // Don't logout on rate limit, just show error
     }
     return Promise.reject(error);
   }
