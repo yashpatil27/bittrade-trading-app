@@ -213,6 +213,9 @@ const Loans: React.FC = () => {
                 <p className="text-white font-medium">
                   Daily at 12:00 AM (+₹{Math.round((loanStatus.borrowedAmount * loanStatus.interestRate / 100) / 365).toLocaleString('en-IN')})
                 </p>
+                <p className="text-yellow-400 text-xs mt-1">
+                  ⚠️ Minimum 30-day interest applies
+                </p>
               </div>
             </div>
           </div>
@@ -459,6 +462,9 @@ const Loans: React.FC = () => {
                   Daily interest cost: ₹{Math.round((loanStatus.borrowedAmount * loanStatus.interestRate / 100) / 365).toLocaleString('en-IN')} 
                   • Monthly: ₹{Math.round((loanStatus.borrowedAmount * loanStatus.interestRate / 100) / 12).toLocaleString('en-IN')}
                 </p>
+                <p className="text-yellow-300 text-xs mt-1">
+                  💡 Minimum charge: ₹{Math.round((loanStatus.borrowedAmount * loanStatus.interestRate / 100) * 30 / 365).toLocaleString('en-IN')} (30 days)
+                </p>
               </div>
             </div>
           </div>
@@ -466,19 +472,42 @@ const Loans: React.FC = () => {
         </div>
       ) : (
         /* No Active Loan */
-        <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-6 text-center">
-          <Wallet className="w-12 h-12 text-zinc-400 mx-auto mb-4" />
-          <h2 className="text-xl font-semibold mb-2">No Active Loan</h2>
-          <p className="text-zinc-400 mb-6">
-            Deposit Bitcoin as collateral to start borrowing INR
-          </p>
-          <button
-            onClick={() => setShowDepositModal(true)}
-            className="bg-white text-black hover:bg-zinc-200 py-3 px-6 rounded-lg font-medium transition-colors flex items-center gap-2 mx-auto"
-          >
-            <Plus className="w-4 h-4" />
-            Deposit Collateral
-          </button>
+        <div className="space-y-4">
+          <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-6 text-center">
+            <Wallet className="w-12 h-12 text-zinc-400 mx-auto mb-4" />
+            <h2 className="text-xl font-semibold mb-2">No Active Loan</h2>
+            <p className="text-zinc-400 mb-6">
+              Deposit Bitcoin as collateral to start borrowing INR
+            </p>
+            <button
+              onClick={() => setShowDepositModal(true)}
+              className="bg-white text-black hover:bg-zinc-200 py-3 px-6 rounded-lg font-medium transition-colors flex items-center gap-2 mx-auto"
+            >
+              <Plus className="w-4 h-4" />
+              Deposit Collateral
+            </button>
+          </div>
+          
+          {/* 30-Day Minimum Policy Notice */}
+          <div className="bg-gradient-to-br from-yellow-900/30 to-orange-900/30 border border-yellow-700/50 rounded-lg p-4">
+            <div className="flex items-start gap-3">
+              <div className="p-2 bg-yellow-800/50 rounded-lg flex-shrink-0">
+                <AlertTriangle className="w-5 h-5 text-yellow-400" />
+              </div>
+              <div>
+                <h3 className="text-yellow-400 font-semibold mb-1">Important: 30-Day Minimum Interest</h3>
+                <p className="text-yellow-200 text-sm mb-2">
+                  All loans are subject to a minimum 30-day interest charge, regardless of repayment timing.
+                  This encourages longer-term borrowing and helps us provide better rates.
+                </p>
+                <div className="text-yellow-300 text-xs">
+                  <p>• Early repayment still charges 30 days of interest</p>
+                  <p>• Optimal loan duration: 30+ days for best value</p>
+                  <p>• No additional fees for longer-term loans</p>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       )}
 
