@@ -52,8 +52,11 @@ api.interceptors.response.use(
     
     if (error.response?.status === 401) {
       console.log('Authentication error - clearing local storage');
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
+      // Only clear auth if we're not already in an auth-clearing state
+      if (localStorage.getItem('token')) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+      }
       // Don't redirect here - let React Router handle it
     } else if (error.response?.status === 429) {
       console.warn('Rate limit exceeded - not logging out');
