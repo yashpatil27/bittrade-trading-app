@@ -18,6 +18,8 @@ const bitcoinDataService = require('./services/bitcoinDataService');
 const limitOrderExecutionService = require('./services/limitOrderExecutionService');
 const dcaExecutionService = require('./services/dcaExecutionService');
 const loanMonitoringService = require('./services/loanMonitoringService');
+const liquidationMonitoringService = require('./services/liquidationMonitoringService');
+const JobScheduler = require('./schedulers/jobScheduler');
 
 // Load environment variables
 dotenv.config();
@@ -56,6 +58,14 @@ const initializeServices = async () => {
     // Start loan monitoring service
     loanMonitoringService.start();
     console.log('✓ Loan monitoring service started');
+    
+    // Start liquidation monitoring service
+    liquidationMonitoringService.start();
+    console.log('✓ Liquidation monitoring service started');
+    
+    // Start job scheduler for daily tasks
+    JobScheduler.start();
+    console.log('✓ Job scheduler started');
     
     console.log('All services initialized successfully');
   } catch (error) {
@@ -107,7 +117,8 @@ app.get('/health', (req, res) => {
       bitcoin_data_service: bitcoinDataService.isRunning ? 'running' : 'stopped',
       limit_order_execution: limitOrderExecutionService.isRunning ? 'running' : 'stopped',
       dca_execution: dcaExecutionService.isRunning ? 'running' : 'stopped',
-      loan_monitoring: loanMonitoringService.getStatus().isRunning ? 'running' : 'stopped'
+      loan_monitoring: loanMonitoringService.getStatus().isRunning ? 'running' : 'stopped',
+      liquidation_monitoring: liquidationMonitoringService.getStatus().isRunning ? 'running' : 'stopped'
     }
   });
 });
@@ -138,6 +149,7 @@ process.on('SIGINT', () => {
   limitOrderExecutionService.stopService();
   dcaExecutionService.stopService();
   loanMonitoringService.stop();
+  liquidationMonitoringService.stop();
   process.exit(0);
 });
 
@@ -147,6 +159,7 @@ process.on('SIGTERM', () => {
   limitOrderExecutionService.stopService();
   dcaExecutionService.stopService();
   loanMonitoringService.stop();
+  liquidationMonitoringService.stop();
   process.exit(0);
 });
 

@@ -272,6 +272,17 @@ export const adminAPI = {
   
   deleteDcaPlan: (planId: number): Promise<AxiosResponse<ApiResponse<any>>> =>
     api.delete(`/admin/dca-plans/${planId}`),
+  
+  // Liquidation monitoring endpoints
+  triggerManualLiquidation: (): Promise<AxiosResponse<ApiResponse<any>>> =>
+    api.post('/admin/liquidation/manual'),
+  
+  getLiquidationRisks: (): Promise<AxiosResponse<ApiResponse<any[]>>> =>
+    api.get('/admin/liquidation/risks'),
+  
+  // Job management endpoints
+  triggerInterestAccrual: (): Promise<AxiosResponse<ApiResponse<any>>> =>
+    api.post('/admin/jobs/accrue-interest'),
 };
 
 export default api;

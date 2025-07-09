@@ -1219,4 +1219,63 @@ router.delete('/dca-plans/:planId', async (req, res) => {
   }
 });
 
+// ========== JOB MANAGEMENT ENDPOINTS ==========
+
+// Manually trigger interest accrual (for testing)
+router.post('/jobs/accrue-interest', async (req, res) => {
+  try {
+    const JobScheduler = require('../schedulers/jobScheduler');
+    await JobScheduler.runInterestAccrual();
+    
+    res.json({
+      success: true,
+      message: 'Interest accrual job triggered successfully'
+    });
+  } catch (error) {
+    console.error('Manual interest accrual error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error triggering interest accrual job'
+    });
+  }
+});
+
+// Liquidation monitoring service
+router.post('/liquidation/manual', async (req, res) => {
+  try {
+    const liquidationMonitoringService = require('../services/liquidationMonitoringService');
+    const result = await liquidationMonitoringService.executeLiquidationNow();
+
+    res.json({
+      success: true,
+      message: result.message
+    });
+  } catch (error) {
+    console.error('Manual liquidation error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error triggering manual liquidation'
+    });
+  }
+});
+
+// Get liquidation risks for all loans
+router.get('/liquidation/risks', async (req, res) => {
+  try {
+    const liquidationMonitoringService = require('../services/liquidationMonitoringService');
+    const risks = await liquidationMonitoringService.getLiquidationRisks();
+
+    res.json({
+      success: true,
+      data: risks
+    });
+  } catch (error) {
+    console.error('Get liquidation risks error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching liquidation risks'
+    });
+  }
+});
+
 module.exports = router;
