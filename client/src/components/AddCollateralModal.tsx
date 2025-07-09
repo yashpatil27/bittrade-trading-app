@@ -129,7 +129,7 @@ const AddCollateralModal: React.FC<AddCollateralModalProps> = ({
   return (
     <>
       <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-        <div className="bg-zinc-900 rounded-2xl border border-zinc-800 p-6 w-full max-w-md">
+        <div className="bg-gradient-to-br from-zinc-950 to-zinc-900 rounded-2xl border border-zinc-800 p-6 w-full max-w-md">
           {/* Header */}
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">

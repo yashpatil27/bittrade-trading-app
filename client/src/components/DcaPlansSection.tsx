@@ -109,7 +109,7 @@ const DcaPlansSection = forwardRef<DcaPlansSectionRef, DcaPlansSectionProps>(({ 
       case 'CANCELLED':
         return 'text-red-400 bg-red-900/20 border-red-800';
       default:
-        return 'text-zinc-400 bg-zinc-800/20 border-zinc-700';
+        return 'text-zinc-400 bg-zinc-800/20 border-zinc-800';
     }
   };
 
@@ -152,7 +152,7 @@ const DcaPlansSection = forwardRef<DcaPlansSectionRef, DcaPlansSectionProps>(({ 
 
   if (loading) {
     return (
-      <div className="bg-gradient-to-br from-zinc-950 to-zinc-900 border border-zinc-700 rounded-xl overflow-hidden">
+      <div className="bg-gradient-to-br from-zinc-950 to-zinc-900 border border-zinc-800 rounded-xl overflow-hidden">
         <div className="p-4 border-b border-zinc-800">
           <h2 className="text-lg font-semibold flex items-center gap-2">
             <Repeat className="w-5 h-5 text-white" />
@@ -168,7 +168,7 @@ const DcaPlansSection = forwardRef<DcaPlansSectionRef, DcaPlansSectionProps>(({ 
   }
 
   return (
-    <div className="bg-gradient-to-br from-zinc-950 to-zinc-900 border border-zinc-700 rounded-xl overflow-hidden">
+    <div className="bg-gradient-to-br from-zinc-950 to-zinc-900 border border-zinc-800 rounded-xl overflow-hidden">
       <div className="p-4 border-b border-zinc-800">
         <h2 className="text-lg font-semibold flex items-center gap-2">
           <Repeat className="w-5 h-5 text-white" />
@@ -280,7 +280,7 @@ const DcaPlansSection = forwardRef<DcaPlansSectionRef, DcaPlansSectionProps>(({ 
       {/* Modal for managing selected DCA plan */}
       {showDetailsModal && selectedPlan && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-zinc-900 border border-zinc-700 rounded-xl w-full max-w-md max-h-[90vh] overflow-hidden">
+          <div className="bg-gradient-to-br from-zinc-950 to-zinc-900 border border-zinc-800 rounded-xl w-full max-w-md max-h-[90vh] overflow-hidden">
             {/* Header */}
             <div className="flex items-center justify-between p-6 border-b border-zinc-800">
               <div className="flex items-center gap-3">

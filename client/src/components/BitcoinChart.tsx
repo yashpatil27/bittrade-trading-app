@@ -147,7 +147,7 @@ const BitcoinChart = forwardRef<BitcoinChartRef, BitcoinChartProps>(({ onPriceRe
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       return (
-        <div className="bg-zinc-800 border border-zinc-700 rounded-lg p-3 shadow-xl">
+        <div className="bg-zinc-800 border border-zinc-800 rounded-lg p-3 shadow-xl">
           <p className="text-zinc-400 text-xs mb-1">{label}</p>
           <p className="text-white font-bold">
             {formatPrice(payload[0].value)}
@@ -159,9 +159,9 @@ const BitcoinChart = forwardRef<BitcoinChartRef, BitcoinChartProps>(({ onPriceRe
   };
 
   return (
-    <div className="bg-zinc-800/50 border border-zinc-700 rounded-xl overflow-hidden">
+    <div className="bg-gradient-to-br from-zinc-950 to-zinc-900 border border-zinc-800 rounded-xl overflow-hidden">
       {/* Header */}
-      <div className="p-3 border-b border-zinc-700">
+      <div className="p-3 border-b border-zinc-800">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
             <div className="p-1.5 bg-zinc-700 rounded-lg">

@@ -803,7 +803,7 @@ const AdminTransactions: React.FC = () => {
       {isFilterOpen && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setIsFilterOpen(false)}>
           {/* Modal */}
-          <div className="bg-zinc-900 rounded-2xl border border-zinc-800 w-full max-w-md max-h-[80vh] overflow-hidden" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-gradient-to-br from-zinc-950 to-zinc-900 rounded-2xl border border-zinc-800 w-full max-w-md max-h-[80vh] overflow-hidden" onClick={(e) => e.stopPropagation()}>
             {/* Header */}
             <div className="flex items-center justify-between p-4 border-b border-zinc-800">
               <div className="flex items-center gap-3">
@@ -1018,7 +1018,7 @@ const AdminTransactions: React.FC = () => {
       {/* DCA Plan Detail Modal */}
       {isDcaModalOpen && selectedDcaPlan && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-zinc-900 border border-zinc-700 rounded-xl w-full max-w-md max-h-[90vh] overflow-hidden">
+          <div className="bg-gradient-to-br from-zinc-950 to-zinc-900 border border-zinc-800 rounded-xl w-full max-w-md max-h-[90vh] overflow-hidden">
             {/* Header */}
             <div className="flex items-center justify-between p-6 border-b border-zinc-800">
               <div className="flex items-center gap-3">
