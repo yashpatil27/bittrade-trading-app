@@ -46,6 +46,11 @@ const RepayModal: React.FC<RepayModalProps> = ({
     }
   };
 
+  const getTotalDue = () => {
+    if (!loanStatus) return 0;
+    return loanStatus.borrowedAmount + (loanStatus.minimumInterestDue || 0);
+  };
+
   const calculateNewLtv = () => {
     if (!amount || !loanStatus) return loanStatus?.currentLtv || 0;
     const repayAmount = parseFloat(amount);
@@ -83,8 +88,8 @@ const RepayModal: React.FC<RepayModalProps> = ({
       return;
     }
 
-    if (repayAmount > loanStatus.borrowedAmount) {
-      setError('Amount exceeds borrowed amount');
+    if (repayAmount > getTotalDue()) {
+      setError('Amount exceeds total due amount');
       return;
     }
 
@@ -127,7 +132,7 @@ const RepayModal: React.FC<RepayModalProps> = ({
   };
 
   const getMaxAmount = () => {
-    return Math.min(availableBalance, loanStatus?.borrowedAmount || 0);
+    return Math.min(availableBalance, getTotalDue());
   };
 
   if (!isOpen || !loanStatus) return null;
@@ -166,9 +171,12 @@ const RepayModal: React.FC<RepayModalProps> = ({
         <div className="bg-zinc-800/50 rounded-lg p-4 mb-6">
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div>
-              <p className="text-zinc-400">Outstanding Debt</p>
+              <p className="text-zinc-400">Total Due</p>
               <p className="text-white font-semibold">
-                ₹{loanStatus.borrowedAmount.toLocaleString('en-IN')}
+                ₹{getTotalDue().toLocaleString('en-IN')}
+              </p>
+              <p className="text-zinc-500 text-xs mt-1">
+                Principal + Interest
               </p>
             </div>
             <div>
@@ -206,19 +214,19 @@ const RepayModal: React.FC<RepayModalProps> = ({
           {/* Percentage Quick Select Buttons */}
           <div className="flex gap-2 mt-3">
             <button
-              onClick={() => setAmount((loanStatus.borrowedAmount * 0.25).toFixed(0))}
+              onClick={() => setAmount((getTotalDue() * 0.25).toFixed(0))}
               className="flex-1 text-xs bg-zinc-800 hover:bg-zinc-700 px-3 py-2 rounded transition-colors"
             >
               25%
             </button>
             <button
-              onClick={() => setAmount((loanStatus.borrowedAmount * 0.5).toFixed(0))}
+              onClick={() => setAmount((getTotalDue() * 0.5).toFixed(0))}
               className="flex-1 text-xs bg-zinc-800 hover:bg-zinc-700 px-3 py-2 rounded transition-colors"
             >
               50%
             </button>
             <button
-              onClick={() => setAmount((loanStatus.borrowedAmount * 0.75).toFixed(0))}
+              onClick={() => setAmount((getTotalDue() * 0.75).toFixed(0))}
               className="flex-1 text-xs bg-zinc-800 hover:bg-zinc-700 px-3 py-2 rounded transition-colors"
             >
               75%
@@ -250,7 +258,7 @@ const RepayModal: React.FC<RepayModalProps> = ({
               <div className="flex justify-between">
                 <span className="text-zinc-400">Remaining Debt:</span>
                 <span className="text-white">
-                  ₹{Math.max(0, loanStatus.borrowedAmount - parseFloat(amount)).toLocaleString('en-IN')}
+                  ₹{Math.max(0, getTotalDue() - parseFloat(amount)).toLocaleString('en-IN')}
                 </span>
               </div>
               <div className="flex justify-between">
@@ -269,34 +277,16 @@ const RepayModal: React.FC<RepayModalProps> = ({
           </div>
         )}
 
-        {/* Full Repayment Notice */}
-        {amount && parseFloat(amount) >= loanStatus.borrowedAmount && (
-          <div className="bg-green-900/20 border border-green-600 rounded-lg p-4 mb-6">
-            <div className="flex items-start gap-2">
-              <Info className="w-4 h-4 text-green-400 mt-0.5 flex-shrink-0" />
-              <div className="text-green-200 text-sm">
-                <p className="mb-1">
-                  <strong>Full Repayment:</strong> This will fully repay your loan.
-                </p>
-                <p>
-                  Your collateral will remain locked and available for future borrowing.
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
-
         {/* Info Box */}
-        <div className="bg-blue-900/20 border border-blue-700 rounded-lg p-4 mb-6">
+        <div className="bg-zinc-800/30 border border-zinc-700 rounded-lg p-3 mb-6">
           <div className="flex items-start gap-2">
-            <Info className="w-4 h-4 text-blue-400 mt-0.5 flex-shrink-0" />
-            <div className="text-blue-200 text-sm">
-              <p className="mb-1">
-                Repayment reduces your outstanding debt and improves your LTV ratio.
-              </p>
-              <p>
-                Interest stops accruing on the repaid amount immediately.
-              </p>
+            <Info className="w-4 h-4 text-zinc-400 mt-0.5 flex-shrink-0" />
+            <div className="text-zinc-300 text-xs">
+              {amount && parseFloat(amount) >= getTotalDue() ? (
+                <p><strong>Full repayment</strong> clears all debt. Collateral stays locked for future use.</p>
+              ) : (
+                <p>Total due = Principal + 30-day minimum interest. Repayment improves LTV ratio.</p>
+              )}
             </div>
           </div>
         </div>

@@ -278,10 +278,11 @@ const LoanService = {
         // If repaying full amount, ensure minimum interest is collected
         let actualRepayAmount = repayAmount;
         let isFullRepayment = false;
+        let additionalInterestNeeded = 0;
         
         if (repayAmount === totalAmountDue) {
           // Full repayment - ensure minimum interest is charged
-          const additionalInterestNeeded = Math.max(0, minimumInterestDue - currentInterestAccrued);
+          additionalInterestNeeded = Math.max(0, minimumInterestDue - currentInterestAccrued);
           
           if (additionalInterestNeeded > 0) {
             // Add the additional interest to the loan amount
@@ -290,30 +291,43 @@ const LoanService = {
               [additionalInterestNeeded, loan.id]
             );
             
+            // Update user borrowed amount to match loan amount
+            await connection.execute(
+              'UPDATE users SET borrowed_inr = borrowed_inr + ?, interest_accrued = interest_accrued + ? WHERE id = ?',
+              [additionalInterestNeeded, additionalInterestNeeded, userId]
+            );
+            
             // Record the additional interest charge
             await connection.execute(
               'INSERT INTO operations (user_id, type, status, inr_amount, loan_id, notes, executed_at) VALUES (?, ?, ?, ?, ?, ?, NOW())',
               [userId, 'INTEREST_ACCRUAL', 'EXECUTED', additionalInterestNeeded, loan.id, '30-day minimum interest charge applied']
-            );
-            
-            // Update user interest accrued
-            await connection.execute(
-              'UPDATE users SET interest_accrued = interest_accrued + ? WHERE id = ?',
-              [additionalInterestNeeded, userId]
             );
           }
           
           isFullRepayment = true;
         }
         
-        // Update user balances
-        await connection.execute(
-          'UPDATE users SET available_inr = available_inr - ?, borrowed_inr = borrowed_inr - ? WHERE id = ?',
-          [actualRepayAmount, actualRepayAmount, userId]
-        );
-
-        // Update loan amount
-        const newBorrowedAmount = loan.inr_borrowed_amount + (isFullRepayment ? Math.max(0, minimumInterestDue - currentInterestAccrued) : 0) - actualRepayAmount;
+        // Update loan amount first to determine if it's fully repaid
+        let newBorrowedAmount = loan.inr_borrowed_amount + additionalInterestNeeded - actualRepayAmount;
+        
+        // For full repayments, ensure the borrowed amount is exactly 0 (handle rounding issues)
+        if (isFullRepayment || newBorrowedAmount <= 0) {
+          newBorrowedAmount = 0;
+        }
+        
+        // Update user balances - if fully repaid, set borrowed_inr to 0
+        if (newBorrowedAmount === 0) {
+          await connection.execute(
+            'UPDATE users SET available_inr = available_inr - ?, borrowed_inr = 0 WHERE id = ?',
+            [actualRepayAmount, userId]
+          );
+        } else {
+          await connection.execute(
+            'UPDATE users SET available_inr = available_inr - ?, borrowed_inr = borrowed_inr - ? WHERE id = ?',
+            [actualRepayAmount, actualRepayAmount, userId]
+          );
+        }
+        
         await connection.execute(
           'UPDATE loans SET inr_borrowed_amount = ? WHERE id = ?',
           [newBorrowedAmount, loan.id]

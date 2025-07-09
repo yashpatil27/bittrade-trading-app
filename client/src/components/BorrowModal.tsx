@@ -251,34 +251,20 @@ const BorrowModal: React.FC<BorrowModalProps> = ({
           </div>
         )}
 
-        {/* Risk Warning */}
-        {amount && parseFloat(amount) > 0 && calculateNewLtv() >= 85 && (
-          <div className="bg-yellow-900/20 border border-yellow-600 rounded-lg p-4 mb-6">
-            <div className="flex items-start gap-2">
-              <AlertTriangle className="w-4 h-4 text-yellow-400 mt-0.5 flex-shrink-0" />
-              <div className="text-yellow-200 text-sm">
-                <p className="mb-1">
-                  <strong>High Risk:</strong> This borrowing will bring your LTV close to liquidation threshold.
-                </p>
-                <p>
-                  Consider borrowing a smaller amount or monitor Bitcoin price closely.
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
-
         {/* Info Box */}
-        <div className="bg-blue-900/20 border border-blue-700 rounded-lg p-4 mb-6">
+        <div className="bg-zinc-800/30 border border-zinc-700 rounded-lg p-3 mb-6">
           <div className="flex items-start gap-2">
-            <Info className="w-4 h-4 text-blue-400 mt-0.5 flex-shrink-0" />
-            <div className="text-blue-200 text-sm">
-              <p className="mb-1">
-                Borrowed funds will be added to your available INR balance.
-              </p>
-              <p>
-                Interest accrues daily at {loanStatus.interestRate}% APR on your total debt.
-              </p>
+            {amount && parseFloat(amount) > 0 && calculateNewLtv() >= 85 ? (
+              <AlertTriangle className="w-4 h-4 text-yellow-400 mt-0.5 flex-shrink-0" />
+            ) : (
+              <Info className="w-4 h-4 text-zinc-400 mt-0.5 flex-shrink-0" />
+            )}
+            <div className="text-zinc-300 text-xs">
+              {amount && parseFloat(amount) > 0 && calculateNewLtv() >= 85 ? (
+                <p><strong className="text-yellow-400">High Risk:</strong> LTV near liquidation threshold. Consider borrowing less.</p>
+              ) : (
+                <p>Borrowed funds added to INR balance. Interest accrues daily at {loanStatus.interestRate}% APR.</p>
+              )}
             </div>
           </div>
         </div>

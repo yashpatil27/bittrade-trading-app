@@ -290,18 +290,12 @@ const AddCollateralModal: React.FC<AddCollateralModalProps> = ({
               </div>
             )}
 
-            {/* Benefits Info */}
-            <div className="bg-blue-900/20 border border-blue-800 rounded-lg p-4">
-              <div className="flex items-start gap-3">
-                <Shield className="w-5 h-5 text-blue-400 mt-0.5 flex-shrink-0" />
-                <div>
-                  <p className="text-blue-300 font-medium text-sm mb-1">Benefits of Adding Collateral</p>
-                  <ul className="text-blue-200 text-sm space-y-1">
-                    <li>• Improve your loan-to-value ratio</li>
-                    <li>• Increase borrowing capacity</li>
-                    <li>• Reduce liquidation risk</li>
-                    <li>• Lower interest on future borrowings</li>
-                  </ul>
+            {/* Info Box */}
+            <div className="bg-zinc-800/30 border border-zinc-700 rounded-lg p-3">
+              <div className="flex items-start gap-2">
+                <Shield className="w-4 h-4 text-zinc-400 mt-0.5 flex-shrink-0" />
+                <div className="text-zinc-300 text-xs">
+                  <p>Adding collateral improves LTV ratio, increases borrowing capacity, and reduces liquidation risk.</p>
                 </div>
               </div>
             </div>

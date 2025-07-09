@@ -438,45 +438,6 @@ const Loans: React.FC = () => {
             </div>
           </div>
 
-          {/* Smart Suggestions */}
-          <div className="bg-gradient-to-br from-zinc-900 to-zinc-800 border border-zinc-700 rounded-xl p-4">
-            <div className="flex items-center gap-2 mb-3">
-              <User className="w-5 h-5 text-white" />
-              <h3 className="text-lg font-semibold">Smart Suggestions</h3>
-            </div>
-            
-            <div className="space-y-2">
-              {loanStatus.currentLtv > 70 && (
-                <div className="bg-zinc-800/50 rounded-lg p-3">
-                  <p className="text-white text-sm font-medium mb-1">💡 Reduce Risk</p>
-                  <p className="text-zinc-300 text-xs">
-                    Consider repaying ₹{Math.floor(loanStatus.borrowedAmount * 0.2).toLocaleString('en-IN')} to reduce your LTV to {(loanStatus.currentLtv * 0.8).toFixed(1)}%
-                  </p>
-                </div>
-              )}
-              
-              {loanStatus.availableCapacity > 0 && (
-                <div className="bg-zinc-800/50 rounded-lg p-3">
-                  <p className="text-white text-sm font-medium mb-1">📈 Opportunity</p>
-                  <p className="text-zinc-300 text-xs">
-                    You can borrow ₹{loanStatus.availableCapacity.toLocaleString('en-IN')} more at current prices
-                  </p>
-                </div>
-              )}
-              
-              <div className="bg-zinc-800/50 rounded-lg p-3">
-                <p className="text-white text-sm font-medium mb-1">💰 Cost Analysis</p>
-                <p className="text-zinc-300 text-xs">
-                  Daily interest cost: ₹{Math.round((loanStatus.borrowedAmount * loanStatus.interestRate / 100) / 365).toLocaleString('en-IN')} 
-                  • Monthly: ₹{Math.round((loanStatus.borrowedAmount * loanStatus.interestRate / 100) / 12).toLocaleString('en-IN')}
-                </p>
-                <p className="text-yellow-300 text-xs mt-1">
-                  💡 Minimum charge: ₹{(loanStatus.minimumInterestDue || 0).toLocaleString('en-IN')} (30 days)
-                </p>
-              </div>
-            </div>
-          </div>
-
         </div>
       ) : (
         /* No Active Loan */
