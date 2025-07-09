@@ -293,7 +293,7 @@ const History: React.FC = () => {
       </div>
 
       {/* Transactions List */}
-      <div className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden">
+      <div className="bg-gradient-to-br from-zinc-900 to-zinc-800 border border-zinc-700 rounded-xl overflow-hidden">
         <div className="p-4 border-b border-zinc-800">
           <h2 className="text-lg font-semibold">All Transactions</h2>
         </div>

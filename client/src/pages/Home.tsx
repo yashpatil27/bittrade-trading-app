@@ -246,7 +246,7 @@ const Home: React.FC = () => {
         </div>
 
         {/* Bitcoin Price Card with Trading Actions */}
-        <div className="bg-zinc-800/50 border border-zinc-700 rounded-xl p-4">
+        <div className="bg-gradient-to-br from-zinc-900 to-zinc-800 border border-zinc-700 rounded-xl p-4">
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-lg font-semibold flex items-center gap-2">
               <TrendingUp className="w-5 h-5 text-white" />
@@ -300,7 +300,7 @@ const Home: React.FC = () => {
         <DcaPlansSection ref={dcaPlansSectionRef} onUpdate={refreshData} />
 
         {/* Recent Activity */}
-        <div className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden">
+        <div className="bg-gradient-to-br from-zinc-900 to-zinc-800 border border-zinc-700 rounded-xl overflow-hidden">
           <div className="p-4 border-b border-zinc-800">
             <h2 className="text-lg font-semibold flex items-center gap-2">
               <Activity className="w-5 h-5 text-white" />

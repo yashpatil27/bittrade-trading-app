@@ -246,7 +246,7 @@ const Portfolio: React.FC = () => {
 
       {/* Performance Metrics */}
       <div className="grid grid-cols-2 gap-4">
-        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4">
+        <div className="bg-gradient-to-br from-zinc-900 to-zinc-800 border border-zinc-700 rounded-xl p-4">
           <div className="flex items-center gap-2 mb-2">
             <TrendingUp className="w-4 h-4 text-green-400" />
             <span className="text-zinc-400 text-sm">Unrealized P&L</span>
@@ -256,7 +256,7 @@ const Portfolio: React.FC = () => {
           </p>
         </div>
 
-        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4">
+        <div className="bg-gradient-to-br from-zinc-900 to-zinc-800 border border-zinc-700 rounded-xl p-4">
           <div className="flex items-center gap-2 mb-2">
             <Trophy className="w-4 h-4 text-blue-400" />
             <span className="text-zinc-400 text-sm">Realized P&L</span>
@@ -268,7 +268,7 @@ const Portfolio: React.FC = () => {
       </div>
 
       {/* Current Holdings */}
-      <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4">
+      <div className="bg-gradient-to-br from-zinc-900 to-zinc-800 border border-zinc-700 rounded-xl p-4">
         <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
           <Eye className="w-5 h-5 text-white" />
           Current Holdings
@@ -291,7 +291,7 @@ const Portfolio: React.FC = () => {
       </div>
 
       {/* Loan Summary */}
-      <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4">
+      <div className="bg-gradient-to-br from-zinc-900 to-zinc-800 border border-zinc-700 rounded-xl p-4">
         <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
           <PieChart className="w-5 h-5 text-white" />
           Loan Summary
@@ -314,7 +314,7 @@ const Portfolio: React.FC = () => {
       </div>
 
       {/* Asset Allocation */}
-      <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4">
+      <div className="bg-gradient-to-br from-zinc-900 to-zinc-800 border border-zinc-700 rounded-xl p-4">
         <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
           <BarChart3 className="w-5 h-5 text-white" />
           Asset Allocation
@@ -368,7 +368,7 @@ const Portfolio: React.FC = () => {
 
       {/* Trading Metrics */}
       <div className="grid grid-cols-2 gap-4">
-        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 text-center">
+        <div className="bg-gradient-to-br from-zinc-900 to-zinc-800 border border-zinc-700 rounded-xl p-4 text-center">
           <Target className="w-6 h-6 text-white mx-auto mb-2" />
           <p className="text-zinc-400 text-sm">Avg Buy Price</p>
           <p className="text-lg font-bold">
@@ -376,7 +376,7 @@ const Portfolio: React.FC = () => {
           </p>
         </div>
 
-        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 text-center">
+        <div className="bg-gradient-to-br from-zinc-900 to-zinc-800 border border-zinc-700 rounded-xl p-4 text-center">
           <TrendingDown className="w-6 h-6 text-white mx-auto mb-2" />
           <p className="text-zinc-400 text-sm">Breakeven Price</p>
           <p className="text-lg font-bold">
@@ -395,7 +395,7 @@ const Portfolio: React.FC = () => {
 
           <div className="grid grid-cols-2 gap-4 mb-6">
             {/* Market Cap */}
-            <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4">
+            <div className="bg-gradient-to-br from-zinc-900 to-zinc-800 border border-zinc-700 rounded-xl p-4">
               <div className="flex items-center gap-2 mb-2">
                 <BarChart3 className="w-4 h-4 text-zinc-400" />
                 <span className="text-zinc-400 text-sm">Market Cap</span>
@@ -404,7 +404,7 @@ const Portfolio: React.FC = () => {
             </div>
 
             {/* 24h Volume */}
-            <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4">
+            <div className="bg-gradient-to-br from-zinc-900 to-zinc-800 border border-zinc-700 rounded-xl p-4">
               <div className="flex items-center gap-2 mb-2">
                 <Activity className="w-4 h-4 text-zinc-400" />
                 <span className="text-zinc-400 text-sm">24h Volume</span>
@@ -424,7 +424,7 @@ const Portfolio: React.FC = () => {
             <h3 className="text-lg font-semibold">All-Time High</h3>
           </div>
 
-          <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 mb-6">
+          <div className="bg-gradient-to-br from-zinc-900 to-zinc-800 border border-zinc-700 rounded-xl p-4 mb-6">
             <div className="grid grid-cols-3 gap-4">
               <div>
                 <p className="text-zinc-500 text-xs mb-1">Price</p>
@@ -453,7 +453,7 @@ const Portfolio: React.FC = () => {
             <h3 className="text-lg font-semibold">Market Sentiment</h3>
           </div>
 
-          <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 mb-6">
+          <div className="bg-gradient-to-br from-zinc-900 to-zinc-800 border border-zinc-700 rounded-xl p-4 mb-6">
           
           <div className="grid grid-cols-2 gap-6">
             {/* Fear & Greed Gauge */}
