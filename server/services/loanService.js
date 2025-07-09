@@ -42,7 +42,11 @@ const LoanService = {
 
         // Get current BTC price for liquidation calculation
         const rates = await bitcoinDataService.getCalculatedRates();
-        const liquidationPrice = Math.floor(rates.btcUsdPrice * (ltvRatio / 90)); // 90% LTV triggers liquidation
+        // Calculate liquidation price as sell rate when LTV reaches 90%
+        // At 90% LTV: loan_amount / (collateral_amount * sell_rate / 100000000) = 0.9
+        // Therefore: sell_rate = (loan_amount * 100000000) / (collateral_amount * 0.9)
+        // But since we don't know loan_amount yet, we'll update this after borrowing
+        const liquidationPrice = 0; // Will be calculated dynamically based on actual borrowed amount
 
         // Update user balances - move BTC from available to collateral
         await connection.execute(
@@ -143,6 +147,14 @@ const LoanService = {
           [borrowAmount, loan.id]
         );
 
+        // Calculate and update liquidation price based on actual borrowed amount
+        const newBorrowedAmount = loan.inr_borrowed_amount + borrowAmount;
+        const liquidationSellRate = Math.floor((newBorrowedAmount * 100000000) / (loan.btc_collateral_amount * 0.9));
+        await connection.execute(
+          'UPDATE loans SET liquidation_price = ? WHERE id = ?',
+          [liquidationSellRate, loan.id]
+        );
+
         // Record the operation
         await connection.execute(
           'INSERT INTO operations (user_id, type, status, inr_amount, loan_id, notes, executed_at) VALUES (?, ?, ?, ?, ?, ?, NOW())',
@@ -223,6 +235,15 @@ const LoanService = {
           'UPDATE loans SET inr_borrowed_amount = ? WHERE id = ?',
           [newBorrowedAmount, loan.id]
         );
+
+        // Update liquidation price based on new borrowed amount
+        if (newBorrowedAmount > 0) {
+          const liquidationSellRate = Math.floor((newBorrowedAmount * 100000000) / (loan.btc_collateral_amount * 0.9));
+          await connection.execute(
+            'UPDATE loans SET liquidation_price = ? WHERE id = ?',
+            [liquidationSellRate, loan.id]
+          );
+        }
 
         // If fully repaid, update loan status and return collateral
         if (newBorrowedAmount === 0) {
@@ -579,7 +600,9 @@ const LoanService = {
         // Get current BTC price for updated liquidation calculation
         const rates = await bitcoinDataService.getCalculatedRates();
         const newTotalCollateral = loan.btc_collateral_amount + additionalCollateral;
-        const liquidationPrice = Math.floor(rates.btcUsdPrice * (loan.ltv_ratio / 90)); // 90% LTV triggers liquidation
+        // Calculate liquidation price as sell rate based on current borrowed amount and new collateral
+        const liquidationPrice = loan.inr_borrowed_amount > 0 ? 
+          Math.floor((loan.inr_borrowed_amount * 100000000) / (newTotalCollateral * 0.9)) : 0;
 
         // Update user balances - move BTC from available to collateral
         await connection.execute(

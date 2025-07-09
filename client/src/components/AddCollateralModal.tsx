@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
-import { X, Plus, AlertCircle, TrendingUp, Shield } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { X, Plus, AlertCircle, TrendingUp, Shield, Bitcoin } from 'lucide-react';
 import { userAPI } from '../services/api';
 import { LoanStatus } from '../types';
 import { formatBitcoin } from '../utils/formatters';
 import PinConfirmationModal from './PinConfirmationModal';
+import { useBalance } from '../contexts/BalanceContext';
 
 interface AddCollateralModalProps {
   isOpen: boolean;
@@ -22,12 +23,35 @@ const AddCollateralModal: React.FC<AddCollateralModalProps> = ({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [showPinModal, setShowPinModal] = useState(false);
+  const [availableBtc, setAvailableBtc] = useState(0);
+  const { updateBalance } = useBalance();
+
+  useEffect(() => {
+    if (isOpen) {
+      fetchAvailableBalance();
+    }
+  }, [isOpen]);
+
+  const fetchAvailableBalance = async () => {
+    try {
+      const dashboardResponse = await userAPI.getDashboard();
+      setAvailableBtc(dashboardResponse.data.data?.balances.btc || 0);
+    } catch (error) {
+      console.error('Error fetching available balance:', error);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!collateralAmount || parseFloat(collateralAmount) <= 0) {
       setError('Please enter a valid collateral amount');
+      return;
+    }
+
+    const btcAmount = parseFloat(collateralAmount);
+    if (btcAmount > availableBtc) {
+      setError('Insufficient Bitcoin balance');
       return;
     }
 
@@ -48,6 +72,9 @@ const AddCollateralModal: React.FC<AddCollateralModalProps> = ({
       // Add collateral
       await userAPI.addCollateralToLoan(parseFloat(collateralAmount));
       
+      // Update balance
+      await updateBalance();
+      
       setShowPinModal(false);
       onSuccess();
       return true;
@@ -67,6 +94,10 @@ const AddCollateralModal: React.FC<AddCollateralModalProps> = ({
       setShowPinModal(false);
       onClose();
     }
+  };
+
+  const getMaxAmount = () => {
+    return availableBtc.toFixed(8);
   };
 
   const calculateNewMetrics = () => {
@@ -151,6 +182,16 @@ const AddCollateralModal: React.FC<AddCollateralModalProps> = ({
             </div>
           )}
 
+          {/* Available Balance */}
+          <div className="bg-zinc-800/50 rounded-lg p-4 mb-6">
+            <div className="flex justify-between text-sm">
+              <span className="text-zinc-400">Available Bitcoin:</span>
+              <span className="font-medium">
+                ₿{formatBitcoin(availableBtc)}
+              </span>
+            </div>
+          </div>
+
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Collateral Amount Input */}
@@ -164,16 +205,52 @@ const AddCollateralModal: React.FC<AddCollateralModalProps> = ({
                   id="collateralAmount"
                   value={collateralAmount}
                   onChange={(e) => setCollateralAmount(e.target.value)}
-                  placeholder="0.00"
+                  placeholder="0.00000001"
                   step="0.00000001"
                   min="0"
-                  max="10"
+                  max={getMaxAmount()}
                   className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-3 text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent"
                   disabled={loading}
                 />
-                <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-zinc-400 text-sm">
-                  BTC
+                <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                  <Bitcoin className="w-4 h-4 text-zinc-400" />
                 </div>
+              </div>
+              
+              {/* Percentage Quick Select Buttons */}
+              <div className="flex gap-2 mt-3">
+                <button
+                  type="button"
+                  onClick={() => setCollateralAmount((availableBtc * 0.25).toFixed(8))}
+                  className="flex-1 text-xs bg-zinc-800 hover:bg-zinc-700 px-3 py-2 rounded transition-colors"
+                  disabled={loading}
+                >
+                  25%
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setCollateralAmount((availableBtc * 0.5).toFixed(8))}
+                  className="flex-1 text-xs bg-zinc-800 hover:bg-zinc-700 px-3 py-2 rounded transition-colors"
+                  disabled={loading}
+                >
+                  50%
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setCollateralAmount((availableBtc * 0.75).toFixed(8))}
+                  className="flex-1 text-xs bg-zinc-800 hover:bg-zinc-700 px-3 py-2 rounded transition-colors"
+                  disabled={loading}
+                >
+                  75%
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setCollateralAmount(getMaxAmount())}
+                  className="flex-1 text-xs bg-zinc-700 hover:bg-zinc-600 px-3 py-2 rounded transition-colors"
+                  disabled={loading}
+                >
+                  Max
+                </button>
               </div>
             </div>
 
@@ -249,7 +326,7 @@ const AddCollateralModal: React.FC<AddCollateralModalProps> = ({
               </button>
               <button
                 type="submit"
-                disabled={loading || !collateralAmount || parseFloat(collateralAmount) <= 0}
+                disabled={loading || !collateralAmount || parseFloat(collateralAmount) <= 0 || parseFloat(collateralAmount) > availableBtc}
                 className="flex-1 bg-white text-black hover:bg-zinc-200 disabled:opacity-50 disabled:cursor-not-allowed py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
               >
                 {loading ? (
