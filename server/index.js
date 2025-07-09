@@ -214,7 +214,7 @@ const startServer = async () => {
       { icon: '🔧', label: 'Environment', value: process.env.NODE_ENV || 'development' }
     ]);
     
-    systemLogger.success('₿itTrade Server is ready to trade Bitcoin!');
+    systemLogger.success('BitTrade Server is ready to trade Bitcoin!');
   });
 };
 

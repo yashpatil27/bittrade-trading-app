@@ -11,9 +11,7 @@ if (!fs.existsSync(logsDir)) {
 
 // Beautiful console formatter
 const consoleFormat = winston.format.combine(
-    winston.format.timestamp({ format: 'HH:mm:ss' }),
-    winston.format.printf(({ timestamp, level, message, service, ...meta }) => {
-        const timeColor = chalk.gray(`[${timestamp}]`);
+    winston.format.printf(({ level, message, service, ...meta }) => {
         const serviceTag = service ? chalk.blue(`[${service}]`) : '';
         
         let levelIcon = '';
@@ -43,7 +41,7 @@ const consoleFormat = winston.format.combine(
         
         const metaString = Object.keys(meta).length > 0 ? chalk.dim(` ${JSON.stringify(meta)}`) : '';
         
-        return `${timeColor} ${levelIcon} ${serviceTag} ${levelColor(message)}${metaString}`;
+        return `${levelIcon} ${serviceTag} ${levelColor(message)}${metaString}`;
     })
 );
 
@@ -136,7 +134,7 @@ class BeautifulLogger {
         const banner = chalk.cyan(`
     ╔══════════════════════════════════════════════════════════════╗
     ║                                                              ║
-    ║        🚀 ₿itTrade Server v2.0 - Loan Management System     ║
+    ║        🚀 BitTrade Server v2.0 - Loan Management System     ║
     ║             Bitcoin Trading & Collateralized Loans          ║
     ║                                                              ║
     ╚══════════════════════════════════════════════════════════════╝
