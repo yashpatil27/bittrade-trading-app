@@ -13,8 +13,8 @@ async function accrueInterestDaily() {
     const loans = await query(`SELECT id, user_id, inr_borrowed_amount, interest_rate FROM loans WHERE status = 'ACTIVE'`);
 
     for (const loan of loans) {
-      // Calculate daily interest
-      const dailyInterest = Math.floor((loan.inr_borrowed_amount * loan.interest_rate) / 36500);
+      // Calculate daily interest using round instead of floor
+      const dailyInterest = Math.round((loan.inr_borrowed_amount * loan.interest_rate) / 36500);
       
       // Update loan inr_borrowed_amount and user interest accrual
       await query(`UPDATE loans SET inr_borrowed_amount = inr_borrowed_amount + ? WHERE id = ?`, [dailyInterest, loan.id]);

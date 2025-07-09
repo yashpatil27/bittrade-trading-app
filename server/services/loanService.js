@@ -179,7 +179,44 @@ const LoanService = {
   },
 
   /**
-   * Repay borrowed INR
+   * Calculate minimum interest due for a loan (30-day minimum policy)
+   * @param {Object} loan - Loan object with created_at, borrowed_amount, and interest_rate
+   * @returns {number} - Minimum interest amount in INR
+   */
+  async calculateMinimumInterestDue(loan) {
+    try {
+      // Get the original borrowed amount by finding all borrow operations
+      const borrowOperations = await query(
+        'SELECT SUM(inr_amount) as total_borrowed FROM operations WHERE loan_id = ? AND type = "LOAN_BORROW"',
+        [loan.id]
+      );
+      
+      const originalBorrowedAmount = borrowOperations[0]?.total_borrowed || 0;
+      
+      if (originalBorrowedAmount === 0) {
+        return 0;
+      }
+      
+      const loanCreatedAt = new Date(loan.created_at);
+      const currentTime = new Date();
+      const daysSinceCreation = Math.floor((currentTime - loanCreatedAt) / (1000 * 60 * 60 * 24));
+      
+      // Calculate minimum 30-day interest
+      const minimumDaysToCharge = 30;
+      const daysToCharge = Math.max(daysSinceCreation, minimumDaysToCharge);
+      
+      // Calculate interest: (original_borrowed_amount * interest_rate / 100) * days / 365
+      const minimumInterest = Math.round((originalBorrowedAmount * loan.interest_rate / 100) * daysToCharge / 365);
+      
+      return minimumInterest;
+    } catch (error) {
+      console.error('Error calculating minimum interest due:', error);
+      return 0;
+    }
+  },
+
+  /**
+   * Repay borrowed INR with 30-day minimum interest policy
    * @param {number} userId - ID of the user
    * @param {number} repayAmount - Amount of INR to repay
    * @returns {Promise} - Resolves with repayment details
@@ -203,8 +240,23 @@ const LoanService = {
 
         const loan = loanRows[0];
         
-        if (repayAmount > loan.inr_borrowed_amount) {
-          throw new Error('Repay amount exceeds borrowed amount');
+        // Calculate minimum interest due (30-day minimum policy)
+        const minimumInterestDue = await this.calculateMinimumInterestDue(loan);
+        
+        // Get original borrowed amount to calculate current interest accrued
+        const borrowOperations = await query(
+          'SELECT SUM(inr_amount) as total_borrowed FROM operations WHERE loan_id = ? AND type = "LOAN_BORROW"',
+          [loan.id]
+        );
+        const originalBorrowedAmount = borrowOperations[0]?.total_borrowed || 0;
+        const currentInterestAccrued = loan.inr_borrowed_amount - originalBorrowedAmount;
+        
+        // Calculate total amount due including minimum interest
+        const interestDue = Math.max(minimumInterestDue, currentInterestAccrued);
+        const totalAmountDue = originalBorrowedAmount + interestDue;
+        
+        if (repayAmount > totalAmountDue) {
+          throw new Error(`Repay amount exceeds total amount due. Maximum repayment: ₹${totalAmountDue}`);
         }
 
         // Get current user balances
@@ -223,14 +275,45 @@ const LoanService = {
           throw new Error('Insufficient INR balance');
         }
 
+        // If repaying full amount, ensure minimum interest is collected
+        let actualRepayAmount = repayAmount;
+        let isFullRepayment = false;
+        
+        if (repayAmount === totalAmountDue) {
+          // Full repayment - ensure minimum interest is charged
+          const additionalInterestNeeded = Math.max(0, minimumInterestDue - currentInterestAccrued);
+          
+          if (additionalInterestNeeded > 0) {
+            // Add the additional interest to the loan amount
+            await connection.execute(
+              'UPDATE loans SET inr_borrowed_amount = inr_borrowed_amount + ? WHERE id = ?',
+              [additionalInterestNeeded, loan.id]
+            );
+            
+            // Record the additional interest charge
+            await connection.execute(
+              'INSERT INTO operations (user_id, type, status, inr_amount, loan_id, notes, executed_at) VALUES (?, ?, ?, ?, ?, ?, NOW())',
+              [userId, 'INTEREST_ACCRUAL', 'EXECUTED', additionalInterestNeeded, loan.id, '30-day minimum interest charge applied']
+            );
+            
+            // Update user interest accrued
+            await connection.execute(
+              'UPDATE users SET interest_accrued = interest_accrued + ? WHERE id = ?',
+              [additionalInterestNeeded, userId]
+            );
+          }
+          
+          isFullRepayment = true;
+        }
+        
         // Update user balances
         await connection.execute(
           'UPDATE users SET available_inr = available_inr - ?, borrowed_inr = borrowed_inr - ? WHERE id = ?',
-          [repayAmount, repayAmount, userId]
+          [actualRepayAmount, actualRepayAmount, userId]
         );
 
         // Update loan amount
-        const newBorrowedAmount = loan.inr_borrowed_amount - repayAmount;
+        const newBorrowedAmount = loan.inr_borrowed_amount + (isFullRepayment ? Math.max(0, minimumInterestDue - currentInterestAccrued) : 0) - actualRepayAmount;
         await connection.execute(
           'UPDATE loans SET inr_borrowed_amount = ? WHERE id = ?',
           [newBorrowedAmount, loan.id]
@@ -262,7 +345,7 @@ const LoanService = {
         // Record the operation
         await connection.execute(
           'INSERT INTO operations (user_id, type, status, inr_amount, loan_id, notes, executed_at) VALUES (?, ?, ?, ?, ?, ?, NOW())',
-          [userId, 'LOAN_REPAY', 'EXECUTED', repayAmount, loan.id, newBorrowedAmount === 0 ? 'Complete loan repayment and collateral release' : 'Partial loan repayment']
+          [userId, 'LOAN_REPAY', 'EXECUTED', actualRepayAmount, loan.id, newBorrowedAmount === 0 ? 'Complete loan repayment and collateral release' : 'Partial loan repayment']
         );
 
         // Clear user cache
@@ -270,10 +353,12 @@ const LoanService = {
 
         return {
           loanId: loan.id,
-          repayAmount,
+          repayAmount: actualRepayAmount,
           remainingDebt: newBorrowedAmount,
           loanStatus: newBorrowedAmount === 0 ? 'REPAID' : 'ACTIVE',
-          collateralReturned: newBorrowedAmount === 0 ? loan.btc_collateral_amount : 0
+          collateralReturned: newBorrowedAmount === 0 ? loan.btc_collateral_amount : 0,
+          minimumInterestDue,
+          minimumInterestApplied: isFullRepayment ? Math.max(0, minimumInterestDue - currentInterestAccrued) : 0
         };
       });
     } catch (error) {
@@ -313,6 +398,9 @@ const LoanService = {
       // Calculate current LTV using sell rate (actual liquidation value)
       const currentLtv = (loan.inr_borrowed_amount / ((loan.btc_collateral_amount * rates.sellRate) / 100000000)) * 100;
       
+      // Calculate minimum interest due for display
+      const minimumInterestDue = await this.calculateMinimumInterestDue(loan);
+      
       return {
         loanId: loan.id,
         collateralAmount: loan.btc_collateral_amount,
@@ -324,7 +412,8 @@ const LoanService = {
         availableCapacity,
         currentLtv,
         currentBtcPrice: rates.sellRate, // Use sell rate for collateral display
-        riskStatus: currentLtv >= 90 ? 'LIQUIDATE' : currentLtv >= 85 ? 'WARNING' : 'SAFE'
+        riskStatus: currentLtv >= 90 ? 'LIQUIDATE' : currentLtv >= 85 ? 'WARNING' : 'SAFE',
+        minimumInterestDue
       };
     } catch (error) {
       console.error('Error getting loan status:', error);
@@ -346,7 +435,7 @@ const LoanService = {
       
       for (const loan of activeLoans) {
         // Calculate daily interest: (borrowed_amount * interest_rate) / 365
-        const dailyInterest = Math.floor((loan.inr_borrowed_amount * loan.interest_rate) / 365 / 100);
+        const dailyInterest = Math.round((loan.inr_borrowed_amount * loan.interest_rate) / 365 / 100);
         
         if (dailyInterest > 0) {
           await transaction(async (connection) => {
