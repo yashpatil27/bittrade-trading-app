@@ -27,6 +27,9 @@ interface PortfolioData {
   currentBalances: {
     inr: number;
     btc: number;
+    collateralBtc: number;
+    borrowedInr: number;
+    interestAccrued: number;
   };
   totalInvestment: number;
   unrealizedProfit: number;
@@ -37,6 +40,13 @@ interface PortfolioData {
   assetAllocation: {
     inrPercentage: number;
     btcPercentage: number;
+    liabilitiesPercentage: number;
+  };
+  loanSummary: {
+    totalLiabilities: number;
+    borrowedAmount: number;
+    interestAccrued: number;
+    collateralBtc: number;
   };
   tradingStats: {
     tradingDays: number;
@@ -186,6 +196,7 @@ const Portfolio: React.FC = () => {
     breakEvenPrice,
     realizedProfit,
     assetAllocation,
+    loanSummary,
     tradingStats,
     currentRates
   } = portfolioData;
@@ -275,6 +286,29 @@ const Portfolio: React.FC = () => {
         </div>
       </div>
 
+      {/* Loan Summary */}
+      <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4">
+        <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+          <PieChart className="w-5 h-5 text-white" />
+          Loan Summary
+        </h3>
+        <div className="grid grid-cols-2 gap-4">
+          <div className="bg-zinc-800/50 rounded-lg p-4 text-center">
+            <span className="text-zinc-400 text-sm">Borrowed Amount</span>
+            <p className="text-lg font-bold">{formatCurrencyInr(loanSummary?.borrowedAmount || 0)}</p>
+          </div>
+          <div className="bg-zinc-800/50 rounded-lg p-4 text-center">
+            <span className="text-zinc-400 text-sm">Interest Accrued</span>
+            <p className="text-lg font-bold">{formatCurrencyInr(loanSummary?.interestAccrued || 0)}</p>
+          </div>
+          <div className="bg-zinc-800/50 rounded-lg p-4 text-center">
+            <Bitcoin className="w-6 h-6 text-white mx-auto mb-2" />
+            <span className="text-zinc-400 text-sm">Collateral Bitcoin</span>
+            <p className="text-lg font-bold">{formatCurrency(loanSummary?.collateralBtc || 0, 'BTC')}</p>
+          </div>
+        </div>
+      </div>
+
       {/* Asset Allocation */}
       <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4">
         <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
@@ -309,6 +343,22 @@ const Portfolio: React.FC = () => {
               />
             </div>
           </div>
+
+          {/* Liabilities Bar */}
+          {(assetAllocation?.liabilitiesPercentage || 0) > 0 && (
+            <div>
+              <div className="flex justify-between text-sm mb-2">
+                <span className="text-zinc-400">Liabilities</span>
+                <span className="text-white font-medium">{(assetAllocation?.liabilitiesPercentage || 0).toFixed(1)}%</span>
+              </div>
+              <div className="w-full bg-zinc-800 rounded-full h-3">
+                <div 
+                  className="bg-red-500 h-3 rounded-full transition-all duration-300"
+                  style={{ width: `${assetAllocation?.liabilitiesPercentage || 0}%` }}
+                />
+              </div>
+            </div>
+          )}
         </div>
       </div>
 

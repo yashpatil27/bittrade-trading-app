@@ -25,7 +25,10 @@ class PortfolioService {
         totalPortfolioValue,
         currentBalances: {
           inr: currentBalances.inr_balance,
-          btc: currentBalances.btc_balance / 100000000 // Convert satoshis to BTC
+          btc: currentBalances.btc_balance / 100000000, // Convert satoshis to BTC
+          collateralBtc: currentBalances.collateral_btc / 100000000, // Convert satoshis to BTC
+          borrowedInr: currentBalances.borrowed_inr,
+          interestAccrued: currentBalances.interest_accrued
         },
         totalInvestment,
         unrealizedProfit,
@@ -38,6 +41,14 @@ class PortfolioService {
         
         // Trading statistics
         tradingStats,
+        
+        // Loan information
+        loanSummary: {
+          totalLiabilities: currentBalances.borrowed_inr + currentBalances.interest_accrued,
+          borrowedAmount: currentBalances.borrowed_inr,
+          interestAccrued: currentBalances.interest_accrued,
+          collateralBtc: currentBalances.collateral_btc / 100000000
+        },
         
         // Placeholder for future FIFO implementation
         realizedProfit: 0, // TODO: Implement FIFO logic
@@ -62,8 +73,11 @@ class PortfolioService {
         available_btc, 
         reserved_inr, 
         reserved_btc,
+        collateral_btc,
+        borrowed_inr,
+        interest_accrued,
         (available_inr + reserved_inr) as total_inr_balance,
-        (available_btc + reserved_btc) as total_btc_balance
+        (available_btc + reserved_btc + collateral_btc) as total_btc_balance
       FROM users WHERE id = ?`,
       [userId]
     );
@@ -77,16 +91,25 @@ class PortfolioService {
       btc_balance: balanceRows[0].available_btc,
       reserved_inr: balanceRows[0].reserved_inr,
       reserved_btc: balanceRows[0].reserved_btc,
+      collateral_btc: balanceRows[0].collateral_btc,
+      borrowed_inr: balanceRows[0].borrowed_inr,
+      interest_accrued: balanceRows[0].interest_accrued,
       total_inr_balance: balanceRows[0].total_inr_balance,
       total_btc_balance: balanceRows[0].total_btc_balance
     };
   }
 
   async calculateTotalPortfolioValue(currentBalances, sellRate) {
-    // Use total balances (available + reserved) for portfolio value calculation
+    // Calculate total assets
     const totalBtcInBtc = currentBalances.total_btc_balance / 100000000; // Convert satoshis to BTC
     const totalBtcValueInInr = totalBtcInBtc * sellRate;
-    return currentBalances.total_inr_balance + totalBtcValueInInr;
+    const totalAssets = currentBalances.total_inr_balance + totalBtcValueInInr;
+    
+    // Calculate total liabilities (borrowed INR + accrued interest)
+    const totalLiabilities = currentBalances.borrowed_inr + currentBalances.interest_accrued;
+    
+    // Net portfolio value = Assets - Liabilities
+    return totalAssets - totalLiabilities;
   }
 
   async calculateTotalInvestment(userId) {
@@ -132,20 +155,33 @@ class PortfolioService {
   }
 
   calculateAssetAllocation(currentBalances, sellRate, totalPortfolioValue) {
-    if (totalPortfolioValue === 0) {
-      return { inrPercentage: 0, btcPercentage: 0 };
+    if (totalPortfolioValue <= 0) {
+      return { inrPercentage: 0, btcPercentage: 0, liabilitiesPercentage: 0 };
     }
 
-    // Use total balances (available + reserved) for asset allocation
+    // Calculate total assets (before subtracting liabilities)
     const totalBtcInBtc = currentBalances.total_btc_balance / 100000000;
     const totalBtcValueInInr = totalBtcInBtc * sellRate;
+    const totalAssets = currentBalances.total_inr_balance + totalBtcValueInInr;
     
-    const inrPercentage = (currentBalances.total_inr_balance / totalPortfolioValue) * 100;
-    const btcPercentage = (totalBtcValueInInr / totalPortfolioValue) * 100;
+    // Calculate liabilities
+    const totalLiabilities = currentBalances.borrowed_inr + currentBalances.interest_accrued;
+    
+    // Calculate percentages based on total assets + liabilities as base
+    const totalBase = totalAssets + totalLiabilities;
+    
+    if (totalBase === 0) {
+      return { inrPercentage: 0, btcPercentage: 0, liabilitiesPercentage: 0 };
+    }
+    
+    const inrPercentage = (currentBalances.total_inr_balance / totalBase) * 100;
+    const btcPercentage = (totalBtcValueInInr / totalBase) * 100;
+    const liabilitiesPercentage = (totalLiabilities / totalBase) * 100;
 
     return {
-      inrPercentage: Math.round(inrPercentage * 100) / 100, // Round to 2 decimal places
-      btcPercentage: Math.round(btcPercentage * 100) / 100
+      inrPercentage: Math.round(inrPercentage * 100) / 100,
+      btcPercentage: Math.round(btcPercentage * 100) / 100,
+      liabilitiesPercentage: Math.round(liabilitiesPercentage * 100) / 100
     };
   }
 
