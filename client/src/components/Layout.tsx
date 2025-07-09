@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Home, History, Settings, Users, BarChart3, Bitcoin, UserCog, PieChart, User, Wallet } from 'lucide-react';
+import { Home, History, Settings, Users, BarChart3, Bitcoin, PieChart, User, Wallet } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useBalance } from '../contexts/BalanceContext';
 import { userAPI } from '../services/api';
@@ -81,15 +81,6 @@ const Layout: React.FC<LayoutProps> = ({ children, isAdmin = false }) => {
             ₿itTrade {isAdmin && <span className="text-sm text-zinc-400">Admin</span>}
           </button>
           <div className="flex items-center gap-3">
-            {(user?.is_admin === true || user?.is_admin === 1) && (
-              <button
-                onClick={() => navigate(isAdmin ? '/' : '/admin')}
-                className="p-2 text-zinc-400 hover:text-white transition-colors"
-                title={isAdmin ? 'Switch to Trading Dashboard' : 'Switch to Admin Dashboard'}
-              >
-                <UserCog size={20} />
-              </button>
-            )}
             <button
               onClick={() => {
                 if (location.pathname === '/profile') {
