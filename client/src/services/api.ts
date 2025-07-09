@@ -155,8 +155,11 @@ export const userAPI = {
   }): Promise<AxiosResponse<ApiResponse<any>>> =>
     api.post('/user/dca-sell', data),
   
-  getDcaPlans: (): Promise<AxiosResponse<ApiResponse<any[]>>> =>
-    api.get('/user/dca-plans'),
+  getDcaPlans: (): Promise<AxiosResponse<ApiResponse<any[]>>> => {
+    console.log('API: Making request to /user/dca-plans');
+    console.log('API: Base URL:', API_BASE_URL);
+    return api.get('/user/dca-plans');
+  },
   
   cancelDcaPlan: (planId: number): Promise<AxiosResponse<ApiResponse<any>>> =>
     api.delete(`/user/dca-plans/${planId}`),

@@ -43,11 +43,30 @@ const DcaPlansSection = forwardRef<DcaPlansSectionRef, DcaPlansSectionProps>(({ 
   const fetchDcaPlans = async () => {
     try {
       setLoading(true);
+      setError(''); // Clear previous errors
+      console.log('Fetching DCA plans...');
+      
       const response = await userAPI.getDcaPlans();
+      console.log('DCA plans response:', response.data);
+      
       setDcaPlans(response.data.data || []);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching DCA plans:', error);
-      setError('Failed to fetch DCA plans');
+      
+      let errorMessage = 'Failed to fetch DCA plans';
+      
+      if (error.response) {
+        // Server responded with error status
+        errorMessage = error.response.data?.message || `Server error: ${error.response.status}`;
+      } else if (error.request) {
+        // Request made but no response received
+        errorMessage = 'Network error: Unable to connect to server';
+      } else {
+        // Something else happened
+        errorMessage = error.message || 'Unknown error occurred';
+      }
+      
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -183,9 +202,23 @@ const DcaPlansSection = forwardRef<DcaPlansSectionRef, DcaPlansSectionProps>(({ 
       
       <div className="p-4">
         {error && (
-          <div className="bg-red-900/20 border border-red-800 rounded-lg p-3 mb-4 flex items-center gap-2">
-            <AlertTriangle className="w-4 h-4 text-red-400" />
-            <span className="text-red-300 text-sm">{error}</span>
+          <div className="bg-red-900/20 border border-red-800 rounded-lg p-3 mb-4">
+            <div className="flex items-center gap-2 mb-2">
+              <AlertTriangle className="w-4 h-4 text-red-400" />
+              <span className="text-red-300 text-sm">{error}</span>
+            </div>
+            <div className="text-xs text-red-400 mb-2">
+              <div>API URL: {process.env.REACT_APP_API_URL || 'http://localhost:3001/api'}</div>
+              <div>Environment: {process.env.NODE_ENV}</div>
+              <div>User Agent: {navigator.userAgent.substring(0, 50)}...</div>
+            </div>
+            <button
+              onClick={fetchDcaPlans}
+              disabled={loading}
+              className="text-xs bg-red-700 hover:bg-red-600 text-white px-3 py-1 rounded transition-colors disabled:opacity-50"
+            >
+              {loading ? 'Retrying...' : 'Retry'}
+            </button>
           </div>
         )}
 
