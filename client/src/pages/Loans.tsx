@@ -4,19 +4,28 @@ import {
   TrendingUp, 
   AlertTriangle, 
   Shield, 
-  History, 
   Plus, 
   ArrowDown,
   ArrowUp,
-  Zap
+  Zap,
+  User,
+  TrendingDown,
+  Minus,
+  Circle,
+  Target,
+  X,
+  Repeat,
+  Lock,
+  Clock
 } from 'lucide-react';
 import { userAPI } from '../services/api';
-import { LoanStatus, LoanHistory } from '../types';
-import { formatBitcoin } from '../utils/formatters';
+import { LoanStatus, LoanHistory, Transaction } from '../types';
+import { formatBitcoin, getTransactionDisplayName, getTransactionIcon, formatTimeAgo, formatCurrency } from '../utils/formatters';
 import DepositCollateralModal from '../components/DepositCollateralModal';
 import BorrowModal from '../components/BorrowModal';
 import RepayModal from '../components/RepayModal';
 import AddCollateralModal from '../components/AddCollateralModal';
+import TransactionDetailModal from '../components/TransactionDetailModal';
 
 const Loans: React.FC = () => {
   const [loanStatus, setLoanStatus] = useState<LoanStatus | null>(null);
@@ -28,6 +37,8 @@ const Loans: React.FC = () => {
   const [showRepayModal, setShowRepayModal] = useState(false);
   const [showAddCollateralModal, setShowAddCollateralModal] = useState(false);
   const [showFullLiquidationModal, setShowFullLiquidationModal] = useState(false);
+  const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
+  const [isTransactionModalOpen, setIsTransactionModalOpen] = useState(false);
 
   useEffect(() => {
     fetchLoanData();
@@ -100,44 +111,42 @@ const Loans: React.FC = () => {
     }
   };
 
-  const getOperationIcon = (type: string) => {
-    switch (type) {
-      case 'LOAN_CREATE':
-        return <Plus className="w-4 h-4 text-blue-400" />;
-      case 'LOAN_BORROW':
-        return <ArrowDown className="w-4 h-4 text-green-400" />;
-      case 'LOAN_REPAY':
-        return <ArrowUp className="w-4 h-4 text-red-400" />;
-      case 'LOAN_ADD_COLLATERAL':
-        return <Plus className="w-4 h-4 text-blue-400" />;
-      case 'INTEREST_ACCRUAL':
-        return <TrendingUp className="w-4 h-4 text-yellow-400" />;
-      case 'PARTIAL_LIQUIDATION':
-      case 'FULL_LIQUIDATION':
-        return <Zap className="w-4 h-4 text-orange-400" />;
-      default:
-        return <History className="w-4 h-4 text-zinc-400" />;
-    }
+  const handleTransactionClick = (transaction: LoanHistory) => {
+    // Convert LoanHistory to Transaction format for the modal
+    const transactionData: Transaction = {
+      id: Date.now(), // Generate a temporary ID
+      user_id: 0,
+      type: transaction.type as Transaction['type'],
+      status: transaction.status || 'EXECUTED',
+      inr_amount: transaction.inr_amount,
+      btc_amount: transaction.btc_amount,
+      btc_price: 0,
+      notes: transaction.notes,
+      executed_at: transaction.executed_at,
+      created_at: transaction.created_at
+    };
+    setSelectedTransaction(transactionData);
+    setIsTransactionModalOpen(true);
   };
 
-  const getOperationText = (type: string) => {
-    switch (type) {
-      case 'LOAN_CREATE':
-        return 'Collateral Deposited';
-      case 'LOAN_BORROW':
-        return 'Funds Borrowed';
-      case 'LOAN_REPAY':
-        return 'Loan Repaid';
-      case 'LOAN_ADD_COLLATERAL':
-        return 'Collateral Added';
-      case 'INTEREST_ACCRUAL':
-        return 'Interest Accrued';
-      case 'PARTIAL_LIQUIDATION':
-        return 'Partial Liquidation';
-      case 'FULL_LIQUIDATION':
-        return 'Full Liquidation';
-      default:
-        return type;
+  const getIconComponent = (iconName: string) => {
+    const iconProps = { className: "w-3 h-3 text-white" };
+    switch (iconName) {
+      case 'User': return <User {...iconProps} />;
+      case 'ArrowUp': return <ArrowUp {...iconProps} />;
+      case 'TrendingUp': return <TrendingUp {...iconProps} />;
+      case 'TrendingDown': return <TrendingDown {...iconProps} />;
+      case 'ArrowDown': return <ArrowDown {...iconProps} />;
+      case 'Plus': return <Plus {...iconProps} />;
+      case 'Minus': return <Minus {...iconProps} />;
+      case 'Target': return <Target {...iconProps} />;
+      case 'X': return <X {...iconProps} />;
+      case 'Repeat': return <Repeat {...iconProps} />;
+      case 'Lock': return <Lock {...iconProps} />;
+      case 'Clock': return <Clock {...iconProps} />;
+      case 'AlertTriangle': return <AlertTriangle {...iconProps} />;
+      case 'Zap': return <Zap {...iconProps} />;
+      default: return <Circle {...iconProps} />;
     }
   };
 
@@ -310,40 +319,83 @@ const Loans: React.FC = () => {
 
       {/* Loan History */}
       {loanHistory.length > 0 && (
-        <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-6">
-          <h2 className="text-xl font-semibold mb-4">Loan History</h2>
-          <div className="space-y-3">
-            {loanHistory.map((item, index) => (
-              <div key={index} className="flex items-center justify-between p-3 bg-zinc-800/50 rounded-lg">
-                <div className="flex items-center gap-3">
-                  {getOperationIcon(item.type)}
-                  <div>
-                    <p className="text-white font-medium">{getOperationText(item.type)}</p>
-                    <p className="text-zinc-400 text-sm">
-                      {new Date(item.created_at).toLocaleDateString('en-IN', {
-                        year: 'numeric',
-                        month: 'short',
-                        day: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit'
-                      })}
-                    </p>
+        <div className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden">
+          <div className="p-4 border-b border-zinc-800">
+            <h2 className="text-lg font-semibold">Loan History</h2>
+          </div>
+          
+          <div className="p-4">
+            <div className="space-y-3">
+              {loanHistory.map((item, index) => (
+                <div 
+                  key={index} 
+                  onClick={() => handleTransactionClick(item)}
+                  className="bg-zinc-800/50 rounded-lg p-4 hover:bg-zinc-800 transition-colors cursor-pointer"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="p-1.5 bg-zinc-700 rounded-lg">
+                        {getIconComponent(getTransactionIcon(item.type, item.status))}
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <p className="font-medium text-white text-sm">
+                            {getTransactionDisplayName(item.type, item.status)}
+                          </p>
+                          {item.status === 'PENDING' && (
+                            <span className="px-1.5 py-0.5 text-xs bg-orange-900/20 border border-orange-800 text-orange-300 rounded">
+                              PENDING
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-zinc-400 text-xs">
+                          {formatTimeAgo(item.created_at)}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      {item.type === 'LOAN_CREATE' ? (
+                        <div>
+                          <p className="font-bold text-sm text-white">
+                            {formatCurrency(item.btc_amount / 100000000, 'BTC')}
+                          </p>
+                          <p className="text-xs text-zinc-400">
+                            Collateral Locked
+                          </p>
+                        </div>
+                      ) : item.type === 'LOAN_ADD_COLLATERAL' ? (
+                        <div>
+                          <p className="font-bold text-sm text-white">
+                            {formatCurrency(item.btc_amount / 100000000, 'BTC')}
+                          </p>
+                          <p className="text-xs text-zinc-400">
+                            Collateral Added
+                          </p>
+                        </div>
+                      ) : item.type.includes('LOAN') || item.type.includes('INTEREST') || item.type.includes('LIQUIDATION') ? (
+                        <div>
+                          {item.inr_amount > 0 && (
+                            <p className="font-bold text-sm text-white">
+                              ₹{item.inr_amount.toLocaleString('en-IN')}
+                            </p>
+                          )}
+                          {item.btc_amount > 0 && (
+                            <p className="text-xs text-zinc-400">
+                              {formatCurrency(item.btc_amount / 100000000, 'BTC')}
+                            </p>
+                          )}
+                        </div>
+                      ) : (
+                        <p className="font-bold text-sm text-white">
+                          {item.inr_amount > 0 ? `₹${item.inr_amount.toLocaleString('en-IN')}` : 
+                           item.btc_amount > 0 ? formatCurrency(item.btc_amount / 100000000, 'BTC') : 'N/A'}
+                        </p>
+                      )}
+                    </div>
                   </div>
                 </div>
-                <div className="text-right">
-                  {item.inr_amount > 0 && (
-                    <p className="text-white font-medium">
-                      ₹{item.inr_amount.toLocaleString('en-IN')}
-                    </p>
-                  )}
-                  {item.btc_amount > 0 && (
-                    <p className="text-zinc-400 text-sm">
-                      ₿{formatBitcoin(item.btc_amount / 100000000)}
-                    </p>
-                  )}
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
       )}
@@ -426,6 +478,14 @@ const Loans: React.FC = () => {
           </div>
         </div>
       )}
+      
+      {/* Transaction Detail Modal */}
+      <TransactionDetailModal
+        isOpen={isTransactionModalOpen}
+        onClose={() => setIsTransactionModalOpen(false)}
+        transaction={selectedTransaction}
+        onTransactionUpdate={fetchLoanData}
+      />
     </div>
   );
 };

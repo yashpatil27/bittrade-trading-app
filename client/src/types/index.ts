@@ -148,6 +148,7 @@ export interface LoanStatus {
 
 export interface LoanHistory {
   type: 'LOAN_CREATE' | 'LOAN_BORROW' | 'LOAN_REPAY' | 'LOAN_ADD_COLLATERAL' | 'INTEREST_ACCRUAL' | 'PARTIAL_LIQUIDATION' | 'FULL_LIQUIDATION';
+  status?: 'PENDING' | 'EXECUTED' | 'CANCELLED' | 'EXPIRED';
   inr_amount: number;
   btc_amount: number;
   notes: string;
