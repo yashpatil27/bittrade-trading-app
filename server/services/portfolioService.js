@@ -130,7 +130,7 @@ class PortfolioService {
         SUM(inr_amount) as total_inr_spent,
         SUM(btc_amount) as total_btc_bought
       FROM operations 
-      WHERE user_id = ? AND status = 'EXECUTED' AND type IN ('MARKET_BUY', 'LIMIT_BUY') AND btc_amount > 0
+      WHERE user_id = ? AND status = 'EXECUTED' AND type IN ('MARKET_BUY', 'LIMIT_BUY', 'DCA_BUY') AND btc_amount > 0
     `, [userId]);
 
     const result = buyRows[0];
@@ -193,21 +193,21 @@ class PortfolioService {
     const tradingDaysRows = await query(`
       SELECT COUNT(DISTINCT DATE(created_at)) as trading_days
       FROM operations 
-      WHERE user_id = ? AND status = 'EXECUTED' AND type IN ('MARKET_BUY', 'MARKET_SELL', 'LIMIT_BUY', 'LIMIT_SELL')
+      WHERE user_id = ? AND status = 'EXECUTED' AND type IN ('MARKET_BUY', 'MARKET_SELL', 'LIMIT_BUY', 'LIMIT_SELL', 'DCA_BUY', 'DCA_SELL')
     `, [userId]);
 
     // Total Trades
     const totalTradesRows = await query(`
       SELECT COUNT(*) as total_trades
       FROM operations 
-      WHERE user_id = ? AND status = 'EXECUTED' AND type IN ('MARKET_BUY', 'MARKET_SELL', 'LIMIT_BUY', 'LIMIT_SELL')
+      WHERE user_id = ? AND status = 'EXECUTED' AND type IN ('MARKET_BUY', 'MARKET_SELL', 'LIMIT_BUY', 'LIMIT_SELL', 'DCA_BUY', 'DCA_SELL')
     `, [userId]);
 
     // Trades This Month
     const tradesThisMonthRows = await query(`
       SELECT COUNT(*) as trades_this_month
       FROM operations 
-      WHERE user_id = ? AND status = 'EXECUTED' AND type IN ('MARKET_BUY', 'MARKET_SELL', 'LIMIT_BUY', 'LIMIT_SELL') 
+      WHERE user_id = ? AND status = 'EXECUTED' AND type IN ('MARKET_BUY', 'MARKET_SELL', 'LIMIT_BUY', 'LIMIT_SELL', 'DCA_BUY', 'DCA_SELL') 
       AND MONTH(created_at) = MONTH(CURRENT_DATE()) 
       AND YEAR(created_at) = YEAR(CURRENT_DATE())
     `, [userId]);
@@ -218,7 +218,7 @@ class PortfolioService {
         AVG(inr_amount) as avg_trade_size,
         SUM(inr_amount) as total_volume
       FROM operations 
-      WHERE user_id = ? AND status = 'EXECUTED' AND type IN ('MARKET_BUY', 'MARKET_SELL', 'LIMIT_BUY', 'LIMIT_SELL')
+      WHERE user_id = ? AND status = 'EXECUTED' AND type IN ('MARKET_BUY', 'MARKET_SELL', 'LIMIT_BUY', 'LIMIT_SELL', 'DCA_BUY', 'DCA_SELL')
     `, [userId]);
 
     // Days in Profit (placeholder - requires more complex calculation)
