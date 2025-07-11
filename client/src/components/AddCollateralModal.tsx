@@ -202,6 +202,8 @@ const AddCollateralModal: React.FC<AddCollateralModalProps> = ({
               <div className="relative">
                 <input
                   type="number"
+                  inputMode="decimal"
+                  pattern="[0-9]*[.]?[0-9]*"
                   id="collateralAmount"
                   value={collateralAmount}
                   onChange={(e) => setCollateralAmount(e.target.value)}

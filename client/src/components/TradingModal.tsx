@@ -611,6 +611,8 @@ const TradingModal: React.FC<TradingModalProps> = ({
                 </label>
                 <input
                   type="number"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
                   value={dcaExecutions}
                   onChange={(e) => setDcaExecutions(e.target.value)}
                   className="w-full bg-zinc-700 border border-zinc-600 rounded-lg py-2 px-3 text-white placeholder-zinc-400 focus:outline-none focus:border-white"
@@ -631,6 +633,8 @@ const TradingModal: React.FC<TradingModalProps> = ({
                     </label>
                     <input
                       type="number"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
                       value={dcaMaxPrice}
                       onChange={(e) => setDcaMaxPrice(e.target.value)}
                       className="w-full bg-zinc-700 border border-zinc-600 rounded-lg py-2 px-3 text-white placeholder-zinc-400 focus:outline-none focus:border-white"
@@ -644,6 +648,8 @@ const TradingModal: React.FC<TradingModalProps> = ({
                     </label>
                     <input
                       type="number"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
                       value={dcaMinPrice}
                       onChange={(e) => setDcaMinPrice(e.target.value)}
                       className="w-full bg-zinc-700 border border-zinc-600 rounded-lg py-2 px-3 text-white placeholder-zinc-400 focus:outline-none focus:border-white"

@@ -71,7 +71,7 @@ const Layout: React.FC<LayoutProps> = ({ children, isAdmin = false }) => {
   return (
     <div className="min-h-screen bg-black">
       {/* Header */}
-      <header className="bg-black border-b border-zinc-800 px-4 py-1">
+      <header className="bg-black border-b border-black px-4 py-1">
         <div className="flex items-center justify-between max-w-md mx-auto">
           <button
             onClick={() => navigate(isAdmin ? '/admin' : '/')}
@@ -99,7 +99,7 @@ const Layout: React.FC<LayoutProps> = ({ children, isAdmin = false }) => {
 
       {/* Persistent Bitcoin Balance Bar */}
       {!isAdmin && (
-        <div className={`fixed top-0 left-0 right-0 bg-black/95 backdrop-blur-sm border-b border-zinc-700 px-4 py-2 z-40 transition-transform duration-300 ease-in-out ${
+        <div className={`fixed top-0 left-0 right-0 bg-black/95 backdrop-blur-sm border-b border-black px-4 py-2 z-40 transition-transform duration-300 ease-in-out ${
           showPersistentBar ? 'translate-y-0' : '-translate-y-full'
         }`}>
           <div className="flex items-center justify-center max-w-md mx-auto">
