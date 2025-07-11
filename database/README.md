@@ -135,7 +135,6 @@ The database includes these main tables:
 - `operations` - Unified activity log for all operations
 - `loans` - Overcollateralized loan management
 - `active_plans` - DCA and recurring operations
-- `balance_movements` - Audit trail for balance changes
 
 ### Configuration Tables
 - `settings` - Application settings

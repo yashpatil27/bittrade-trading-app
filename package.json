@@ -9,7 +9,9 @@
     "client": "cd client && npm start",
     "build": "cd client && npm run build",
     "start": "node server/index.js",
-    "install-all": "npm install && cd client && npm install"
+    "install-all": "npm install && cd client && npm install",
+    "deploy-cli": "node deploy-cli.js",
+    "cli": "node deploy-cli.js"
   },
   "dependencies": {
     "axios": "^1.6.2",

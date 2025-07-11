@@ -123,29 +123,6 @@ CREATE TABLE loans (
   INDEX idx_loans_liquidation (status, liquidation_price)
 );
 
--- Balance Movements table (Audit trail for all balance changes)
-CREATE TABLE balance_movements (
-  id INT PRIMARY KEY AUTO_INCREMENT,
-  user_id INT NOT NULL,
-  operation_id INT,
-  
-  movement_type ENUM(
-    'CREDIT_INR', 'DEBIT_INR', 
-    'CREDIT_BTC', 'DEBIT_BTC',
-    'RESERVE_INR', 'RELEASE_INR',
-    'RESERVE_BTC', 'RELEASE_BTC',
-    'COLLATERALIZE_BTC', 'RELEASE_COLLATERAL_BTC'
-  ) NOT NULL,
-  
-  amount BIGINT NOT NULL,               -- Amount moved (satoshis for BTC, rupees for INR)
-  balance_after BIGINT NOT NULL,        -- Relevant balance after movement
-  
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  
-  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-  FOREIGN KEY (operation_id) REFERENCES operations(id) ON DELETE SET NULL,
-  INDEX idx_balance_movements_user (user_id, created_at DESC)
-);
 
 -- Settings table (unchanged)
 CREATE TABLE settings (
@@ -238,5 +215,5 @@ CREATE INDEX idx_bitcoin_sentiment_data_date ON bitcoin_sentiment(data_date);
 -- Bitcoin chart data indexes
 CREATE INDEX idx_bitcoin_chart_data_timeframe ON bitcoin_chart_data(timeframe);
 CREATE INDEX idx_bitcoin_chart_data_timeframe_updated ON bitcoin_chart_data(timeframe, last_updated DESC);
-CREATE INDEX idx_bitcoin_chart_data_last_updated ON bitcoin_chart_data(last_updated DESC);USE bittrade;
+CREATE INDEX idx_bitcoin_chart_data_last_updated ON bitcoin_chart_data(last_updated DESC);
 
