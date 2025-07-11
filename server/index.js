@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
+const compression = require('compression');
 const dotenv = require('dotenv');
 const path = require('path');
 const { systemLogger } = require('./utils/beautifulLogger');
@@ -95,9 +96,32 @@ if (process.env.NODE_ENV === 'development') {
   app.set('trust proxy', 1);
 }
 
-// Middleware
-app.use(helmet());
-app.use(cors());
+// Performance Middleware
+app.use(compression()); // Enable gzip compression
+
+// Security Middleware
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      scriptSrc: ["'self'"],
+      imgSrc: ["'self'", "data:", "https:"],
+      connectSrc: ["'self'", "https://api.coingecko.com", "https://api.alternative.me"]
+    }
+  }
+}));
+
+// CORS with caching headers
+app.use(cors({
+  origin: process.env.NODE_ENV === 'production' 
+    ? ['https://bittrade.co.in', 'https://www.bittrade.co.in']
+    : true,
+  credentials: true,
+  optionsSuccessStatus: 200
+}));
+
+// Body parsing middleware
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
@@ -126,10 +150,24 @@ app.use('/api/public', publicRoutes);
 
 // Serve static files from React app in production
 if (process.env.NODE_ENV === 'production') {
-  app.use(express.static(path.join(__dirname, '../client/build')));
+  // Serve static assets with caching headers
+  app.use(express.static(path.join(__dirname, '../client/build'), {
+    maxAge: '1y', // Cache static assets for 1 year
+    etag: true,
+    lastModified: true,
+    setHeaders: (res, path) => {
+      // Don't cache HTML files
+      if (path.endsWith('.html')) {
+        res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+      }
+      // Enable compression for all files
+      res.setHeader('Vary', 'Accept-Encoding');
+    }
+  }));
   
   // Handle React routing, return all requests to React app
   app.get('*', (req, res) => {
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
     res.sendFile(path.join(__dirname, '../client/build', 'index.html'));
   });
 }
