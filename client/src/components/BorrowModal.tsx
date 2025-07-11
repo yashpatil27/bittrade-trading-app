@@ -31,7 +31,7 @@ const BorrowModal: React.FC<BorrowModalProps> = ({
     if (isOpen && error) {
       setError('');
     }
-  }, [isOpen]);
+  }, [isOpen, error]);
 
   const calculateNewLtv = () => {
     if (!amount || !loanStatus) return 0;

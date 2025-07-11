@@ -35,7 +35,7 @@ const RepayModal: React.FC<RepayModalProps> = ({
     if (isOpen) {
       fetchAvailableBalance();
     }
-  }, [isOpen]);
+  }, [isOpen, error]);
 
   const fetchAvailableBalance = async () => {
     try {

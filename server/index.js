@@ -88,6 +88,13 @@ const initializeServices = async () => {
   }
 };
 
+// Trust proxy configuration for development
+if (process.env.NODE_ENV === 'development') {
+  app.set('trust proxy', 'loopback');
+} else {
+  app.set('trust proxy', 1);
+}
+
 // Middleware
 app.use(helmet());
 app.use(cors());
@@ -101,6 +108,12 @@ const limiter = rateLimit({
   message: {
     success: false,
     message: 'Too many requests from this IP, please try again later.'
+  },
+  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+  // Skip rate limiting for health checks and static files
+  skip: (req) => {
+    return req.path === '/health' || req.path.startsWith('/static/');
   }
 });
 app.use('/api/', limiter);

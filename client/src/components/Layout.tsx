@@ -12,7 +12,7 @@ interface LayoutProps {
 }
 
 const Layout: React.FC<LayoutProps> = ({ children, isAdmin = false }) => {
-  const { user } = useAuth();
+  // const { user } = useAuth(); // Currently unused
   const { balanceVersion } = useBalance();
   const location = useLocation();
   const navigate = useNavigate();
