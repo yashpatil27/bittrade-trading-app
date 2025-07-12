@@ -64,9 +64,9 @@ export const getTransactionColor = (type: Transaction['type']): string => {
 
 export const formatCurrency = (amount: number, currency: 'INR' | 'BTC'): string => {
   if (currency === 'INR') {
-    return `₹${amount.toLocaleString('en-IN')}`;
+    return formatCurrencyInr(amount);
   } else {
-    return `₿${formatBitcoin(amount)}`;
+    return formatBitcoinDisplay(amount);
   }
 };
 
@@ -76,6 +76,22 @@ export const formatBitcoin = (amount: number): string => {
   // Remove trailing zeros but keep at least one decimal place for small amounts
   const trimmed = formatted.replace(/0+$/, '').replace(/\.$/, '');
   return trimmed;
+};
+
+// Standardized INR formatting - ensures all INR values use the same format
+export const formatInr = (amount: number): string => {
+  if (typeof amount !== 'number' || isNaN(amount) || !isFinite(amount)) {
+    return '₹0';
+  }
+  return `₹${Math.round(amount).toLocaleString('en-IN')}`;
+};
+
+// Standardized Bitcoin amount formatting - ensures all BTC values use the same format
+export const formatBtc = (amount: number): string => {
+  if (typeof amount !== 'number' || isNaN(amount) || !isFinite(amount)) {
+    return '₿0';
+  }
+  return formatBitcoinDisplay(amount);
 };
 
 export const formatBitcoinWithINRValue = (btcAmount: number, sellRate: number): string => {
@@ -108,6 +124,9 @@ export const getPerformanceColor = (value: number): string => {
 };
 
 export const formatPercentage = (value: number): string => {
+  if (typeof value !== 'number' || isNaN(value) || !isFinite(value)) {
+    return '0.00%';
+  }
   const sign = value >= 0 ? '+' : '';
   return `${sign}${value.toFixed(2)}%`;
 };

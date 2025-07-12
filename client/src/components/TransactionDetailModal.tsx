@@ -221,7 +221,7 @@ const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
                     <span className="text-white text-xs">₹{transaction.execution_price.toLocaleString('en-IN')}</span>
                   </div>
                 ) : null}
-                {transaction.notes ? (
+                {transaction.notes && transaction.type !== 'PARTIAL_LIQUIDATION' && transaction.type !== 'FULL_LIQUIDATION' ? (
                   <div className="flex justify-between">
                     <span className="text-zinc-400 text-xs">Notes:</span>
                     <span className="text-white text-xs">{transaction.notes}</span>
@@ -360,28 +360,8 @@ const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
             </div>
           )}
 
-          {/* Balances After Transaction - Only show if balance data is available */}
-          {(transaction.inr_balance !== undefined && transaction.btc_balance !== undefined) && (
-            <div className="bg-zinc-800/50 rounded-lg p-3">
-              <p className="text-zinc-400 text-xs mb-2">{transaction.status === 'PENDING' ? 'Current Balances' : transaction.status === 'CANCELLED' ? 'Balances (Unchanged)' : 'Balances After'}</p>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="text-center">
-                  <p className="text-zinc-400 text-xs">INR</p>
-                  <p className="text-white font-medium text-sm">₹{transaction.inr_balance.toLocaleString('en-IN')}</p>
-                  {transaction.status === 'PENDING' && transaction.type.includes('BUY') && (
-                    <p className="text-orange-300 text-xs">(₹{transaction.inr_amount.toLocaleString('en-IN')} reserved)</p>
-                  )}
-                </div>
-                <div className="text-center">
-                  <p className="text-zinc-400 text-xs">₿</p>
-                  <p className="text-white font-medium text-sm">₿{formatBitcoin(transaction.btc_balance)}</p>
-                  {transaction.status === 'PENDING' && transaction.type.includes('SELL') && (
-                    <p className="text-orange-300 text-xs">(₿{formatBitcoin(transaction.btc_amount)} reserved)</p>
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
+          {/* Balances After Transaction - Hidden for now as we're not storing balance snapshots */}
+          {/* TODO: Implement balance snapshots in operations table to show historical balances */}
 
           {/* Date and Status */}
           <div className="bg-zinc-800/50 rounded-lg p-3">

@@ -51,12 +51,9 @@ class UserService {
         [userId]
       );
 
-      // Get current balances for each transaction (for backward compatibility)
-      const currentBalances = await this.getUserBalances(userId);
+      // Format transactions (removed balance fields since we're not storing historical snapshots)
       const transactions = operations.map(op => ({
         ...op,
-        inr_balance: currentBalances.inr_balance,
-        btc_balance: currentBalances.btc_balance,
         // Use limit_price for pending orders, execution_price for executed orders
         btc_price: op.status === 'PENDING' ? op.limit_price : op.execution_price
       }));
@@ -79,12 +76,9 @@ class UserService {
         [userId]
       );
       
-      // Get current balances for display (for backward compatibility)
-      const currentBalances = await this.getUserBalances(userId);
+      // Format transactions (removed balance fields since we're not storing historical snapshots)
       const transactions = operations.map(op => ({
         ...op,
-        inr_balance: currentBalances.inr_balance,
-        btc_balance: currentBalances.btc_balance,
         // Use limit_price for pending orders, execution_price for executed orders
         btc_price: op.status === 'PENDING' ? op.limit_price : op.execution_price
       }));

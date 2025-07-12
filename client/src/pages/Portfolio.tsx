@@ -20,7 +20,7 @@ import {
   Brain
 } from 'lucide-react';
 import { userAPI } from '../services/api';
-import { formatCurrency } from '../utils/formatters';
+import { formatCurrency, formatInr, formatBtc, formatPercentage, formatCurrencyInr } from '../utils/formatters';
 
 interface PortfolioData {
   totalPortfolioValue: number;
@@ -110,19 +110,18 @@ const Portfolio: React.FC = () => {
     }
   };
 
-  const formatPercentage = (value: number | null | undefined) => {
+  const formatPercentageWithNA = (value: number | null | undefined) => {
     if (value === null || value === undefined || typeof value !== 'number' || isNaN(value) || !isFinite(value)) {
       return 'N/A';
     }
-    const sign = value >= 0 ? '+' : '';
-    return `${sign}${value.toFixed(2)}%`;
+    return formatPercentage(value);
   };
 
-  const formatCurrencyInr = (value: number | null | undefined) => {
+  const formatInrWithNA = (value: number | null | undefined) => {
     if (value === null || value === undefined || typeof value !== 'number' || isNaN(value) || !isFinite(value)) {
       return '₹0';
     }
-    return `₹${Math.round(value).toLocaleString('en-IN')}`;
+    return formatInr(value);
   };
 
   const formatLargeNumber = (value: number | null | undefined) => {
@@ -227,19 +226,15 @@ const Portfolio: React.FC = () => {
           <h2 className="text-lg font-semibold">Total Portfolio Value</h2>
         </div>
         <p className="text-3xl font-bold text-white mb-2">
-          {formatCurrencyInr(totalPortfolioValue || 0)}
+          {formatInrWithNA(totalPortfolioValue || 0)}
         </p>
         <div className="flex items-center justify-center gap-4 text-sm">
           <span className="text-zinc-400">
-            Investment: {(() => {
-              console.log('Rendering Investment - totalInvestment:', totalInvestment);
-              console.log('totalInvestment || 0:', totalInvestment || 0);
-              return formatCurrencyInr(totalInvestment || 0);
-            })()}
+            Investment: {formatInrWithNA(totalInvestment || 0)}
           </span>
           <span className={`flex items-center gap-1 ${(unrealizedProfit || 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
             {(unrealizedProfit || 0) >= 0 ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />}
-            {formatPercentage(totalReturn)}
+            {formatPercentageWithNA(totalReturn)}
           </span>
         </div>
       </div>
@@ -252,7 +247,7 @@ const Portfolio: React.FC = () => {
             <span className="text-zinc-400 text-sm">Unrealized P&L</span>
           </div>
           <p className={`text-lg font-bold ${(unrealizedProfit || 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-            {formatCurrencyInr(unrealizedProfit || 0)}
+            {formatInrWithNA(unrealizedProfit || 0)}
           </p>
         </div>
 
@@ -262,7 +257,7 @@ const Portfolio: React.FC = () => {
             <span className="text-zinc-400 text-sm">Realized P&L</span>
           </div>
           <p className={`text-lg font-bold ${(realizedProfit || 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-            {(realizedProfit || 0) === 0 ? 'Coming Soon' : formatCurrencyInr(realizedProfit || 0)}
+            {(realizedProfit || 0) === 0 ? 'Coming Soon' : formatInrWithNA(realizedProfit || 0)}
           </p>
         </div>
       </div>
@@ -277,14 +272,14 @@ const Portfolio: React.FC = () => {
           <div className="bg-zinc-800/50 rounded-lg p-4 text-center">
             <DollarSign className="w-6 h-6 text-white mx-auto mb-2" />
             <p className="text-zinc-400 text-sm">Cash Balance</p>
-            <p className="text-lg font-bold">{formatCurrencyInr(currentBalances?.inr || 0)}</p>
+            <p className="text-lg font-bold">{formatInrWithNA(currentBalances?.inr || 0)}</p>
           </div>
           <div className="bg-zinc-800/50 rounded-lg p-4 text-center">
             <Bitcoin className="w-6 h-6 text-white mx-auto mb-2" />
             <p className="text-zinc-400 text-sm">Bitcoin</p>
             <p className="text-lg font-bold">{formatCurrency(currentBalances?.btc || 0, 'BTC')}</p>
             <p className="text-xs text-zinc-500">
-              ≈ {formatCurrencyInr((currentBalances?.btc || 0) * (currentRates?.sellRate || 0))}
+              ≈ {formatInrWithNA((currentBalances?.btc || 0) * (currentRates?.sellRate || 0))}
             </p>
           </div>
         </div>
@@ -299,11 +294,11 @@ const Portfolio: React.FC = () => {
         <div className="grid grid-cols-2 gap-4">
           <div className="bg-zinc-800/50 rounded-lg p-4 text-center">
             <span className="text-zinc-400 text-sm">Borrowed Amount</span>
-            <p className="text-lg font-bold">{formatCurrencyInr(loanSummary?.borrowedAmount || 0)}</p>
+            <p className="text-lg font-bold">{formatInrWithNA(loanSummary?.borrowedAmount || 0)}</p>
           </div>
           <div className="bg-zinc-800/50 rounded-lg p-4 text-center">
             <span className="text-zinc-400 text-sm">Interest Accrued</span>
-            <p className="text-lg font-bold">{formatCurrencyInr(loanSummary?.interestAccrued || 0)}</p>
+            <p className="text-lg font-bold">{formatInrWithNA(loanSummary?.interestAccrued || 0)}</p>
           </div>
           <div className="bg-zinc-800/50 rounded-lg p-4 text-center">
             <Bitcoin className="w-6 h-6 text-white mx-auto mb-2" />
@@ -372,7 +367,7 @@ const Portfolio: React.FC = () => {
           <Target className="w-6 h-6 text-white mx-auto mb-2" />
           <p className="text-zinc-400 text-sm">Avg Buy Price</p>
           <p className="text-lg font-bold">
-            {(averageBuyPrice || 0) > 0 ? formatCurrencyInr(averageBuyPrice || 0) : 'N/A'}
+            {(averageBuyPrice || 0) > 0 ? formatInrWithNA(averageBuyPrice || 0) : 'N/A'}
           </p>
         </div>
 
@@ -380,7 +375,7 @@ const Portfolio: React.FC = () => {
           <TrendingDown className="w-6 h-6 text-white mx-auto mb-2" />
           <p className="text-zinc-400 text-sm">Breakeven Price</p>
           <p className="text-lg font-bold">
-            {(breakEvenPrice || 0) > 0 ? formatCurrencyInr(breakEvenPrice || 0) : 'N/A'}
+            {(breakEvenPrice || 0) > 0 ? formatInrWithNA(breakEvenPrice || 0) : 'N/A'}
           </p>
         </div>
       </div>
@@ -521,13 +516,13 @@ const Portfolio: React.FC = () => {
         <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 text-center">
           <DollarSign className="w-6 h-6 text-white mx-auto mb-2" />
           <p className="text-zinc-400 text-sm">Avg Trade Size</p>
-          <p className="text-lg font-bold">{formatCurrencyInr(tradingStats?.averageTradeSize || 0)}</p>
+          <p className="text-lg font-bold">{formatInrWithNA(tradingStats?.averageTradeSize || 0)}</p>
         </div>
 
         <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 text-center">
           <TrendingUp className="w-6 h-6 text-white mx-auto mb-2" />
           <p className="text-zinc-400 text-sm">Total Volume</p>
-          <p className="text-lg font-bold">{formatCurrencyInr(tradingStats?.totalVolume || 0)}</p>
+          <p className="text-lg font-bold">{formatInrWithNA(tradingStats?.totalVolume || 0)}</p>
         </div>
 
         <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 text-center">
@@ -552,11 +547,11 @@ const Portfolio: React.FC = () => {
           </div>
           <div>
             <p className="text-zinc-500">Buy Rate</p>
-            <p className="font-bold">{formatCurrencyInr(currentRates?.buyRate || 0)}</p>
+            <p className="font-bold">{formatInrWithNA(currentRates?.buyRate || 0)}</p>
           </div>
           <div>
             <p className="text-zinc-500">Sell Rate</p>
-            <p className="font-bold">{formatCurrencyInr(currentRates?.sellRate || 0)}</p>
+            <p className="font-bold">{formatInrWithNA(currentRates?.sellRate || 0)}</p>
           </div>
         </div>
       </div>

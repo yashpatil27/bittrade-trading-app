@@ -21,7 +21,7 @@ import {
 } from 'lucide-react';
 import { userAPI } from '../services/api';
 import { LoanStatus, LoanHistory, Transaction } from '../types';
-import { formatBitcoin, getTransactionDisplayName, getTransactionIcon, formatTimeAgo, formatCurrency } from '../utils/formatters';
+import { formatBitcoin, getTransactionDisplayName, getTransactionIcon, formatTimeAgo, formatCurrency, formatInr, formatPercentage } from '../utils/formatters';
 import DepositCollateralModal from '../components/DepositCollateralModal';
 import BorrowModal from '../components/BorrowModal';
 import RepayModal from '../components/RepayModal';
@@ -203,7 +203,7 @@ const Loans: React.FC = () => {
               <div>
                 <p className="text-zinc-400">Next Interest</p>
                 <p className="text-white font-medium">
-                  Daily at 12:00 AM (+₹{Math.round((loanStatus.borrowedAmount * loanStatus.interestRate / 100) / 365).toLocaleString('en-IN')})
+Daily at 12:00 AM (+{formatInr((loanStatus.borrowedAmount * loanStatus.interestRate / 100) / 365)})
                 </p>
                 <p className="text-yellow-400 text-xs mt-1">
                   ⚠️ Minimum 30-day interest applies
@@ -224,10 +224,10 @@ const Loans: React.FC = () => {
                 ₿{formatBitcoin(loanStatus.collateralAmount / 100000000)}
               </p>
               <p className="text-zinc-500 text-xs">
-                ₹{Math.floor((loanStatus.collateralAmount * loanStatus.currentBtcPrice) / 100000000).toLocaleString('en-IN')}
+{formatInr((loanStatus.collateralAmount * loanStatus.currentBtcPrice) / 100000000)}
               </p>
               <p className="text-zinc-400 text-xs mt-1">
-                @ ₹{loanStatus.currentBtcPrice.toLocaleString('en-IN')}/BTC
+{formatInr(loanStatus.currentBtcPrice)}
               </p>
               <div className="mt-auto pt-3">
                 <button
@@ -246,7 +246,7 @@ const Loans: React.FC = () => {
                 <p className="text-zinc-400 text-sm">Total Due</p>
               </div>
               <p className="text-white font-bold text-lg">
-                ₹{(loanStatus.borrowedAmount + (loanStatus.minimumInterestDue || 0)).toLocaleString('en-IN')}
+{formatInr(loanStatus.borrowedAmount + (loanStatus.minimumInterestDue || 0))}
               </p>
               <p className="text-zinc-500 text-xs">
                 Principal + Minimum Interest
@@ -273,13 +273,13 @@ const Loans: React.FC = () => {
                 <p className="text-zinc-400 text-sm">Available to Borrow</p>
               </div>
               <p className="text-white font-bold text-lg">
-                ₹{loanStatus.availableCapacity.toLocaleString('en-IN')}
+{formatInr(loanStatus.availableCapacity)}
               </p>
               <p className="text-zinc-500 text-xs">
                 Max {loanStatus.ltvRatio}% LTV
               </p>
               <p className="text-zinc-400 text-xs mt-1">
-                {((loanStatus.availableCapacity / ((loanStatus.collateralAmount * loanStatus.currentBtcPrice) / 100000000)) * 100).toFixed(1)}% capacity used
+{formatPercentage((loanStatus.availableCapacity / ((loanStatus.collateralAmount * loanStatus.currentBtcPrice) / 100000000)) * 100)} capacity used
               </p>
               <div className="mt-auto pt-3">
                 <button
@@ -299,13 +299,13 @@ const Loans: React.FC = () => {
                 <p className="text-zinc-400 text-sm">Liquidation Health</p>
               </div>
               <p className="text-white font-bold text-lg">
-                {((loanStatus.currentBtcPrice - loanStatus.liquidationPrice) / loanStatus.currentBtcPrice * 100).toFixed(1)}% buffer
+{formatPercentage((loanStatus.currentBtcPrice - loanStatus.liquidationPrice) / loanStatus.currentBtcPrice * 100)} buffer
               </p>
               <p className="text-zinc-500 text-xs">
-                ₹{(loanStatus.currentBtcPrice - loanStatus.liquidationPrice).toLocaleString('en-IN')} margin
+{formatInr(loanStatus.currentBtcPrice - loanStatus.liquidationPrice)} margin
               </p>
               <p className="text-zinc-400 text-xs mt-1">
-                Liquidation @ ₹{loanStatus.liquidationPrice.toLocaleString('en-IN')}
+Liquidation @ {formatInr(loanStatus.liquidationPrice)}
               </p>
               <div className="mt-auto pt-3">
                 <button
@@ -325,10 +325,10 @@ const Loans: React.FC = () => {
                 <p className="text-zinc-400 text-sm">Interest Accrued</p>
               </div>
               <p className="text-white font-bold text-lg">
-                ₹{(loanStatus.minimumInterestDue || 0).toLocaleString('en-IN')}
+{formatInr(loanStatus.minimumInterestDue || 0)}
               </p>
               <p className="text-zinc-500 text-xs">
-                ₹{Math.round((loanStatus.borrowedAmount * loanStatus.interestRate / 100) / 365).toLocaleString('en-IN')}/day
+{formatInr((loanStatus.borrowedAmount * loanStatus.interestRate / 100) / 365)}/day
               </p>
               <p className="text-zinc-400 text-xs mt-1">
                 {loanStatus.interestRate}% APR (30-day minimum)
@@ -341,10 +341,10 @@ const Loans: React.FC = () => {
                 <p className="text-zinc-400 text-sm">Principal Borrowed</p>
               </div>
               <p className="text-white font-bold text-lg">
-                ₹{loanStatus.borrowedAmount.toLocaleString('en-IN')}
+                {formatInr(loanStatus.borrowedAmount)}
               </p>
               <p className="text-zinc-500 text-xs">
-                {loanStatus.currentLtv.toFixed(1)}% LTV
+                {formatPercentage(loanStatus.currentLtv)} LTV
               </p>
               <div className="w-full bg-zinc-700 rounded-full h-2 mt-2">
                 <div 
@@ -365,7 +365,7 @@ const Loans: React.FC = () => {
             <div className="space-y-3">
               <div className="flex items-center justify-between text-sm">
                 <span className="text-zinc-400">Current Price</span>
-                <span className="text-white font-medium">₹{loanStatus.currentBtcPrice.toLocaleString('en-IN')}</span>
+                <span className="text-white font-medium">{formatInr(loanStatus.currentBtcPrice)}</span>
               </div>
               
               <div className="relative">
@@ -387,14 +387,14 @@ const Loans: React.FC = () => {
               
               <div className="flex items-center justify-between text-sm">
                 <span className="text-zinc-400">Liquidation Price</span>
-                <span className="text-white font-medium">₹{loanStatus.liquidationPrice.toLocaleString('en-IN')}</span>
+                <span className="text-white font-medium">{formatInr(loanStatus.liquidationPrice)}</span>
               </div>
               
               <div className="flex items-center justify-between text-sm">
                 <span className="text-zinc-400">Safety Margin</span>
                 <span className="text-white font-medium">
-                  ₹{(loanStatus.currentBtcPrice - loanStatus.liquidationPrice).toLocaleString('en-IN')} 
-                  ({((loanStatus.currentBtcPrice - loanStatus.liquidationPrice) / loanStatus.currentBtcPrice * 100).toFixed(1)}%)
+{formatInr(loanStatus.currentBtcPrice - loanStatus.liquidationPrice)}
+                  ({formatPercentage((loanStatus.currentBtcPrice - loanStatus.liquidationPrice) / loanStatus.currentBtcPrice * 100)})
                 </span>
               </div>
             </div>
@@ -411,7 +411,7 @@ const Loans: React.FC = () => {
               <div>
                 <p className="text-zinc-400 text-sm">Interest Paid to Date</p>
                 <p className="text-white font-semibold">
-                  ₹0
+                  {formatInr(0)}
                 </p>
                 <p className="text-zinc-500 text-xs">
                   0% of principal
@@ -424,7 +424,7 @@ const Loans: React.FC = () => {
                   {loanStatus.interestRate}% APR
                 </p>
                 <p className="text-zinc-500 text-xs">
-                  {(loanStatus.interestRate / 100 / 365).toFixed(3)}% daily
+                  {formatPercentage(loanStatus.interestRate / 100 / 365)} daily
                 </p>
               </div>
             </div>
@@ -531,7 +531,7 @@ const Loans: React.FC = () => {
                         <div>
                           {item.inr_amount > 0 && (
                             <p className="font-bold text-sm text-white">
-                              ₹{item.inr_amount.toLocaleString('en-IN')}
+{formatInr(item.inr_amount)}
                             </p>
                           )}
                           {item.btc_amount > 0 && (
@@ -542,7 +542,7 @@ const Loans: React.FC = () => {
                         </div>
                       ) : (
                         <p className="font-bold text-sm text-white">
-                          {item.inr_amount > 0 ? `₹${item.inr_amount.toLocaleString('en-IN')}` : 
+{item.inr_amount > 0 ? formatInr(item.inr_amount) : 
                            item.btc_amount > 0 ? formatCurrency(item.btc_amount / 100000000, 'BTC') : 'N/A'}
                         </p>
                       )}

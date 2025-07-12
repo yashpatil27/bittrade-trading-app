@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { X, Wallet, Bitcoin, Calculator, Info } from 'lucide-react';
 import { userAPI, adminAPI } from '../services/api';
 import { useBalance } from '../contexts/BalanceContext';
-import { formatBitcoin } from '../utils/formatters';
+import { formatBitcoin, formatInr } from '../utils/formatters';
 import PinConfirmationModal from './PinConfirmationModal';
 import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 
@@ -227,13 +227,13 @@ const DepositCollateralModal: React.FC<DepositCollateralModalProps> = ({
               <div className="flex justify-between">
                 <span className="text-zinc-400">Collateral Value:</span>
                 <span className="text-white">
-                  ₹{Math.floor(parseFloat(amount) * btcSellRate).toLocaleString('en-IN')}
+                  {formatInr(parseFloat(amount) * btcSellRate)}
                 </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-zinc-400">Max Borrowable (60% LTV):</span>
                 <span className="text-white">
-                  ₹{calculateMaxBorrowable().toLocaleString('en-IN')}
+                  {formatInr(calculateMaxBorrowable())}
                 </span>
               </div>
               <div className="flex justify-between">
@@ -243,7 +243,7 @@ const DepositCollateralModal: React.FC<DepositCollateralModalProps> = ({
               <div className="flex justify-between">
                 <span className="text-zinc-400">Liquidation Price:</span>
                 <span className="text-yellow-400">
-                  ₹{calculateLiquidationPrice().toLocaleString('en-IN')} per BTC
+                  {formatInr(calculateLiquidationPrice())} per BTC
                 </span>
               </div>
             </div>
