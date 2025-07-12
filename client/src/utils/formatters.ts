@@ -96,8 +96,8 @@ export const formatBtc = (amount: number): string => {
 
 export const formatBitcoinWithINRValue = (btcAmount: number, sellRate: number): string => {
   const btcFormatted = formatBitcoin(btcAmount);
-  const inrValue = Math.floor(btcAmount * sellRate);
-  return `₿${btcFormatted} (₹${inrValue.toLocaleString()})`;
+  const inrValue = Math.round(btcAmount * sellRate);
+  return `₿${btcFormatted} (₹${inrValue.toLocaleString('en-IN')})`;
 };
 
 export const formatTimeAgo = (dateString: string): string => {
@@ -132,7 +132,10 @@ export const formatPercentage = (value: number): string => {
 };
 
 export const formatCurrencyInr = (amount: number): string => {
-  return `₹${amount.toLocaleString('en-IN')}`;
+  if (typeof amount !== 'number' || isNaN(amount) || !isFinite(amount)) {
+    return '₹0';
+  }
+  return `₹${Math.round(amount).toLocaleString('en-IN')}`;
 };
 
 export const formatBitcoinDisplay = (amount: number): string => {
