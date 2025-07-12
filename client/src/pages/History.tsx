@@ -60,6 +60,13 @@ const History: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [activeFiltersCount, setActiveFiltersCount] = useState(0);
+  // Store counts for category cards (based on loaded transactions only)
+  const [transactionCounts, setTransactionCounts] = useState({
+    buy: 0,
+    sell: 0,
+    loan: 0,
+    balance: 0
+  });
   
   const [filters, setFilters] = useState<FilterState>({
     types: ['ALL'],
@@ -276,21 +283,137 @@ const History: React.FC = () => {
         </button>
       </div>
 
-      {/* Summary Stats */}
-      <div className="grid grid-cols-2 gap-4">
-        <div className="bg-gradient-to-br from-zinc-950 to-zinc-900 border border-zinc-800 rounded-xl p-4 text-center">
-          <Activity className="w-8 h-8 text-zinc-400 mx-auto mb-2" />
-          <p className="text-zinc-400 text-sm">Total Transactions</p>
-          <p className="text-2xl font-bold">{allTransactions.length}</p>
-        </div>
-        <div className="bg-gradient-to-br from-zinc-950 to-zinc-900 border border-zinc-800 rounded-xl p-4 text-center">
-          <Activity className="w-8 h-8 text-white mx-auto mb-2" />
-          <p className="text-zinc-400 text-sm">Filtered Results</p>
-          <p className="text-2xl font-bold">
-            {filteredTransactions.length}
+      {/* Category Filter Cards */}
+      <div className="grid grid-cols-2 gap-3">
+        {/* Buy Transactions */}
+        <button
+          onClick={() => {
+            const buyTypes: TransactionType[] = ['BUY', 'LIMIT_BUY', 'DCA_BUY'];
+            const isCurrentlySelected = buyTypes.every(type => filters.types.includes(type)) && 
+                                      filters.types.length === buyTypes.length;
+            if (isCurrentlySelected) {
+              setFilters(prev => ({ ...prev, types: ['ALL'] }));
+            } else {
+              setFilters(prev => ({ ...prev, types: buyTypes }));
+            }
+          }}
+          className={`bg-gradient-to-br from-zinc-950 to-zinc-900 border rounded-lg p-3 flex items-center gap-3 transition-all hover:border-green-600 ${
+            ['BUY', 'LIMIT_BUY', 'DCA_BUY'].every(type => filters.types.includes(type as TransactionType)) && 
+            filters.types.length === 3 && !filters.types.includes('ALL')
+              ? 'border-green-500 bg-green-950/20'
+              : 'border-zinc-800'
+          }`}
+        >
+          <div className="p-1.5 bg-zinc-800 rounded-lg">
+            <TrendingUp className="w-4 h-4 text-green-400" />
+          </div>
+          <div>
+            <p className="text-zinc-400 text-xs">Buy</p>
+            <p className="text-lg font-bold text-white">
+              {allTransactions.filter(t => ['BUY', 'LIMIT_BUY', 'DCA_BUY'].includes(t.type)).length}
+            </p>
+          </div>
+        </button>
+
+        {/* Sell Transactions */}
+        <button
+          onClick={() => {
+            const sellTypes: TransactionType[] = ['SELL', 'LIMIT_SELL', 'DCA_SELL'];
+            const isCurrentlySelected = sellTypes.every(type => filters.types.includes(type)) && 
+                                      filters.types.length === sellTypes.length;
+            if (isCurrentlySelected) {
+              setFilters(prev => ({ ...prev, types: ['ALL'] }));
+            } else {
+              setFilters(prev => ({ ...prev, types: sellTypes }));
+            }
+          }}
+          className={`bg-gradient-to-br from-zinc-950 to-zinc-900 border rounded-lg p-3 flex items-center gap-3 transition-all hover:border-red-600 ${
+            ['SELL', 'LIMIT_SELL', 'DCA_SELL'].every(type => filters.types.includes(type as TransactionType)) && 
+            filters.types.length === 3 && !filters.types.includes('ALL')
+              ? 'border-red-500 bg-red-950/20'
+              : 'border-zinc-800'
+          }`}
+        >
+          <div className="p-1.5 bg-zinc-800 rounded-lg">
+            <TrendingDown className="w-4 h-4 text-red-400" />
+          </div>
+          <div>
+            <p className="text-zinc-400 text-xs">Sell</p>
+            <p className="text-lg font-bold text-white">
+              {allTransactions.filter(t => ['SELL', 'LIMIT_SELL', 'DCA_SELL'].includes(t.type)).length}
+            </p>
+          </div>
+        </button>
+
+        {/* Loan Transactions */}
+        <button
+          onClick={() => {
+            const loanTypes: TransactionType[] = ['LOAN_CREATE', 'LOAN_BORROW', 'LOAN_REPAY', 'LOAN_ADD_COLLATERAL', 'INTEREST_ACCRUAL', 'PARTIAL_LIQUIDATION', 'FULL_LIQUIDATION'];
+            const isCurrentlySelected = loanTypes.some(type => filters.types.includes(type)) && 
+                                      !filters.types.includes('ALL');
+            if (isCurrentlySelected) {
+              setFilters(prev => ({ ...prev, types: ['ALL'] }));
+            } else {
+              setFilters(prev => ({ ...prev, types: loanTypes }));
+            }
+          }}
+          className={`bg-gradient-to-br from-zinc-950 to-zinc-900 border rounded-lg p-3 flex items-center gap-3 transition-all hover:border-yellow-600 ${
+            ['LOAN_CREATE', 'LOAN_BORROW', 'LOAN_REPAY', 'LOAN_ADD_COLLATERAL', 'INTEREST_ACCRUAL', 'PARTIAL_LIQUIDATION', 'FULL_LIQUIDATION'].some(type => filters.types.includes(type as TransactionType)) && 
+            !filters.types.includes('ALL')
+              ? 'border-yellow-500 bg-yellow-950/20'
+              : 'border-zinc-800'
+          }`}
+        >
+          <div className="p-1.5 bg-zinc-800 rounded-lg">
+            <Lock className="w-4 h-4 text-yellow-400" />
+          </div>
+          <div>
+            <p className="text-zinc-400 text-xs">Loan</p>
+            <p className="text-lg font-bold text-white">
+              {allTransactions.filter(t => ['LOAN_CREATE', 'LOAN_BORROW', 'LOAN_REPAY', 'LOAN_ADD_COLLATERAL', 'INTEREST_ACCRUAL', 'PARTIAL_LIQUIDATION', 'FULL_LIQUIDATION'].includes(t.type)).length}
+            </p>
+          </div>
+        </button>
+
+        {/* Balance Transactions */}
+        <button
+          onClick={() => {
+            const balanceTypes: TransactionType[] = ['DEPOSIT_INR', 'DEPOSIT_BTC', 'WITHDRAW_INR', 'WITHDRAW_BTC'];
+            const isCurrentlySelected = balanceTypes.every(type => filters.types.includes(type)) && 
+                                      filters.types.length === balanceTypes.length;
+            if (isCurrentlySelected) {
+              setFilters(prev => ({ ...prev, types: ['ALL'] }));
+            } else {
+              setFilters(prev => ({ ...prev, types: balanceTypes }));
+            }
+          }}
+          className={`bg-gradient-to-br from-zinc-950 to-zinc-900 border rounded-lg p-3 flex items-center gap-3 transition-all hover:border-blue-600 ${
+            ['DEPOSIT_INR', 'DEPOSIT_BTC', 'WITHDRAW_INR', 'WITHDRAW_BTC'].every(type => filters.types.includes(type as TransactionType)) && 
+            filters.types.length === 4 && !filters.types.includes('ALL')
+              ? 'border-blue-500 bg-blue-950/20'
+              : 'border-zinc-800'
+          }`}
+        >
+          <div className="p-1.5 bg-zinc-800 rounded-lg">
+            <Wallet className="w-4 h-4 text-blue-400" />
+          </div>
+          <div>
+            <p className="text-zinc-400 text-xs">Balance</p>
+            <p className="text-lg font-bold text-white">
+              {allTransactions.filter(t => ['DEPOSIT_INR', 'DEPOSIT_BTC', 'WITHDRAW_INR', 'WITHDRAW_BTC'].includes(t.type)).length}
+            </p>
+          </div>
+        </button>
+      </div>
+
+      {/* Info note about loaded transactions */}
+      {hasMore && (
+        <div className="bg-zinc-900/50 border border-zinc-800 rounded-lg p-3 text-center">
+          <p className="text-zinc-400 text-xs">
+            Counts show loaded transactions only. Click "Load More" to see additional transactions.
           </p>
         </div>
-      </div>
+      )}
 
       {/* Transactions List */}
       <div className="bg-gradient-to-br from-zinc-950 to-zinc-900 border border-zinc-800 rounded-xl overflow-hidden">

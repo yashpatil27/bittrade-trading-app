@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Home, History, Settings, Users, BarChart3, Bitcoin, PieChart, User, Wallet } from 'lucide-react';
-import { useAuth } from '../contexts/AuthContext';
 import { useBalance } from '../contexts/BalanceContext';
 import { userAPI } from '../services/api';
 import { formatBitcoin } from '../utils/formatters';
