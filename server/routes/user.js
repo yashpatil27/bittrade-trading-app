@@ -1356,6 +1356,53 @@ router.get('/loan/history', async (req, res) => {
   }
 });
 
+// Execute user-initiated partial liquidation
+router.post('/loan/partial-liquidation', async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { btcAmount } = req.body;
+
+    // Validate input
+    if (!btcAmount || btcAmount <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'BTC amount must be greater than 0'
+      });
+    }
+
+    const result = await loanService.executeUserPartialLiquidation(userId, btcAmount);
+
+    res.json({
+      success: true,
+      message: result.loanClosed ? 'Loan fully repaid through liquidation' : 'Partial liquidation executed successfully',
+      data: {
+        ...result,
+        btcSold: result.btcSold / 100000000, // Convert back to BTC for frontend
+        newCollateralAmount: result.newCollateralAmount / 100000000 // Convert back to BTC for frontend
+      }
+    });
+
+  } catch (error) {
+    console.error('Partial liquidation error:', error);
+    
+    let statusCode = 500;
+    let message = 'Error executing partial liquidation';
+    
+    if (error.message === 'No active loan found') {
+      statusCode = 404;
+      message = error.message;
+    } else if (error.message === 'Amount exceeds available collateral' || error.message === 'BTC amount must be greater than 0') {
+      statusCode = 400;
+      message = error.message;
+    }
+
+    res.status(statusCode).json({
+      success: false,
+      message
+    });
+  }
+});
+
 // Execute full liquidation
 router.post('/loan/full-liquidation', async (req, res) => {
   try {

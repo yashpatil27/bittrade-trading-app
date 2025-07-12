@@ -32,6 +32,11 @@ const PartialLiquidationModal: React.FC<PartialLiquidationModalProps> = ({
     }
   }, [isOpen, error]);
 
+  const getTotalDue = () => {
+    if (!loanStatus) return 0;
+    return loanStatus.borrowedAmount + (loanStatus.minimumInterestDue || 0);
+  };
+
   const handlePartialLiquidation = () => {
     if (!btcAmount || parseFloat(btcAmount) <= 0) {
       setError('Please enter a valid BTC amount');
@@ -59,6 +64,7 @@ const PartialLiquidationModal: React.FC<PartialLiquidationModalProps> = ({
     try {
       // Verify PIN first
       const pinResponse = await userAPI.verifyPin(pin);
+      
       if (!pinResponse.data.data?.valid) {
         return false;
       }
@@ -74,7 +80,13 @@ const PartialLiquidationModal: React.FC<PartialLiquidationModalProps> = ({
       return true;
     } catch (error: any) {
       console.error('Partial liquidation error:', error);
+      // Check if error is from PIN verification or liquidation
+      if (error.response?.status === 400 && error.response?.data?.message?.includes('PIN')) {
+        return false;
+      }
+      // If it's a liquidation error, set the error message but don't close the PIN modal
       setError(error.response?.data?.message || 'Error executing partial liquidation');
+      setIsPinModalOpen(false);
       return false;
     } finally {
       setLoading(false);
@@ -139,25 +151,25 @@ const PartialLiquidationModal: React.FC<PartialLiquidationModalProps> = ({
           {/* Percentage Quick Select Buttons */}
           <div className="flex gap-2 mt-3">
             <button
-              onClick={() => setBtcAmount(((loanStatus.borrowedAmount / loanStatus.currentBtcPrice) * 0.25).toFixed(8))}
+              onClick={() => setBtcAmount(((getTotalDue() / loanStatus.currentBtcPrice) * 0.25).toFixed(8))}
               className="flex-1 text-xs bg-zinc-800 hover:bg-zinc-700 px-3 py-2 rounded transition-colors"
             >
               25%
             </button>
             <button
-              onClick={() => setBtcAmount(((loanStatus.borrowedAmount / loanStatus.currentBtcPrice) * 0.5).toFixed(8))}
+              onClick={() => setBtcAmount(((getTotalDue() / loanStatus.currentBtcPrice) * 0.5).toFixed(8))}
               className="flex-1 text-xs bg-zinc-800 hover:bg-zinc-700 px-3 py-2 rounded transition-colors"
             >
               50%
             </button>
             <button
-              onClick={() => setBtcAmount(((loanStatus.borrowedAmount / loanStatus.currentBtcPrice) * 0.75).toFixed(8))}
+              onClick={() => setBtcAmount(((getTotalDue() / loanStatus.currentBtcPrice) * 0.75).toFixed(8))}
               className="flex-1 text-xs bg-zinc-800 hover:bg-zinc-700 px-3 py-2 rounded transition-colors"
             >
               75%
             </button>
             <button
-              onClick={() => setBtcAmount((loanStatus.borrowedAmount / loanStatus.currentBtcPrice).toFixed(8))}
+              onClick={() => setBtcAmount((getTotalDue() / loanStatus.currentBtcPrice).toFixed(8))}
               className="flex-1 text-xs bg-zinc-700 hover:bg-zinc-600 px-3 py-2 rounded transition-colors"
             >
               Max
@@ -183,7 +195,7 @@ const PartialLiquidationModal: React.FC<PartialLiquidationModalProps> = ({
               <div className="flex justify-between">
                 <span className="text-zinc-400">Est. INR Proceeds:</span>
                 <span className="text-white">
-                  {formatCurrencyInr(Math.floor(parseFloat(btcAmount) * loanStatus.currentBtcPrice))}
+                  {formatCurrencyInr(Math.round(parseFloat(btcAmount) * loanStatus.currentBtcPrice))}
                 </span>
               </div>
               <div className="flex justify-between">
@@ -195,7 +207,7 @@ const PartialLiquidationModal: React.FC<PartialLiquidationModalProps> = ({
               <div className="flex justify-between">
                 <span className="text-zinc-400">Remaining Debt:</span>
                 <span className="text-white">
-                  {formatCurrencyInr(Math.floor(Math.max(0, loanStatus.borrowedAmount - (parseFloat(btcAmount) * loanStatus.currentBtcPrice))))}
+                  {formatCurrencyInr(Math.round(Math.max(0, getTotalDue() - (parseFloat(btcAmount) * loanStatus.currentBtcPrice))))}
                 </span>
               </div>
             </div>
@@ -210,12 +222,12 @@ const PartialLiquidationModal: React.FC<PartialLiquidationModalProps> = ({
               {!btcAmount || parseFloat(btcAmount) === 0 ? (
                 <div>
                   <p className="mb-2">Liquidate part of your collateral to reduce debt and improve your position.</p>
-                  <p><strong>Note:</strong> 30-day minimum interest policy still applies to remaining debt.</p>
+                  <p><strong>Note:</strong> Total debt includes principal + 30-day minimum interest.</p>
                 </div>
               ) : (
                 <div>
                   <p className="mb-2">Bitcoin will be sold at current market price to reduce your loan debt.</p>
-                  <p>The proceeds will be applied directly to your outstanding balance.</p>
+                  <p>The proceeds will be applied to your total outstanding balance (principal + interest).</p>
                 </div>
               )}
             </div>
@@ -244,17 +256,17 @@ const PartialLiquidationModal: React.FC<PartialLiquidationModalProps> = ({
             {loading ? 'Processing...' : 'Liquidate BTC'}
           </button>
         </div>
-
-        {/* PIN Confirmation Modal */}
-        <PinConfirmationModal
-          isOpen={isPinModalOpen}
-          onClose={handlePinModalClose}
-          onConfirm={handlePinConfirm}
-          title="Confirm Liquidation"
-          message={`Enter your PIN to confirm liquidating ${btcAmount} BTC`}
-          isLoading={loading}
-        />
       </div>
+
+      {/* PIN Confirmation Modal */}
+      <PinConfirmationModal
+        isOpen={isPinModalOpen}
+        onClose={handlePinModalClose}
+        onConfirm={handlePinConfirm}
+        title="Confirm Liquidation"
+        message={`Enter your PIN to confirm liquidating ${btcAmount} BTC`}
+        isLoading={loading}
+      />
     </div>
   );
 };

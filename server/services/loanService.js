@@ -801,6 +801,121 @@ const LoanService = {
   },
 
   /**
+   * User-initiated partial liquidation
+   * @param {number} userId - ID of the user
+   * @param {number} btcAmount - Amount of BTC to liquidate
+   * @returns {Promise} - Resolves with liquidation details
+   */
+  async executeUserPartialLiquidation(userId, btcAmount) {
+    try {
+      if (btcAmount <= 0) {
+        throw new Error('BTC amount must be greater than 0');
+      }
+
+      return await transaction(async (connection) => {
+        // Get active loan for user
+        const [loanRows] = await connection.execute(
+          'SELECT * FROM loans WHERE user_id = ? AND status = "ACTIVE"',
+          [userId]
+        );
+
+        if (loanRows.length === 0) {
+          throw new Error('No active loan found');
+        }
+
+        const loan = loanRows[0];
+        const btcToSell = Math.floor(btcAmount * 100000000); // Convert to satoshis
+        
+        if (btcToSell > loan.btc_collateral_amount) {
+          throw new Error('Amount exceeds available collateral');
+        }
+        
+        // Get current BTC price
+        const rates = await bitcoinDataService.getCalculatedRates();
+        
+        // Calculate INR proceeds from BTC sale
+        const inrFromSale = Math.round((btcToSell * rates.sellRate) / 100000000);
+        
+        // Calculate total debt including minimum interest
+        const minimumInterestDue = await this.calculateMinimumInterestDue(loan);
+        const totalDebt = loan.inr_borrowed_amount + minimumInterestDue;
+        
+        // Apply proceeds to debt first, then to user balance
+        const debtReduction = Math.min(inrFromSale, totalDebt);
+        const remainingInr = inrFromSale - debtReduction;
+        
+        // Update user balances
+        await connection.execute(
+          'UPDATE users SET borrowed_inr = GREATEST(0, borrowed_inr - ?), interest_accrued = GREATEST(0, interest_accrued - ?), collateral_btc = collateral_btc - ?, available_inr = available_inr + ? WHERE id = ?',
+          [debtReduction, debtReduction, btcToSell, remainingInr, userId]
+        );
+
+        // Update loan
+        const newBorrowedAmount = Math.max(0, loan.inr_borrowed_amount - debtReduction);
+        const newCollateralAmount = loan.btc_collateral_amount - btcToSell;
+        
+        // If loan is fully paid off, close it
+        if (newBorrowedAmount === 0) {
+          await connection.execute(
+            'UPDATE loans SET status = "REPAID", inr_borrowed_amount = 0, btc_collateral_amount = ?, repaid_at = NOW() WHERE id = ?',
+            [newCollateralAmount, loan.id]
+          );
+          
+          // Move remaining collateral back to available balance if any
+          if (newCollateralAmount > 0) {
+            await connection.execute(
+              'UPDATE users SET available_btc = available_btc + ?, collateral_btc = collateral_btc - ? WHERE id = ?',
+              [newCollateralAmount, newCollateralAmount, userId]
+            );
+          }
+        } else {
+          await connection.execute(
+            'UPDATE loans SET inr_borrowed_amount = ?, btc_collateral_amount = ? WHERE id = ?',
+            [newBorrowedAmount, newCollateralAmount, loan.id]
+          );
+        }
+
+        // Record the operation
+        const operationType = newBorrowedAmount === 0 ? 'FULL_LIQUIDATION' : 'PARTIAL_LIQUIDATION';
+        const operationNotes = newBorrowedAmount === 0 ? 
+          `User-initiated full liquidation - loan fully repaid. Original collateral: ${(loan.btc_collateral_amount / 100000000).toFixed(8)} BTC, liquidated: ${btcAmount} BTC, remaining: ${(newCollateralAmount / 100000000).toFixed(8)} BTC` :
+          `User-initiated partial liquidation - debt reduced by ₹${debtReduction.toLocaleString()}`;
+          
+        await connection.execute(
+          'INSERT INTO operations (user_id, type, status, inr_amount, btc_amount, execution_price, loan_id, notes, executed_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())',
+          [userId, operationType, 'EXECUTED', debtReduction, btcToSell, rates.sellRate, loan.id, operationNotes]
+        );
+
+        // Clear user cache
+        await clearUserCache(userId);
+        
+        // Calculate new LTV if loan is still active
+        let newLtv = 0;
+        if (newBorrowedAmount > 0 && newCollateralAmount > 0) {
+          newLtv = (newBorrowedAmount / ((newCollateralAmount * rates.sellRate) / 100000000)) * 100;
+        }
+
+        return {
+          loanId: loan.id,
+          btcSold: btcToSell,
+          btcSoldFormatted: btcAmount,
+          inrFromSale,
+          debtReduction,
+          remainingInr,
+          newBorrowedAmount,
+          newCollateralAmount,
+          newLtv,
+          loanClosed: newBorrowedAmount === 0,
+          executionPrice: rates.sellRate
+        };
+      });
+    } catch (error) {
+      console.error('Error executing user partial liquidation:', error);
+      throw error;
+    }
+  },
+
+  /**
    * Check loans at risk of liquidation
    * @returns {Promise} - Resolves with at-risk loans
    */
