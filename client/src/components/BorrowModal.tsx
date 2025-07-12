@@ -5,6 +5,7 @@ import { LoanStatus } from '../types';
 import { useBalance } from '../contexts/BalanceContext';
 import PinConfirmationModal from './PinConfirmationModal';
 import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
+import { formatCurrencyInr } from '../utils/formatters';
 
 interface BorrowModalProps {
   isOpen: boolean;
@@ -150,7 +151,7 @@ const BorrowModal: React.FC<BorrowModalProps> = ({
             <div>
               <p className="text-zinc-400">Available to Borrow</p>
               <p className="text-white font-semibold">
-                ₹{loanStatus.availableCapacity.toLocaleString('en-IN')}
+                {formatCurrencyInr(loanStatus.availableCapacity)}
               </p>
             </div>
             <div>
@@ -226,13 +227,13 @@ const BorrowModal: React.FC<BorrowModalProps> = ({
               <div className="flex justify-between">
                 <span className="text-zinc-400">Amount Borrowed:</span>
                 <span className="text-white">
-                  ₹{parseFloat(amount).toLocaleString('en-IN')}
+                  {formatCurrencyInr(parseFloat(amount))}
                 </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-zinc-400">Total Debt:</span>
                 <span className="text-white">
-                  ₹{(loanStatus.borrowedAmount + parseFloat(amount)).toLocaleString('en-IN')}
+                  {formatCurrencyInr(loanStatus.borrowedAmount + parseFloat(amount))}
                 </span>
               </div>
               <div className="flex justify-between">
@@ -244,7 +245,7 @@ const BorrowModal: React.FC<BorrowModalProps> = ({
               <div className="flex justify-between">
                 <span className="text-zinc-400">Remaining Capacity:</span>
                 <span className="text-white">
-                  ₹{(loanStatus.availableCapacity - parseFloat(amount)).toLocaleString('en-IN')}
+                  {formatCurrencyInr(loanStatus.availableCapacity - parseFloat(amount))}
                 </span>
               </div>
             </div>
@@ -309,7 +310,7 @@ const BorrowModal: React.FC<BorrowModalProps> = ({
         onClose={handlePinModalClose}
         onConfirm={handlePinConfirm}
         title="Confirm Borrowing"
-        message={`Enter your PIN to confirm borrowing ₹${amount}`}
+        message={`Enter your PIN to confirm borrowing ${formatCurrencyInr(parseFloat(amount || '0'))}`}
         isLoading={loading}
       />
     </div>

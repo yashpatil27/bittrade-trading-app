@@ -5,6 +5,7 @@ import { LoanStatus } from '../types';
 import { useBalance } from '../contexts/BalanceContext';
 import PinConfirmationModal from './PinConfirmationModal';
 import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
+import { formatCurrencyInr } from '../utils/formatters';
 
 interface RepayModalProps {
   isOpen: boolean;
@@ -173,7 +174,7 @@ const RepayModal: React.FC<RepayModalProps> = ({
             <div>
               <p className="text-zinc-400">Total Due</p>
               <p className="text-white font-semibold">
-                ₹{getTotalDue().toLocaleString('en-IN')}
+                {formatCurrencyInr(getTotalDue())}
               </p>
               <p className="text-zinc-500 text-xs mt-1">
                 Principal + Interest
@@ -182,7 +183,7 @@ const RepayModal: React.FC<RepayModalProps> = ({
             <div>
               <p className="text-zinc-400">Available Balance</p>
               <p className="text-white font-semibold">
-                ₹{availableBalance.toLocaleString('en-IN')}
+                {formatCurrencyInr(availableBalance)}
               </p>
             </div>
           </div>
@@ -252,13 +253,13 @@ const RepayModal: React.FC<RepayModalProps> = ({
               <div className="flex justify-between">
                 <span className="text-zinc-400">Amount Repaid:</span>
                 <span className="text-white">
-                  ₹{parseFloat(amount).toLocaleString('en-IN')}
+                  {formatCurrencyInr(parseFloat(amount))}
                 </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-zinc-400">Remaining Debt:</span>
                 <span className="text-white">
-                  ₹{Math.max(0, getTotalDue() - parseFloat(amount)).toLocaleString('en-IN')}
+                  {formatCurrencyInr(Math.max(0, getTotalDue() - parseFloat(amount)))}
                 </span>
               </div>
               <div className="flex justify-between">
@@ -270,7 +271,7 @@ const RepayModal: React.FC<RepayModalProps> = ({
               <div className="flex justify-between">
                 <span className="text-zinc-400">Remaining Balance:</span>
                 <span className="text-white">
-                  ₹{(availableBalance - parseFloat(amount)).toLocaleString('en-IN')}
+                  {formatCurrencyInr(availableBalance - parseFloat(amount))}
                 </span>
               </div>
             </div>
@@ -331,7 +332,7 @@ const RepayModal: React.FC<RepayModalProps> = ({
         onClose={handlePinModalClose}
         onConfirm={handlePinConfirm}
         title="Confirm Repayment"
-        message={`Enter your PIN to confirm repaying ₹${amount}`}
+        message={`Enter your PIN to confirm repaying ${formatCurrencyInr(parseFloat(amount || '0'))}`}
         isLoading={loading}
       />
     </div>

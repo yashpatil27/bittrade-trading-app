@@ -32,7 +32,8 @@ import {
   getTransactionDisplayName, 
   getTransactionIcon, 
   formatTimeAgo,
-  formatCurrency
+  formatCurrency,
+  formatInr
 } from '../utils/formatters';
 
 type TransactionType = 'ALL' | 'MARKET_BUY' | 'MARKET_SELL' | 'LIMIT_BUY' | 'LIMIT_SELL' | 'DEPOSIT_INR' | 'DEPOSIT_BTC' | 'WITHDRAW_INR' | 'WITHDRAW_BTC' | 'DCA_BUY' | 'DCA_SELL' | 'LOAN_CREATE' | 'LOAN_BORROW' | 'LOAN_REPAY' | 'LOAN_ADD_COLLATERAL' | 'INTEREST_ACCRUAL' | 'PARTIAL_LIQUIDATION' | 'FULL_LIQUIDATION';
@@ -188,15 +189,15 @@ const History: React.FC = () => {
 
   const formatAmount = (transaction: Transaction) => {
     if (transaction.type.includes('INR')) {
-      return `₹${transaction.inr_amount.toLocaleString('en-IN')}`;
+      return formatInr(transaction.inr_amount);
     } else if (transaction.type.includes('BTC')) {
       return formatCurrency(transaction.btc_amount, 'BTC');
     } else if (transaction.type.includes('LOAN') || transaction.type.includes('INTEREST') || transaction.type.includes('LIQUIDATION')) {
       // For loan transactions, show both amounts if they exist
       if (transaction.inr_amount > 0 && transaction.btc_amount > 0) {
-        return `₹${transaction.inr_amount.toLocaleString('en-IN')} / ${formatCurrency(transaction.btc_amount, 'BTC')}`;
+        return `${formatInr(transaction.inr_amount)} / ${formatCurrency(transaction.btc_amount, 'BTC')}`;
       } else if (transaction.inr_amount > 0) {
-        return `₹${transaction.inr_amount.toLocaleString('en-IN')}`;
+        return formatInr(transaction.inr_amount);
       } else if (transaction.btc_amount > 0) {
         return formatCurrency(transaction.btc_amount, 'BTC');
       }
@@ -462,14 +463,14 @@ const History: React.FC = () => {
                       {(transaction.type === 'BUY' || transaction.type === 'SELL' || transaction.type === 'MARKET_BUY' || transaction.type === 'MARKET_SELL' || transaction.type === 'LIMIT_BUY' || transaction.type === 'LIMIT_SELL' || transaction.type === 'DCA_BUY' || transaction.type === 'DCA_SELL') ? (
                         <div>
                           <p className="font-bold text-sm text-white">
-                            ₹{transaction.inr_amount.toLocaleString('en-IN')}
+                            {formatInr(transaction.inr_amount)}
                           </p>
                           <p className="text-xs text-zinc-400">
                             {formatCurrency(transaction.btc_amount, 'BTC')}
                           </p>
                           {transaction.status === 'PENDING' && transaction.btc_price && (
                             <p className="text-xs text-orange-300">
-                              @ ₹{transaction.btc_price.toLocaleString('en-IN')}
+                              @ {formatInr(transaction.btc_price)}
                             </p>
                           )}
                         </div>
@@ -495,7 +496,7 @@ const History: React.FC = () => {
                           <div>
                             {transaction.inr_amount > 0 && (
                               <p className="font-bold text-sm text-white">
-                                ₹{transaction.inr_amount.toLocaleString('en-IN')}
+                                {formatInr(transaction.inr_amount)}
                               </p>
                             )}
                             {transaction.btc_amount > 0 && (

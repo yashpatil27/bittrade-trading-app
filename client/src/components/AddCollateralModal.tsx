@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { X, Plus, AlertCircle, TrendingUp, Shield, Bitcoin } from 'lucide-react';
 import { userAPI } from '../services/api';
 import { LoanStatus } from '../types';
-import { formatBitcoin } from '../utils/formatters';
+import { formatBitcoin, formatCurrencyInr } from '../utils/formatters';
 import PinConfirmationModal from './PinConfirmationModal';
 import { useBalance } from '../contexts/BalanceContext';
 
@@ -169,13 +169,13 @@ const AddCollateralModal: React.FC<AddCollateralModalProps> = ({
                 <div>
                   <p className="text-zinc-400">Borrowed</p>
                   <p className="text-white font-medium">
-                    ₹{loanStatus.borrowedAmount.toLocaleString('en-IN')}
+                    {formatCurrencyInr(loanStatus.borrowedAmount)}
                   </p>
                 </div>
                 <div>
                   <p className="text-zinc-400">Available to Borrow</p>
                   <p className="text-white font-medium">
-                    ₹{loanStatus.availableCapacity.toLocaleString('en-IN')}
+                    {formatCurrencyInr(loanStatus.availableCapacity)}
                   </p>
                 </div>
               </div>
@@ -279,13 +279,13 @@ const AddCollateralModal: React.FC<AddCollateralModalProps> = ({
                   <div>
                     <p className="text-green-300">Max Borrowable</p>
                     <p className="text-white font-medium">
-                      ₹{newMetrics.newMaxBorrowable.toLocaleString('en-IN')}
+                      {formatCurrencyInr(newMetrics.newMaxBorrowable)}
                     </p>
                   </div>
                   <div>
                     <p className="text-green-300">New Available to Borrow</p>
                     <p className="text-white font-medium">
-                      ₹{newMetrics.newAvailableCapacity.toLocaleString('en-IN')}
+                      {formatCurrencyInr(newMetrics.newAvailableCapacity)}
                     </p>
                   </div>
                 </div>

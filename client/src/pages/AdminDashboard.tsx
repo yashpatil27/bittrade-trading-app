@@ -162,11 +162,11 @@ const AdminDashboard: React.FC = () => {
           </div>
           <div className="flex justify-between items-center">
             <span className="text-zinc-400">Buy Rate</span>
-            <span className="font-medium text-green-400">₹{(data?.current_prices.buy_rate || 0).toLocaleString('en-IN')}</span>
+            <span className="font-medium text-green-400">{formatCurrencyInr(data?.current_prices.buy_rate || 0)}</span>
           </div>
           <div className="flex justify-between items-center">
             <span className="text-zinc-400">Sell Rate</span>
-            <span className="font-medium text-red-400">₹{(data?.current_prices.sell_rate || 0).toLocaleString('en-IN')}</span>
+            <span className="font-medium text-red-400">{formatCurrencyInr(data?.current_prices.sell_rate || 0)}</span>
           </div>
           <div className="border-t border-zinc-800 pt-3">
             <div className="flex justify-between items-center text-sm">
@@ -253,7 +253,7 @@ const AdminDashboard: React.FC = () => {
             <div className="text-center">
               <p className="text-zinc-400 text-sm">Total Value</p>
               <p className="text-lg font-bold">
-                ₹{(limitOrdersSummary.pending_orders?.total_buy_inr || 0).toLocaleString('en-IN')}
+                {formatCurrencyInr(limitOrdersSummary.pending_orders?.total_buy_inr || 0)}
               </p>
               <div className="text-xs text-zinc-500 mt-1">
                 {(limitOrdersSummary.pending_orders?.total_sell_btc || 0).toFixed(6)} BTC

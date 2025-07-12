@@ -18,7 +18,7 @@ import {
   Zap
 } from 'lucide-react';
 import { Transaction } from '../types';
-import { getTransactionDisplayName, getTransactionIcon, formatBitcoin } from '../utils/formatters';
+import { getTransactionDisplayName, getTransactionIcon, formatBitcoin, formatCurrencyInr } from '../utils/formatters';
 import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 import { userAPI } from '../services/api';
 import PinConfirmationModal from './PinConfirmationModal';
@@ -118,19 +118,19 @@ const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
 
   const formatAmount = () => {
     if (transaction.type === 'BUY' || transaction.type === 'SELL' || transaction.type === 'MARKET_BUY' || transaction.type === 'MARKET_SELL' || transaction.type === 'LIMIT_BUY' || transaction.type === 'LIMIT_SELL' || transaction.type === 'DCA_BUY' || transaction.type === 'DCA_SELL') {
-      return `₹${transaction.inr_amount.toLocaleString('en-IN')} / ₿${formatBitcoin(transaction.btc_amount)}`;
+      return `${formatCurrencyInr(transaction.inr_amount)} / ₿${formatBitcoin(transaction.btc_amount)}`;
     } else if (transaction.type.includes('LOAN') || transaction.type.includes('INTEREST') || transaction.type.includes('LIQUIDATION')) {
       // For loan transactions, show both amounts if they exist
       if (transaction.inr_amount > 0 && transaction.btc_amount > 0) {
-        return `₹${transaction.inr_amount.toLocaleString('en-IN')} / ₿${formatBitcoin(transaction.btc_amount)}`;
+        return `${formatCurrencyInr(transaction.inr_amount)} / ₿${formatBitcoin(transaction.btc_amount)}`;
       } else if (transaction.inr_amount > 0) {
-        return `₹${transaction.inr_amount.toLocaleString('en-IN')}`;
+        return formatCurrencyInr(transaction.inr_amount);
       } else if (transaction.btc_amount > 0) {
         return `₿${formatBitcoin(transaction.btc_amount)}`;
       }
       return 'N/A';
     } else if (transaction.type.includes('INR')) {
-      return `₹${transaction.inr_amount.toLocaleString('en-IN')}`;
+      return formatCurrencyInr(transaction.inr_amount);
     } else if (transaction.type.includes('BTC')) {
       return `₿${formatBitcoin(transaction.btc_amount)}`;
     }
@@ -218,7 +218,7 @@ const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
 {transaction.execution_price ? (
                   <div className="flex justify-between">
                     <span className="text-zinc-400 text-xs">Execution Price:</span>
-                    <span className="text-white text-xs">₹{transaction.execution_price.toLocaleString('en-IN')}</span>
+                    <span className="text-white text-xs">{formatCurrencyInr(transaction.execution_price)}</span>
                   </div>
                 ) : null}
                 {transaction.notes && transaction.type !== 'PARTIAL_LIQUIDATION' && transaction.type !== 'FULL_LIQUIDATION' ? (
@@ -287,13 +287,13 @@ const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
                       {(transaction.execution_price || transaction.btc_price) && (
                         <div className="flex justify-between">
                           <span className="text-zinc-400 text-xs">Sale Price:</span>
-                          <span className="text-white text-xs">₹{(transaction.execution_price || transaction.btc_price).toLocaleString('en-IN')}</span>
+                          <span className="text-white text-xs">{formatCurrencyInr(transaction.execution_price || transaction.btc_price)}</span>
                         </div>
                       )}
                       {transaction.inr_amount > 0 && (
                         <div className="flex justify-between">
                           <span className="text-zinc-400 text-xs">{transaction.type === 'FULL_LIQUIDATION' ? 'Debt Cleared:' : 'Amount Applied:'}</span>
-                          <span className="text-white text-xs">₹{transaction.inr_amount.toLocaleString('en-IN')}</span>
+                          <span className="text-white text-xs">{formatCurrencyInr(transaction.inr_amount)}</span>
                         </div>
                       )}
                       {/* Show BTC returned for full liquidations */}
@@ -329,7 +329,7 @@ const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
               <div className="space-y-1">
                 <div className="flex justify-between">
                   <span className="text-zinc-400 text-xs">{transaction.status === 'PENDING' ? 'Target Price:' : 'BTC Price:'}</span>
-                  <span className="text-white text-xs">₹{transaction.btc_price ? transaction.btc_price.toLocaleString('en-IN') : 'N/A'}</span>
+                  <span className="text-white text-xs">{transaction.btc_price ? formatCurrencyInr(transaction.btc_price) : 'N/A'}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-zinc-400 text-xs">{transaction.status === 'PENDING' ? 'Estimated BTC:' : 'BTC Amount:'}</span>
