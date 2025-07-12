@@ -175,9 +175,9 @@ const TradingModal: React.FC<TradingModalProps> = ({
               </h2>
               <p className="text-sm text-zinc-400">
                 {orderType === 'market' ? 
-                  `Market Rate: ${formatCurrencyInr(rate)} /BTC` :
+                  `Market Rate: ${formatCurrencyInr(rate || 0)}/BTC` :
                   orderType === 'limit' ?
-                  `Current: ${formatCurrencyInr(rate)}/BTC` :
+                  `Current: ${formatCurrencyInr(rate || 0)}/BTC` :
                   `Recurring ${dcaFrequency.toLowerCase()} ${isBuy ? 'purchases' : 'sales'}`
                 }
               </p>
@@ -454,7 +454,7 @@ const TradingModal: React.FC<TradingModalProps> = ({
                   <p className="text-white font-medium text-sm">Optional Settings</p>
                   <p className="text-zinc-400 text-xs">
                     {dcaExecutions || dcaMaxPrice || dcaMinPrice ? (
-                      `${dcaExecutions ? `${dcaExecutions} executions` : ''}${dcaExecutions  (dcaMaxPrice || dcaMinPrice) ? ', ' : ''}${dcaMaxPrice ? `Max ${formatCurrencyInr(parseFloat(dcaMaxPrice))}` : ''}${dcaMaxPrice  dcaMinPrice ? ', ' : ''}${dcaMinPrice ? `Min ${formatCurrencyInr(parseFloat(dcaMinPrice))}` : ''}`
+                      `${dcaExecutions ? `${dcaExecutions} executions` : ''}${dcaExecutions && (dcaMaxPrice || dcaMinPrice) ? ', ' : ''}${dcaMaxPrice ? `Max ${formatCurrencyInr(parseFloat(dcaMaxPrice))}` : ''}${dcaMaxPrice && dcaMinPrice ? ', ' : ''}${dcaMinPrice ? `Min ${formatCurrencyInr(parseFloat(dcaMinPrice))}` : ''}`
                     ) : (
                       'Set execution limits and price ranges'
                     )}
@@ -495,15 +495,15 @@ const TradingModal: React.FC<TradingModalProps> = ({
               <div className="mt-2 text-xs text-zinc-400">
                 {isBuy ? (
                   targetPrice && rate && parseFloat(targetPrice) < rate ? (
-                    span className="text-green-400"• Waiting for price to drop to {formatCurrencyInr(parseFloat(targetPrice))}/span
+                    <span className="text-green-400">• Waiting for price to drop to {formatCurrencyInr(parseFloat(targetPrice))}</span>
                   ) : (
-                    span className="text-orange-400"• Waiting for price to rise to {formatCurrencyInr(parseFloat(targetPrice))}/span
+                    <span className="text-orange-400">• Waiting for price to rise to {formatCurrencyInr(parseFloat(targetPrice))}</span>
                   )
                 ) : (
                   targetPrice && rate && parseFloat(targetPrice) > rate ? (
-                    span className="text-green-400"• Waiting for price to rise to {formatCurrencyInr(parseFloat(targetPrice))}/span
+                    <span className="text-green-400">• Waiting for price to rise to {formatCurrencyInr(parseFloat(targetPrice))}</span>
                   ) : (
-                    span className="text-orange-400"• Waiting for price to drop to {formatCurrencyInr(parseFloat(targetPrice))}/span
+                    <span className="text-orange-400">• Waiting for price to drop to {formatCurrencyInr(parseFloat(targetPrice))}</span>
                   )
                 )}
               </div>
