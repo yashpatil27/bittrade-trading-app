@@ -877,9 +877,33 @@ const LoanService = {
 
         // Record the operation
         const operationType = newBorrowedAmount === 0 ? 'FULL_LIQUIDATION' : 'PARTIAL_LIQUIDATION';
+        
+        // Create structured JSON notes for consistent display
         const operationNotes = newBorrowedAmount === 0 ? 
-          `User-initiated full liquidation - loan fully repaid. Original collateral: ${(loan.btc_collateral_amount / 100000000).toFixed(8)} BTC, liquidated: ${btcAmount} BTC, remaining: ${(newCollateralAmount / 100000000).toFixed(8)} BTC` :
-          `User-initiated partial liquidation - debt reduced by ₹${debtReduction.toLocaleString()}`;
+          JSON.stringify({
+            type: 'user_initiated_full_liquidation',
+            originalCollateral: (loan.btc_collateral_amount / 100000000).toFixed(8),
+            liquidatedBtc: btcAmount,
+            remainingBtc: (newCollateralAmount / 100000000).toFixed(8),
+            btcReturned: (newCollateralAmount / 100000000).toFixed(8),
+            inrFromSale: inrFromSale,
+            debtReduction: debtReduction,
+            remainingInr: remainingInr,
+            executionPrice: rates.sellRate,
+            loanFullyRepaid: true,
+            message: `User-initiated full liquidation - loan fully repaid. Original collateral: ${(loan.btc_collateral_amount / 100000000).toFixed(8)} BTC, liquidated: ${btcAmount} BTC, remaining: ${(newCollateralAmount / 100000000).toFixed(8)} BTC`
+          }) :
+          JSON.stringify({
+            type: 'user_initiated_partial_liquidation',
+            liquidatedBtc: btcAmount,
+            inrFromSale: inrFromSale,
+            debtReduction: debtReduction,
+            remainingInr: remainingInr,
+            executionPrice: rates.sellRate,
+            newBorrowedAmount: newBorrowedAmount,
+            newCollateralAmount: (newCollateralAmount / 100000000).toFixed(8),
+            message: `User-initiated partial liquidation - debt reduced by ₹${debtReduction.toLocaleString()}`
+          });
           
         await connection.execute(
           'INSERT INTO operations (user_id, type, status, inr_amount, btc_amount, execution_price, loan_id, notes, executed_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())',
