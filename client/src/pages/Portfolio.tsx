@@ -20,7 +20,7 @@ import {
   Brain
 } from 'lucide-react';
 import { userAPI } from '../services/api';
-import { formatCurrency, formatInr, formatBtc, formatPercentage, formatCurrencyInr } from '../utils/formatters';
+import { formatCurrency, formatPercentage, formatCurrencyInr } from '../utils/formatters';
 
 interface PortfolioData {
   totalPortfolioValue: number;
@@ -119,9 +119,9 @@ const Portfolio: React.FC = () => {
 
   const formatInrWithNA = (value: number | null | undefined) => {
     if (value === null || value === undefined || typeof value !== 'number' || isNaN(value) || !isFinite(value)) {
-      return '₹0';
+      return formatCurrencyInr(0);
     }
-    return formatInr(value);
+    return formatCurrencyInr(value);
   };
 
   const formatLargeNumber = (value: number | null | undefined) => {
