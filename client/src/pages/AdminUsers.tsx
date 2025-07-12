@@ -14,7 +14,7 @@ import {
 import { adminAPI } from '../services/api';
 import { AdminUser } from '../types';
 import UserManagementModal from '../components/UserManagementModal';
-import { formatBitcoin } from '../utils/formatters';
+import { formatBitcoin, formatCurrencyInr } from '../utils/formatters';
 
 const AdminUsers: React.FC = () => {
   const [users, setUsers] = useState<AdminUser[]>([]);
@@ -87,7 +87,7 @@ const AdminUsers: React.FC = () => {
         <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 text-center">
           <DollarSign className="w-8 h-8 text-white mx-auto mb-2" />
           <p className="text-zinc-400 text-sm">Total INR</p>
-          <p className="text-xl font-bold">₹{totalINR.toLocaleString('en-IN')}</p>
+          <p className="text-xl font-bold">{formatCurrencyInr(totalINR)}</p>
           <p className="text-xs text-zinc-500">Platform Total</p>
         </div>
       </div>
@@ -157,7 +157,7 @@ const AdminUsers: React.FC = () => {
                         <p className="text-zinc-400 text-sm">{user.email}</p>
                         <div className="flex items-center gap-4 mt-1">
                           <span className="text-xs text-zinc-500">
-                            ₹{user.inr_balance.toLocaleString('en-IN')}
+                            {formatCurrencyInr(user.inr_balance)}
                           </span>
                           <span className="text-xs text-zinc-500">
                             ₿{formatBitcoin(user.btc_balance)}

@@ -37,7 +37,8 @@ import {
   getTransactionIcon, 
   formatTimeAgo,
   formatBitcoin,
-  formatCurrency
+  formatCurrency,
+  formatCurrencyInr
 } from '../utils/formatters';
 
 type TransactionType = 'ALL' | 'BUY' | 'SELL' | 'LIMIT_BUY' | 'LIMIT_SELL' | 'DEPOSIT_INR' | 'DEPOSIT_BTC' | 'WITHDRAW_INR' | 'WITHDRAW_BTC' | 'LOAN_CREATE' | 'LOAN_BORROW' | 'LOAN_REPAY' | 'LOAN_ADD_COLLATERAL';
@@ -272,15 +273,15 @@ const AdminTransactions: React.FC = () => {
 
   const formatAmount = (transaction: Transaction) => {
     if (transaction.type.includes('INR')) {
-      return `₹${transaction.inr_amount.toLocaleString('en-IN')}`;
+      return formatCurrencyInr(transaction.inr_amount);
     } else if (transaction.type.includes('BTC')) {
       return `₿${formatBitcoin(transaction.btc_amount)}`;
     } else if (transaction.type.includes('LOAN') || transaction.type.includes('INTEREST') || transaction.type.includes('LIQUIDATION')) {
       // For loan transactions, show both amounts if they exist
       if (transaction.inr_amount > 0 && transaction.btc_amount > 0) {
-        return `₹${transaction.inr_amount.toLocaleString('en-IN')} / ₿${formatBitcoin(transaction.btc_amount)}`;
+        return `${formatCurrencyInr(transaction.inr_amount)} / ₿${formatBitcoin(transaction.btc_amount)}`;
       } else if (transaction.inr_amount > 0) {
-        return `₹${transaction.inr_amount.toLocaleString('en-IN')}`;
+        return formatCurrencyInr(transaction.inr_amount);
       } else if (transaction.btc_amount > 0) {
         return `₿${formatBitcoin(transaction.btc_amount)}`;
       }
@@ -627,14 +628,14 @@ const AdminTransactions: React.FC = () => {
                         {(transaction.type === 'BUY' || transaction.type === 'SELL' || transaction.type === 'MARKET_BUY' || transaction.type === 'MARKET_SELL' || transaction.type === 'LIMIT_BUY' || transaction.type === 'LIMIT_SELL' || transaction.type === 'DCA_BUY' || transaction.type === 'DCA_SELL') ? (
                           <div>
                             <p className="font-bold text-sm text-white">
-                              ₹{transaction.inr_amount.toLocaleString('en-IN')}
+                              {formatCurrencyInr(transaction.inr_amount)}
                             </p>
                             <p className="text-xs text-zinc-400">
                               {formatCurrency(transaction.btc_amount, 'BTC')}
                             </p>
                             {transaction.status === 'PENDING' && transaction.btc_price && (
                               <p className="text-xs text-orange-300">
-                                @ ₹{transaction.btc_price.toLocaleString('en-IN')}
+                                @ {formatCurrencyInr(transaction.btc_price)}
                               </p>
                             )}
                             {(transaction.type === 'DCA_BUY' || transaction.type === 'DCA_SELL') && (
@@ -735,7 +736,7 @@ const AdminTransactions: React.FC = () => {
                         <p className="text-zinc-400">Amount per execution</p>
                         <p className="font-bold text-white">
                           {plan.plan_type === 'DCA_BUY' 
-                            ? `₹${plan.amount_per_execution.toLocaleString('en-IN')}`
+                            ? formatCurrencyInr(plan.amount_per_execution)
                             : formatCurrency(plan.amount_per_execution, 'BTC')
                           }
                         </p>
@@ -763,10 +764,10 @@ const AdminTransactions: React.FC = () => {
                           <p className="text-zinc-400">Price limits</p>
                           <div className="font-bold text-white text-xs">
                             {plan.max_price && (
-                              <p>Max: ₹{plan.max_price.toLocaleString('en-IN')}</p>
+                              <p>Max: {formatCurrencyInr(plan.max_price)}</p>
                             )}
                             {plan.min_price && (
-                              <p>Min: ₹{plan.min_price.toLocaleString('en-IN')}</p>
+                              <p>Min: {formatCurrencyInr(plan.min_price)}</p>
                             )}
                           </div>
                         </div>
@@ -1057,7 +1058,7 @@ const AdminTransactions: React.FC = () => {
                   <p className="text-zinc-400 text-xs mb-1">Amount per Execution</p>
                   <p className="text-white font-medium text-sm">
                     {selectedDcaPlan.plan_type === 'DCA_BUY' 
-                      ? `₹${selectedDcaPlan.amount_per_execution.toLocaleString('en-IN')}`
+                      ? formatCurrencyInr(selectedDcaPlan.amount_per_execution)
                       : formatCurrency(selectedDcaPlan.amount_per_execution, 'BTC')
                     }
                   </p>
@@ -1096,9 +1097,9 @@ const AdminTransactions: React.FC = () => {
                       <div>
                         <span className="text-zinc-400">Price Limits: </span>
                         <span className="text-white">
-                          {selectedDcaPlan.max_price && `Max ₹${selectedDcaPlan.max_price.toLocaleString('en-IN')}`}
+                          {selectedDcaPlan.max_price && `Max ${formatCurrencyInr(selectedDcaPlan.max_price)}`}
                           {selectedDcaPlan.max_price && selectedDcaPlan.min_price && ', '}
-                          {selectedDcaPlan.min_price && `Min ₹${selectedDcaPlan.min_price.toLocaleString('en-IN')}`}
+                          {selectedDcaPlan.min_price && `Min ${formatCurrencyInr(selectedDcaPlan.min_price)}`}
                         </span>
                       </div>
                     )}

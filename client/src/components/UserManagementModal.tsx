@@ -15,7 +15,7 @@ import {
 } from 'lucide-react';
 import { AdminUser } from '../types';
 import { adminAPI, userAPI } from '../services/api';
-import { formatBitcoin } from '../utils/formatters';
+import { formatBitcoin, formatCurrencyInr } from '../utils/formatters';
 import { useBalance } from '../contexts/BalanceContext';
 import PinConfirmationModal from './PinConfirmationModal';
 import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
@@ -124,10 +124,10 @@ const UserManagementModal: React.FC<UserManagementModalProps> = ({
       if (currency === 'INR') {
         if (operation === 'deposit') {
           await adminAPI.depositINR(user.id, parsedAmount);
-          setMessage(`✅ ₹${parsedAmount.toLocaleString()} deposited successfully`);
+          setMessage(`✅ ${formatCurrencyInr(parsedAmount)} deposited successfully`);
         } else {
           await adminAPI.withdrawINR(user.id, parsedAmount);
-          setMessage(`✅ ₹${parsedAmount.toLocaleString()} withdrawn successfully`);
+          setMessage(`✅ ${formatCurrencyInr(parsedAmount)} withdrawn successfully`);
         }
         setInrAmount('');
       } else {
@@ -214,7 +214,7 @@ const UserManagementModal: React.FC<UserManagementModalProps> = ({
       }
 
       await adminAPI.externalBuy(user.id, inrAmount, btcAmount);
-      setMessage(`✅ External buy recorded: ₹${inrAmount.toLocaleString()} → ₿${btcAmount}`);
+      setMessage(`✅ External buy recorded: ${formatCurrencyInr(inrAmount)} → ₿${btcAmount}`);
       setExternalInrAmount('');
       setExternalBtcAmount('');
       onUserUpdated();
@@ -335,7 +335,7 @@ const UserManagementModal: React.FC<UserManagementModalProps> = ({
                 <div className="bg-zinc-800/50 rounded-lg p-4 text-center">
                   <DollarSign className="w-6 h-6 text-white mx-auto mb-2" />
                   <p className="text-zinc-400 text-sm">INR Balance</p>
-            <p className="text-white font-bold">₹{user.inr_balance.toLocaleString('en-IN')}</p>
+            <p className="text-white font-bold">{formatCurrencyInr(user.inr_balance)}</p>
                 </div>
                 <div className="bg-zinc-800/50 rounded-lg p-4 text-center">
                   <Bitcoin className="w-6 h-6 text-white mx-auto mb-2" />
@@ -376,7 +376,7 @@ const UserManagementModal: React.FC<UserManagementModalProps> = ({
                 <div className="grid grid-cols-2 gap-3">
                   <div className="text-center">
                     <p className="text-zinc-400 text-xs">INR Balance</p>
-                    <p className="text-white font-bold text-lg">₹{user.inr_balance.toLocaleString('en-IN')}</p>
+                    <p className="text-white font-bold text-lg">{formatCurrencyInr(user.inr_balance)}</p>
                   </div>
                   <div className="text-center">
                     <p className="text-zinc-400 text-xs">₿ Balance</p>
@@ -439,7 +439,7 @@ const UserManagementModal: React.FC<UserManagementModalProps> = ({
                         requirePinConfirmation(
                           () => handleBalanceOperation('deposit', currency),
                           'Confirm Deposit',
-                          `Deposit ${currency === 'INR' ? '₹' + parseFloat(amount).toLocaleString() : '₿' + amount} to ${user.name}?`
+                          `Deposit ${currency === 'INR' ? formatCurrencyInr(parseFloat(amount)) : '₿' + amount} to ${user.name}?`
                         );
                       }}
                       disabled={isLoading || (balanceMode === 'INR' ? !inrAmount : !btcAmount)}
@@ -455,7 +455,7 @@ const UserManagementModal: React.FC<UserManagementModalProps> = ({
                         requirePinConfirmation(
                           () => handleBalanceOperation('withdraw', currency),
                           'Confirm Withdrawal',
-                          `Withdraw ${currency === 'INR' ? '₹' + parseFloat(amount).toLocaleString() : '₿' + amount} from ${user.name}?`
+                          `Withdraw ${currency === 'INR' ? formatCurrencyInr(parseFloat(amount)) : '₿' + amount} from ${user.name}?`
                         );
                       }}
                       disabled={isLoading || (balanceMode === 'INR' ? !inrAmount : !btcAmount)}
@@ -482,7 +482,7 @@ const UserManagementModal: React.FC<UserManagementModalProps> = ({
                 <div className="grid grid-cols-2 gap-3">
                   <div className="text-center">
                     <p className="text-zinc-400 text-xs">INR Balance</p>
-                    <p className="text-white font-bold text-lg">₹{user.inr_balance.toLocaleString('en-IN')}</p>
+                    <p className="text-white font-bold text-lg">{formatCurrencyInr(user.inr_balance)}</p>
                   </div>
                   <div className="text-center">
                     <p className="text-zinc-400 text-xs">₿ Balance</p>
@@ -536,7 +536,7 @@ const UserManagementModal: React.FC<UserManagementModalProps> = ({
                     <div className="bg-zinc-700/50 rounded-lg p-3">
                       <p className="text-zinc-400 text-xs mb-1">Calculated Rate</p>
                       <p className="text-white font-medium">
-                        ₹{(parseFloat(externalInrAmount) / parseFloat(externalBtcAmount)).toLocaleString('en-IN', { maximumFractionDigits: 2 })} per BTC
+                        {formatCurrencyInr(parseFloat(externalInrAmount) / parseFloat(externalBtcAmount))} per BTC
                       </p>
                     </div>
                   )}
@@ -546,7 +546,7 @@ const UserManagementModal: React.FC<UserManagementModalProps> = ({
                       requirePinConfirmation(
                         handleExternalBuy,
                         'Confirm External Buy',
-                        `Record external Bitcoin purchase: ₹${parseFloat(externalInrAmount).toLocaleString()} → ₿${externalBtcAmount} for ${user.name}?`
+                        `Record external Bitcoin purchase: ${formatCurrencyInr(parseFloat(externalInrAmount))} → ₿${externalBtcAmount} for ${user.name}?`
                       );
                     }}
                     disabled={isLoading || !externalInrAmount || !externalBtcAmount || parseFloat(externalInrAmount) <= 0 || parseFloat(externalBtcAmount) <= 0}
