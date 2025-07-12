@@ -177,3 +177,13 @@ export interface FullLiquidationResponse {
   collateralReturned: number;
   loanStatus: 'REPAID';
 }
+
+export interface PartialLiquidationResponse {
+  loanId: number;
+  btcSold: number;
+  debtCleared: number;
+  remainingDebt: number;
+  remainingCollateral: number;
+  newLtv: number;
+  loanStatus: 'ACTIVE' | 'REPAID';
+}

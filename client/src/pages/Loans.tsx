@@ -26,6 +26,7 @@ import DepositCollateralModal from '../components/DepositCollateralModal';
 import BorrowModal from '../components/BorrowModal';
 import RepayModal from '../components/RepayModal';
 import AddCollateralModal from '../components/AddCollateralModal';
+import PartialLiquidationModal from '../components/PartialLiquidationModal';
 import TransactionDetailModal from '../components/TransactionDetailModal';
 
 const Loans: React.FC = () => {
@@ -37,7 +38,7 @@ const Loans: React.FC = () => {
   const [showBorrowModal, setShowBorrowModal] = useState(false);
   const [showRepayModal, setShowRepayModal] = useState(false);
   const [showAddCollateralModal, setShowAddCollateralModal] = useState(false);
-  const [showFullLiquidationModal, setShowFullLiquidationModal] = useState(false);
+  const [showPartialLiquidationModal, setShowPartialLiquidationModal] = useState(false);
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
   const [isTransactionModalOpen, setIsTransactionModalOpen] = useState(false);
 
@@ -76,15 +77,6 @@ const Loans: React.FC = () => {
     }
   };
 
-  const handleFullLiquidation = async () => {
-    try {
-      await userAPI.executeFullLiquidation();
-      setShowFullLiquidationModal(false);
-      fetchLoanData(); // Refresh data
-    } catch (error: any) {
-      setError(error.response?.data?.message || 'Error executing full liquidation');
-    }
-  };
 
   const getRiskColor = (riskStatus: string) => {
     return 'text-white';
@@ -317,7 +309,7 @@ const Loans: React.FC = () => {
               </p>
               <div className="mt-auto pt-3">
                 <button
-                  onClick={() => setShowFullLiquidationModal(true)}
+                  onClick={() => setShowPartialLiquidationModal(true)}
                   className="w-full bg-white text-black hover:bg-zinc-200 py-2 rounded-lg font-medium transition-colors text-sm flex items-center justify-center gap-2"
                 >
                   <Zap className="w-4 h-4" />
@@ -603,44 +595,16 @@ const Loans: React.FC = () => {
         }}
       />
 
-      {/* Full Liquidation Confirmation Modal */}
-      {showFullLiquidationModal && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setShowFullLiquidationModal(false)}>
-          <div className="bg-gradient-to-br from-zinc-950 to-zinc-900 rounded-2xl border border-zinc-800 p-6 w-full max-w-md" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center gap-3 mb-4">
-              <div className="p-2 bg-zinc-800 rounded-lg">
-                <Zap className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <h2 className="text-xl font-bold">Close Loan</h2>
-                <p className="text-zinc-400 text-sm">This will liquidate your collateral</p>
-              </div>
-            </div>
+      <PartialLiquidationModal
+        isOpen={showPartialLiquidationModal}
+        onClose={() => setShowPartialLiquidationModal(false)}
+        loanStatus={loanStatus}
+        onSuccess={() => {
+          setShowPartialLiquidationModal(false);
+          fetchLoanData();
+        }}
+      />
 
-            <div className="bg-zinc-800/50 border border-zinc-700 rounded-lg p-4 mb-6">
-              <p className="text-zinc-300 text-sm">
-                This will sell enough of your Bitcoin collateral to repay the loan completely. 
-                Any remaining Bitcoin will be returned to your available balance.
-              </p>
-            </div>
-
-            <div className="flex gap-3">
-              <button
-                onClick={() => setShowFullLiquidationModal(false)}
-                className="flex-1 bg-zinc-700 text-white hover:bg-zinc-600 py-3 rounded-lg font-medium transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleFullLiquidation}
-                className="flex-1 bg-zinc-700 text-white hover:bg-zinc-600 py-3 rounded-lg font-medium transition-colors"
-              >
-                Close Loan
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
       
       {/* Transaction Detail Modal */}
       <TransactionDetailModal

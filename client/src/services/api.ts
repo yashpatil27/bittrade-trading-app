@@ -14,7 +14,8 @@ import {
   LoanStatus,
   LoanHistory,
   LiquidationRisk,
-  FullLiquidationResponse
+  FullLiquidationResponse,
+  PartialLiquidationResponse
 } from '../types';
 
 const API_BASE_URL = process.env.NODE_ENV === 'production' 
@@ -186,6 +187,9 @@ export const userAPI = {
   
   executeFullLiquidation: (): Promise<AxiosResponse<ApiResponse<FullLiquidationResponse>>> =>
     api.post('/user/loan/full-liquidation'),
+  
+  executePartialLiquidation: (btcAmount: number): Promise<AxiosResponse<ApiResponse<PartialLiquidationResponse>>> =>
+    api.post('/user/loan/partial-liquidation', { btcAmount }),
   
   getLiquidationRisk: (): Promise<AxiosResponse<ApiResponse<LiquidationRisk[]>>> =>
     api.get('/user/loan/liquidation-risk'),

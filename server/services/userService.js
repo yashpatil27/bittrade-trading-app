@@ -47,7 +47,7 @@ class UserService {
 
       // Get recent operations (including pending limit orders)
       const operations = await query(
-        `SELECT id, type, status, inr_amount, btc_amount, execution_price, btc_price, limit_price, loan_id, notes, executed_at, created_at FROM operations WHERE user_id = ? ORDER BY id DESC LIMIT ${parseInt(limit)}`,
+        `SELECT id, type, status, inr_amount, btc_amount, execution_price, limit_price, loan_id, notes, executed_at, created_at FROM operations WHERE user_id = ? ORDER BY id DESC LIMIT ${parseInt(limit)}`,
         [userId]
       );
 
@@ -58,7 +58,7 @@ class UserService {
         inr_balance: currentBalances.inr_balance,
         btc_balance: currentBalances.btc_balance,
         // Use limit_price for pending orders, execution_price for executed orders
-        btc_price: op.status === 'PENDING' ? op.limit_price : op.btc_price
+        btc_price: op.status === 'PENDING' ? op.limit_price : op.execution_price
       }));
 
       // Cache for 30 seconds
@@ -75,7 +75,7 @@ class UserService {
     try {
       // Get operations (including pending limit orders)
       const operations = await query(
-        `SELECT id, type, status, inr_amount, btc_amount, execution_price, btc_price, limit_price, loan_id, notes, executed_at, created_at FROM operations WHERE user_id = ? ORDER BY id DESC LIMIT ${parseInt(limit)} OFFSET ${parseInt(offset)}`,
+        `SELECT id, type, status, inr_amount, btc_amount, execution_price, limit_price, loan_id, notes, executed_at, created_at FROM operations WHERE user_id = ? ORDER BY id DESC LIMIT ${parseInt(limit)} OFFSET ${parseInt(offset)}`,
         [userId]
       );
       
@@ -86,7 +86,7 @@ class UserService {
         inr_balance: currentBalances.inr_balance,
         btc_balance: currentBalances.btc_balance,
         // Use limit_price for pending orders, execution_price for executed orders
-        btc_price: op.status === 'PENDING' ? op.limit_price : op.btc_price
+        btc_price: op.status === 'PENDING' ? op.limit_price : op.execution_price
       }));
       
       return transactions;
