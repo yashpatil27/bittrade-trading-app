@@ -204,7 +204,7 @@ const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
           </div>
 
           {/* Loan Information (for LOAN operations) */}
-          {(transaction.type.includes('LOAN') || transaction.type.includes('INTEREST') || transaction.type.includes('LIQUIDATION')) 
+{(transaction.type.includes('LOAN') || transaction.type.includes('INTEREST') || transaction.type === 'PARTIAL_LIQUIDATION' || transaction.type === 'FULL_LIQUIDATION') 
             
             && (
             <div className="bg-zinc-800/50 rounded-lg p-3">
@@ -213,6 +213,12 @@ const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
                   <div className="flex justify-between">
                     <span className="text-zinc-400 text-xs">Loan ID:</span>
                     <span className="text-white text-xs">{transaction.loan_id}</span>
+                  </div>
+                ) : null}
+{transaction.execution_price ? (
+                  <div className="flex justify-between">
+                    <span className="text-zinc-400 text-xs">Execution Price:</span>
+                    <span className="text-white text-xs">₹{transaction.execution_price.toLocaleString('en-IN')}</span>
                   </div>
                 ) : null}
                 {transaction.notes ? (
@@ -230,6 +236,94 @@ const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
               </div>
             </div>
           )}
+          
+          {/* Liquidation Details */}
+          {(transaction.type === 'FULL_LIQUIDATION' || transaction.type === 'PARTIAL_LIQUIDATION') && (
+            <div className="bg-red-900/10 border border-red-800 rounded-lg p-3">
+              <div className="flex items-center gap-2 mb-2">
+                <AlertTriangle className="w-4 h-4 text-red-400" />
+                <span className="text-red-300 text-xs font-medium">
+                  {transaction.type === 'FULL_LIQUIDATION' ? 'Full Liquidation Details' : 'Partial Liquidation Details'}
+                </span>
+              </div>
+              <div className="space-y-1">
+                {(() => {
+                  // Try to parse structured liquidation data from notes
+                  let liquidationData = null;
+                  try {
+                    if (transaction.notes) {
+                      liquidationData = JSON.parse(transaction.notes);
+                    }
+                  } catch (e) {
+                    // If parsing fails, fall back to basic display
+                  }
+                  
+                  // For full liquidations, try to calculate BTC returned if not in structured data
+                  let btcReturned = liquidationData?.btcReturned;
+                  let originalCollateral = liquidationData?.originalCollateral;
+                  
+                  // Fallback calculation for older transactions
+                  if (transaction.type === 'FULL_LIQUIDATION' && !btcReturned && transaction.execution_price && transaction.inr_amount && transaction.btc_amount) {
+                    // For full liquidations, the total sale proceeds should equal debt cleared
+                    // So we can estimate original collateral = btc_sold + btc_returned
+                    // Since we know debt was fully cleared, any excess BTC from sale would be returned
+                    const saleProceeds = (transaction.btc_amount * (transaction.execution_price || transaction.btc_price || 0)) / 100000000;
+                    const excessInr = saleProceeds - transaction.inr_amount;
+                    
+                    // If there was excess INR, it means some BTC was sold and converted back to user's balance
+                    // But for full liquidation, typically the BTC returned calculation is:
+                    // Original collateral = BTC sold to cover debt + BTC returned directly
+                    // We'll show a note that this is estimated for older transactions
+                  }
+                  
+                  return (
+                    <>
+                      {transaction.btc_amount > 0 && (
+                        <div className="flex justify-between">
+                          <span className="text-zinc-400 text-xs">BTC Sold:</span>
+                          <span className="text-white text-xs">₿{formatBitcoin(transaction.btc_amount)}</span>
+                        </div>
+                      )}
+                      {(transaction.execution_price || transaction.btc_price) && (
+                        <div className="flex justify-between">
+                          <span className="text-zinc-400 text-xs">Sale Price:</span>
+                          <span className="text-white text-xs">₹{(transaction.execution_price || transaction.btc_price).toLocaleString('en-IN')}</span>
+                        </div>
+                      )}
+                      {transaction.inr_amount > 0 && (
+                        <div className="flex justify-between">
+                          <span className="text-zinc-400 text-xs">{transaction.type === 'FULL_LIQUIDATION' ? 'Debt Cleared:' : 'Amount Applied:'}</span>
+                          <span className="text-white text-xs">₹{transaction.inr_amount.toLocaleString('en-IN')}</span>
+                        </div>
+                      )}
+                      {/* Show BTC returned for full liquidations */}
+                      {transaction.type === 'FULL_LIQUIDATION' && btcReturned && (
+                        <div className="flex justify-between">
+                          <span className="text-zinc-400 text-xs">BTC Returned:</span>
+                          <span className="text-green-300 text-xs">₿{formatBitcoin(btcReturned)}</span>
+                        </div>
+                      )}
+                      {/* Show original collateral if available */}
+                      {originalCollateral && (
+                        <div className="flex justify-between">
+                          <span className="text-zinc-400 text-xs">Original Collateral:</span>
+                          <span className="text-white text-xs">₿{formatBitcoin(originalCollateral)}</span>
+                        </div>
+                      )}
+                      {transaction.type === 'FULL_LIQUIDATION' && (
+                        <div className="text-center mt-2">
+                          <span className="px-2 py-1 text-xs bg-red-900/20 border border-red-800 text-red-300 rounded">
+                            Loan Fully Repaid
+                          </span>
+                        </div>
+                      )}
+                    </>
+                  );
+                })()}
+              </div>
+            </div>
+          )}
+          
           {(transaction.type === 'BUY' || transaction.type === 'SELL' || transaction.type === 'MARKET_BUY' || transaction.type === 'MARKET_SELL' || transaction.type === 'LIMIT_BUY' || transaction.type === 'LIMIT_SELL' || transaction.type === 'DCA_BUY' || transaction.type === 'DCA_SELL') && (
             <div className="bg-zinc-800/50 rounded-lg p-3">
               <div className="space-y-1">

@@ -544,8 +544,8 @@ const LoanService = {
 
         // Record the operation
         await connection.execute(
-          'INSERT INTO operations (user_id, type, status, inr_amount, btc_amount, loan_id, notes, executed_at) VALUES (?, ?, ?, ?, ?, ?, ?, NOW())',
-          [loan.user_id, 'PARTIAL_LIQUIDATION', 'EXECUTED', debtReduction, btcToSell, loan.id, 'Partial liquidation - LTV reduced from 90% to 60%']
+          'INSERT INTO operations (user_id, type, status, inr_amount, btc_amount, execution_price, loan_id, notes, executed_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())',
+          [loan.user_id, 'PARTIAL_LIQUIDATION', 'EXECUTED', debtReduction, btcToSell, rates.sellRate, loan.id, 'Partial liquidation - LTV reduced from 90% to 60%']
         );
 
         return {
@@ -585,15 +585,52 @@ const LoanService = {
 
         const loan = loanRows[0];
         
+        // Calculate minimum interest due (30-day minimum policy)
+        const minimumInterestDue = await this.calculateMinimumInterestDue(loan);
+        
+        // Get original borrowed amount to calculate current interest accrued
+        const borrowOperations = await query(
+          'SELECT SUM(inr_amount) as total_borrowed FROM operations WHERE loan_id = ? AND type = "LOAN_BORROW"',
+          [loan.id]
+        );
+        const originalBorrowedAmount = borrowOperations[0]?.total_borrowed || 0;
+        const currentInterestAccrued = loan.inr_borrowed_amount - originalBorrowedAmount;
+        
+        // Calculate additional interest needed to meet minimum
+        const additionalInterestNeeded = Math.max(0, minimumInterestDue - currentInterestAccrued);
+        
+        // Apply additional interest if needed
+        let finalDebtAmount = loan.inr_borrowed_amount;
+        if (additionalInterestNeeded > 0) {
+          finalDebtAmount = loan.inr_borrowed_amount + additionalInterestNeeded;
+          
+          // Update loan and user balances with additional interest
+          await connection.execute(
+            'UPDATE loans SET inr_borrowed_amount = ? WHERE id = ?',
+            [finalDebtAmount, loan.id]
+          );
+          
+          await connection.execute(
+            'UPDATE users SET borrowed_inr = borrowed_inr + ?, interest_accrued = interest_accrued + ? WHERE id = ?',
+            [additionalInterestNeeded, additionalInterestNeeded, userId]
+          );
+          
+          // Record the additional interest charge
+          await connection.execute(
+            'INSERT INTO operations (user_id, type, status, inr_amount, loan_id, notes, executed_at) VALUES (?, ?, ?, ?, ?, ?, NOW())',
+            [userId, 'INTEREST_ACCRUAL', 'EXECUTED', additionalInterestNeeded, loan.id, '30-day minimum interest charge applied before full liquidation']
+          );
+        }
+        
         // Get current BTC price
         const rates = await bitcoinDataService.getCalculatedRates();
         
-        // Calculate BTC to sell to cover entire debt
-        const btcToSell = Math.ceil((loan.inr_borrowed_amount * 100000000) / rates.sellRate);
+        // Calculate BTC to sell to cover entire debt (including minimum interest)
+        const btcToSell = Math.ceil((finalDebtAmount * 100000000) / rates.sellRate);
         const remainingCollateral = loan.btc_collateral_amount - btcToSell;
         
         if (remainingCollateral < 0) {
-          throw new Error('Insufficient collateral for full liquidation');
+          throw new Error('Insufficient collateral for full liquidation including minimum interest');
         }
 
         // Update user balances
@@ -608,18 +645,29 @@ const LoanService = {
           [loan.id]
         );
 
-        // Record the operation
+        // Record the operation with detailed structured notes
+        const liquidationNotes = JSON.stringify({
+          description: 'Manual full liquidation',
+          debtCleared: finalDebtAmount,
+          btcSold: btcToSell,
+          btcReturned: remainingCollateral,
+          originalCollateral: loan.btc_collateral_amount,
+          minimumInterestApplied: additionalInterestNeeded,
+          sellRate: rates.sellRate
+        });
+        
         await connection.execute(
-          'INSERT INTO operations (user_id, type, status, inr_amount, btc_amount, loan_id, notes, executed_at) VALUES (?, ?, ?, ?, ?, ?, ?, NOW())',
-          [userId, 'FULL_LIQUIDATION', 'EXECUTED', loan.inr_borrowed_amount, btcToSell, loan.id, 'Manual full liquidation - loan repaid, remaining collateral returned']
+          'INSERT INTO operations (user_id, type, status, inr_amount, btc_amount, execution_price, loan_id, notes, executed_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())',
+          [userId, 'FULL_LIQUIDATION', 'EXECUTED', finalDebtAmount, btcToSell, rates.sellRate, loan.id, liquidationNotes]
         );
 
         return {
           loanId: loan.id,
           btcSold: btcToSell,
-          debtCleared: loan.inr_borrowed_amount,
+          debtCleared: finalDebtAmount,
           collateralReturned: remainingCollateral,
-          loanStatus: 'REPAID'
+          loanStatus: 'REPAID',
+          minimumInterestApplied: additionalInterestNeeded
         };
       });
     } catch (error) {
@@ -637,7 +685,7 @@ const LoanService = {
   async getLoanHistory(userId, loanId = null) {
     try {
       let query_str = `
-        SELECT type, inr_amount, btc_amount, notes, created_at, executed_at
+        SELECT type, inr_amount, btc_amount, execution_price, notes, created_at, executed_at
         FROM operations 
         WHERE user_id = ? AND type IN ('LOAN_CREATE', 'LOAN_BORROW', 'LOAN_REPAY', 'LOAN_ADD_COLLATERAL', 'INTEREST_ACCRUAL', 'PARTIAL_LIQUIDATION', 'FULL_LIQUIDATION')
       `;

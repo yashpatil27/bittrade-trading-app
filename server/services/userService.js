@@ -47,7 +47,7 @@ class UserService {
 
       // Get recent operations (including pending limit orders)
       const operations = await query(
-        `SELECT id, type, status, inr_amount, btc_amount, execution_price as btc_price, limit_price, created_at FROM operations WHERE user_id = ? ORDER BY id DESC LIMIT ${parseInt(limit)}`,
+        `SELECT id, type, status, inr_amount, btc_amount, execution_price, btc_price, limit_price, loan_id, notes, executed_at, created_at FROM operations WHERE user_id = ? ORDER BY id DESC LIMIT ${parseInt(limit)}`,
         [userId]
       );
 
@@ -75,7 +75,7 @@ class UserService {
     try {
       // Get operations (including pending limit orders)
       const operations = await query(
-        `SELECT id, type, status, inr_amount, btc_amount, execution_price as btc_price, limit_price, created_at FROM operations WHERE user_id = ? ORDER BY id DESC LIMIT ${parseInt(limit)} OFFSET ${parseInt(offset)}`,
+        `SELECT id, type, status, inr_amount, btc_amount, execution_price, btc_price, limit_price, loan_id, notes, executed_at, created_at FROM operations WHERE user_id = ? ORDER BY id DESC LIMIT ${parseInt(limit)} OFFSET ${parseInt(offset)}`,
         [userId]
       );
       
@@ -391,6 +391,10 @@ class UserService {
       inr_amount: transaction.inr_amount,
       btc_amount: transaction.btc_amount / 100000000, // Convert satoshis to BTC
       btc_price: transaction.btc_price,
+      execution_price: transaction.execution_price,
+      loan_id: transaction.loan_id,
+      notes: transaction.notes,
+      executed_at: transaction.executed_at,
       inr_balance: transaction.inr_balance,
       btc_balance: transaction.btc_balance / 100000000, // Convert satoshis to BTC
       created_at: transaction.created_at

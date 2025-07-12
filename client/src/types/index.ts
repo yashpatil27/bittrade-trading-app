@@ -43,6 +43,7 @@ export interface Transaction {
   inr_amount: number;
   btc_amount: number;
   btc_price: number;
+  execution_price?: number; // Actual price used for liquidations and trades
   inr_balance?: number; // Optional for admin views
   btc_balance?: number; // Optional for admin views
   loan_id?: number; // For loan operations
