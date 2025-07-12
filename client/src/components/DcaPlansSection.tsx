@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 import { userAPI } from '../services/api';
 import { DcaPlan } from '../types';
-import { formatCurrency, formatTimeAgo } from '../utils/formatters';
+import { formatCurrency, formatTimeAgo, formatCurrencyInr } from '../utils/formatters';
 
 interface DcaPlansSectionProps {
   onUpdate?: () => void;
@@ -261,7 +261,7 @@ const DcaPlansSection = forwardRef<DcaPlansSectionRef, DcaPlansSectionProps>(({ 
                     <p className="text-zinc-400">Amount per execution</p>
                     <p className="font-bold text-white">
                       {plan.plan_type === 'DCA_BUY' 
-                        ? `₹${plan.amount_per_execution.toLocaleString('en-IN')}`
+                        ? formatCurrencyInr(plan.amount_per_execution)
                         : formatCurrency(plan.amount_per_execution, 'BTC')
                       }
                     </p>
@@ -289,10 +289,10 @@ const DcaPlansSection = forwardRef<DcaPlansSectionRef, DcaPlansSectionProps>(({ 
                       <p className="text-zinc-400">Price limits</p>
                       <div className="font-bold text-white text-xs">
                         {plan.max_price && (
-                          <p>Max: ₹{plan.max_price.toLocaleString('en-IN')}</p>
+                          <p>Max: {formatCurrencyInr(plan.max_price)}</p>
                         )}
                         {plan.min_price && (
-                          <p>Min: ₹{plan.min_price.toLocaleString('en-IN')}</p>
+                          <p>Min: {formatCurrencyInr(plan.min_price)}</p>
                         )}
                       </div>
                     </div>
@@ -352,7 +352,7 @@ const DcaPlansSection = forwardRef<DcaPlansSectionRef, DcaPlansSectionProps>(({ 
                   <p className="text-zinc-400 text-xs mb-1">Amount per Execution</p>
                   <p className="text-white font-medium text-sm">
                     {selectedPlan.plan_type === 'DCA_BUY' 
-                      ? `₹${selectedPlan.amount_per_execution.toLocaleString('en-IN')}`
+                      ? formatCurrencyInr(selectedPlan.amount_per_execution)
                       : formatCurrency(selectedPlan.amount_per_execution, 'BTC')
                     }
                   </p>
@@ -391,9 +391,9 @@ const DcaPlansSection = forwardRef<DcaPlansSectionRef, DcaPlansSectionProps>(({ 
                       <div>
                         <span className="text-zinc-400">Price Limits: </span>
                         <span className="text-white">
-                          {selectedPlan.max_price && `Max ₹${selectedPlan.max_price.toLocaleString('en-IN')}`}
+                          {selectedPlan.max_price && `Max ${formatCurrencyInr(selectedPlan.max_price)}`}
                           {selectedPlan.max_price && selectedPlan.min_price && ', '}
-                          {selectedPlan.min_price && `Min ₹${selectedPlan.min_price.toLocaleString('en-IN')}`}
+                          {selectedPlan.min_price && `Min ${formatCurrencyInr(selectedPlan.min_price)}`}
                         </span>
                       </div>
                     )}
