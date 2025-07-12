@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Home, History, Settings, Users, BarChart3, Bitcoin, PieChart, User, Wallet } from 'lucide-react';
 import { useBalance } from '../contexts/BalanceContext';
 import { userAPI } from '../services/api';
-import { formatBitcoin } from '../utils/formatters';
+import { formatBitcoin, formatCurrencyInr } from '../utils/formatters';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -108,7 +108,7 @@ const Layout: React.FC<LayoutProps> = ({ children, isAdmin = false }) => {
                 ₿{formatBitcoin(bitcoinBalance)}
               </span>
               <span className="text-zinc-400 text-sm">
-                (₹{Math.floor(bitcoinBalance * sellRate).toLocaleString('en-IN')})
+                ({formatCurrencyInr(bitcoinBalance * sellRate)})
               </span>
             </div>
           </div>
