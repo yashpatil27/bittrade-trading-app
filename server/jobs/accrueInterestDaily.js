@@ -22,8 +22,8 @@ async function accrueInterestDaily() {
 
       // Log the operation
       await query(
-        `INSERT INTO operations (user_id, type, inr_amount, loan_id, notes) 
-         VALUES (?, 'INTEREST_ACCRUAL', ?, ?, 'Daily interest accrual')`,
+        `INSERT INTO operations (user_id, type, status, inr_amount, loan_id, notes, executed_at) 
+         VALUES (?, 'INTEREST_ACCRUAL', 'EXECUTED', ?, ?, 'Daily interest accrual', NOW())`,
         [loan.user_id, dailyInterest, loan.id]
       );
 
