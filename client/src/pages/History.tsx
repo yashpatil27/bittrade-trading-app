@@ -35,7 +35,7 @@ import {
   formatCurrency
 } from '../utils/formatters';
 
-type TransactionType = 'ALL' | 'BUY' | 'SELL' | 'LIMIT_BUY' | 'LIMIT_SELL' | 'DEPOSIT_INR' | 'DEPOSIT_BTC' | 'WITHDRAW_INR' | 'WITHDRAW_BTC' | 'DCA_BUY' | 'DCA_SELL' | 'LOAN_CREATE' | 'LOAN_BORROW' | 'LOAN_REPAY' | 'LOAN_ADD_COLLATERAL' | 'INTEREST_ACCRUAL' | 'PARTIAL_LIQUIDATION' | 'FULL_LIQUIDATION';
+type TransactionType = 'ALL' | 'MARKET_BUY' | 'MARKET_SELL' | 'LIMIT_BUY' | 'LIMIT_SELL' | 'DEPOSIT_INR' | 'DEPOSIT_BTC' | 'WITHDRAW_INR' | 'WITHDRAW_BTC' | 'DCA_BUY' | 'DCA_SELL' | 'LOAN_CREATE' | 'LOAN_BORROW' | 'LOAN_REPAY' | 'LOAN_ADD_COLLATERAL' | 'INTEREST_ACCRUAL' | 'PARTIAL_LIQUIDATION' | 'FULL_LIQUIDATION';
 type DateFilter = 'ALL' | 'TODAY' | 'WEEK' | 'MONTH' | 'CUSTOM';
 type SortOption = 'NEWEST' | 'OLDEST' | 'HIGHEST' | 'LOWEST';
 
@@ -60,13 +60,6 @@ const History: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [activeFiltersCount, setActiveFiltersCount] = useState(0);
-  // Store counts for category cards (based on loaded transactions only)
-  const [transactionCounts, setTransactionCounts] = useState({
-    buy: 0,
-    sell: 0,
-    loan: 0,
-    balance: 0
-  });
   
   const [filters, setFilters] = useState<FilterState>({
     types: ['ALL'],
@@ -288,7 +281,7 @@ const History: React.FC = () => {
         {/* Buy Transactions */}
         <button
           onClick={() => {
-            const buyTypes: TransactionType[] = ['BUY', 'LIMIT_BUY', 'DCA_BUY'];
+            const buyTypes: TransactionType[] = ['MARKET_BUY', 'LIMIT_BUY', 'DCA_BUY'];
             const isCurrentlySelected = buyTypes.every(type => filters.types.includes(type)) && 
                                       filters.types.length === buyTypes.length;
             if (isCurrentlySelected) {
@@ -298,7 +291,7 @@ const History: React.FC = () => {
             }
           }}
           className={`bg-gradient-to-br from-zinc-950 to-zinc-900 border rounded-lg p-3 flex items-center gap-3 transition-all hover:border-green-600 ${
-            ['BUY', 'LIMIT_BUY', 'DCA_BUY'].every(type => filters.types.includes(type as TransactionType)) && 
+            ['MARKET_BUY', 'LIMIT_BUY', 'DCA_BUY'].every(type => filters.types.includes(type as TransactionType)) && 
             filters.types.length === 3 && !filters.types.includes('ALL')
               ? 'border-green-500 bg-green-950/20'
               : 'border-zinc-800'
@@ -310,7 +303,7 @@ const History: React.FC = () => {
           <div>
             <p className="text-zinc-400 text-xs">Buy</p>
             <p className="text-lg font-bold text-white">
-              {allTransactions.filter(t => ['BUY', 'LIMIT_BUY', 'DCA_BUY'].includes(t.type)).length}
+              {allTransactions.filter(t => ['MARKET_BUY', 'LIMIT_BUY', 'DCA_BUY'].includes(t.type)).length}
             </p>
           </div>
         </button>
@@ -318,7 +311,7 @@ const History: React.FC = () => {
         {/* Sell Transactions */}
         <button
           onClick={() => {
-            const sellTypes: TransactionType[] = ['SELL', 'LIMIT_SELL', 'DCA_SELL'];
+            const sellTypes: TransactionType[] = ['MARKET_SELL', 'LIMIT_SELL', 'DCA_SELL'];
             const isCurrentlySelected = sellTypes.every(type => filters.types.includes(type)) && 
                                       filters.types.length === sellTypes.length;
             if (isCurrentlySelected) {
@@ -328,7 +321,7 @@ const History: React.FC = () => {
             }
           }}
           className={`bg-gradient-to-br from-zinc-950 to-zinc-900 border rounded-lg p-3 flex items-center gap-3 transition-all hover:border-red-600 ${
-            ['SELL', 'LIMIT_SELL', 'DCA_SELL'].every(type => filters.types.includes(type as TransactionType)) && 
+            ['MARKET_SELL', 'LIMIT_SELL', 'DCA_SELL'].every(type => filters.types.includes(type as TransactionType)) && 
             filters.types.length === 3 && !filters.types.includes('ALL')
               ? 'border-red-500 bg-red-950/20'
               : 'border-zinc-800'
@@ -340,7 +333,7 @@ const History: React.FC = () => {
           <div>
             <p className="text-zinc-400 text-xs">Sell</p>
             <p className="text-lg font-bold text-white">
-              {allTransactions.filter(t => ['SELL', 'LIMIT_SELL', 'DCA_SELL'].includes(t.type)).length}
+              {allTransactions.filter(t => ['MARKET_SELL', 'LIMIT_SELL', 'DCA_SELL'].includes(t.type)).length}
             </p>
           </div>
         </button>
@@ -598,8 +591,8 @@ const History: React.FC = () => {
                 <div className="grid grid-cols-2 gap-2">
                   {[
                     { key: 'ALL', label: 'All Types', icon: Circle },
-                    { key: 'BUY', label: 'Buy', icon: TrendingUp },
-                    { key: 'SELL', label: 'Sell', icon: TrendingDown },
+                    { key: 'MARKET_BUY', label: 'Market Buy', icon: TrendingUp },
+                    { key: 'MARKET_SELL', label: 'Market Sell', icon: TrendingDown },
                     { key: 'LIMIT_BUY', label: 'Limit Buy', icon: Target },
                     { key: 'LIMIT_SELL', label: 'Limit Sell', icon: Target },
                     { key: 'DCA_BUY', label: 'DCA Buy', icon: Repeat },
