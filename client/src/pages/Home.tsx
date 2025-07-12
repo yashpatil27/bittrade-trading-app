@@ -34,7 +34,8 @@ import {
   getTransactionDisplayName, 
   getTransactionIcon, 
   formatTimeAgo,
-  formatCurrency
+  formatCurrency,
+  formatCurrencyInr
 } from '../utils/formatters';
 
 const Home: React.FC = () => {
@@ -221,7 +222,7 @@ const Home: React.FC = () => {
             </div>
             <div className="space-y-1">
               <p className="text-zinc-400 text-sm">Cash Balance</p>
-              <p className="text-xl font-bold">₹{balances?.inr.toLocaleString('en-IN')}</p>
+              <p className="text-xl font-bold">{formatCurrencyInr(balances?.inr || 0)}</p>
             </div>
           </div>
 
@@ -238,7 +239,7 @@ const Home: React.FC = () => {
               <p className="text-xl font-bold">{formatCurrency(balances?.btc || 0, 'BTC')}</p>
               {balances && prices && (
                 <p className="text-xs text-zinc-500">
-                  ≈ ₹{Math.floor((balances.btc || 0) * (prices.sell_rate || 0)).toLocaleString('en-IN')}
+                  ≈ {formatCurrencyInr(Math.floor((balances.btc || 0) * (prices.sell_rate || 0)))}
                 </p>
               )}
             </div>
@@ -261,7 +262,7 @@ const Home: React.FC = () => {
           <div className="grid grid-cols-3 gap-4 mb-4">
             <div className="text-center">
               <p className="text-zinc-400 text-xs">Buy Rate</p>
-              <p className="font-bold text-white">₹{(prices?.buy_rate ?? 0).toLocaleString('en-IN')}</p>
+              <p className="font-bold text-white">{formatCurrencyInr(prices?.buy_rate ?? 0)}</p>
             </div>
             <div className="text-center">
               <p className="text-zinc-400 text-xs">USD Price</p>
@@ -269,7 +270,7 @@ const Home: React.FC = () => {
             </div>
             <div className="text-center">
               <p className="text-zinc-400 text-xs">Sell Rate</p>
-              <p className="font-bold text-white">₹{(prices?.sell_rate ?? 0).toLocaleString('en-IN')}</p>
+              <p className="font-bold text-white">{formatCurrencyInr(prices?.sell_rate ?? 0)}</p>
             </div>
           </div>
           
@@ -356,14 +357,14 @@ const Home: React.FC = () => {
                         {(transaction.type === 'BUY' || transaction.type === 'SELL' || transaction.type === 'MARKET_BUY' || transaction.type === 'MARKET_SELL' || transaction.type === 'LIMIT_BUY' || transaction.type === 'LIMIT_SELL' || transaction.type === 'DCA_BUY' || transaction.type === 'DCA_SELL') ? (
                           <div>
                             <p className="font-bold text-sm text-white">
-                              ₹{transaction.inr_amount.toLocaleString('en-IN')}
+                              {formatCurrencyInr(transaction.inr_amount)}
                             </p>
                             <p className="text-xs text-zinc-400">
                               {formatCurrency(transaction.btc_amount, 'BTC')}
                             </p>
                             {transaction.status === 'PENDING' && transaction.btc_price && (
                               <p className="text-xs text-orange-300">
-                                @ ₹{transaction.btc_price.toLocaleString('en-IN')}
+                                @ {formatCurrencyInr(transaction.btc_price)}
                               </p>
                             )}
                           </div>
@@ -389,7 +390,7 @@ const Home: React.FC = () => {
                           <div>
                             {transaction.inr_amount > 0 && (
                               <p className="font-bold text-sm text-white">
-                                ₹{transaction.inr_amount.toLocaleString('en-IN')}
+                                {formatCurrencyInr(transaction.inr_amount)}
                               </p>
                             )}
                             {transaction.btc_amount > 0 && (
@@ -401,7 +402,7 @@ const Home: React.FC = () => {
                         ) : (
                           <p className="font-bold text-sm text-white">
                             {transaction.type.includes('INR') ? (
-                              `₹${transaction.inr_amount.toLocaleString('en-IN')}`
+                              formatCurrencyInr(transaction.inr_amount)
                             ) : (
                               formatCurrency(transaction.btc_amount, 'BTC')
                             )}

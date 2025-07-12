@@ -3,6 +3,7 @@ import { X, TrendingUp, TrendingDown, Calculator, Zap, Target, Clock, Repeat, Se
 import { Prices } from '../types';
 import { userAPI } from '../services/api';
 import PinConfirmationModal from './PinConfirmationModal';
+import { formatCurrencyInr } from '../utils/formatters';
 import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 
 interface TradingModalProps {
@@ -174,9 +175,9 @@ const TradingModal: React.FC<TradingModalProps> = ({
               </h2>
               <p className="text-sm text-zinc-400">
                 {orderType === 'market' ? 
-                  `Market Rate: ₹${rate?.toLocaleString('en-IN')}/BTC` :
+                  `Market Rate: ${formatCurrencyInr(rate)} /BTC` :
                   orderType === 'limit' ?
-                  `Current: ₹${rate?.toLocaleString('en-IN')}/BTC` :
+                  `Current: ${formatCurrencyInr(rate)}/BTC` :
                   `Recurring ${dcaFrequency.toLowerCase()} ${isBuy ? 'purchases' : 'sales'}`
                 }
               </p>
@@ -235,7 +236,7 @@ const TradingModal: React.FC<TradingModalProps> = ({
             <span className="text-zinc-400">Available Balance:</span>
             <span className="font-medium">
               {isBuy ? (
-                `₹${availableBalance.toLocaleString('en-IN')}`
+                formatCurrencyInr(availableBalance)
               ) : (
                 `${availableBalance.toFixed(8)} BTC`
               )}
@@ -309,7 +310,7 @@ const TradingModal: React.FC<TradingModalProps> = ({
                 value={targetPrice}
                 onChange={(e) => setTargetPrice(e.target.value)}
                 className="input-field w-full"
-                placeholder={rate?.toLocaleString('en-IN') || "0"}
+                placeholder={rate ? formatCurrencyInr(rate) : "0"}
                 step="1"
                 min="1"
               />
@@ -453,7 +454,7 @@ const TradingModal: React.FC<TradingModalProps> = ({
                   <p className="text-white font-medium text-sm">Optional Settings</p>
                   <p className="text-zinc-400 text-xs">
                     {dcaExecutions || dcaMaxPrice || dcaMinPrice ? (
-                      `${dcaExecutions ? `${dcaExecutions} executions` : ''}${dcaExecutions && (dcaMaxPrice || dcaMinPrice) ? ', ' : ''}${dcaMaxPrice ? `Max ₹${parseFloat(dcaMaxPrice).toLocaleString('en-IN')}` : ''}${dcaMaxPrice && dcaMinPrice ? ', ' : ''}${dcaMinPrice ? `Min ₹${parseFloat(dcaMinPrice).toLocaleString('en-IN')}` : ''}`
+                      `${dcaExecutions ? `${dcaExecutions} executions` : ''}${dcaExecutions  (dcaMaxPrice || dcaMinPrice) ? ', ' : ''}${dcaMaxPrice ? `Max ${formatCurrencyInr(parseFloat(dcaMaxPrice))}` : ''}${dcaMaxPrice  dcaMinPrice ? ', ' : ''}${dcaMinPrice ? `Min ${formatCurrencyInr(parseFloat(dcaMinPrice))}` : ''}`
                     ) : (
                       'Set execution limits and price ranges'
                     )}
@@ -487,22 +488,22 @@ const TradingModal: React.FC<TradingModalProps> = ({
               {isBuy ? (
                 `₿ ${estimation.toFixed(8)}`
               ) : (
-                `₹${Math.floor(estimation).toLocaleString('en-IN')}`
+                formatCurrencyInr(Math.floor(estimation))
               )}
             </div>
             {orderType === 'limit' && (
               <div className="mt-2 text-xs text-zinc-400">
                 {isBuy ? (
                   targetPrice && rate && parseFloat(targetPrice) < rate ? (
-                    <span className="text-green-400">• Waiting for price to drop to ₹{parseFloat(targetPrice).toLocaleString('en-IN')}</span>
+                    span className="text-green-400"• Waiting for price to drop to {formatCurrencyInr(parseFloat(targetPrice))}/span
                   ) : (
-                    <span className="text-orange-400">• Waiting for price to rise to ₹{parseFloat(targetPrice).toLocaleString('en-IN')}</span>
+                    span className="text-orange-400"• Waiting for price to rise to {formatCurrencyInr(parseFloat(targetPrice))}/span
                   )
                 ) : (
                   targetPrice && rate && parseFloat(targetPrice) > rate ? (
-                    <span className="text-green-400">• Waiting for price to rise to ₹{parseFloat(targetPrice).toLocaleString('en-IN')}</span>
+                    span className="text-green-400"• Waiting for price to rise to {formatCurrencyInr(parseFloat(targetPrice))}/span
                   ) : (
-                    <span className="text-orange-400">• Waiting for price to drop to ₹{parseFloat(targetPrice).toLocaleString('en-IN')}</span>
+                    span className="text-orange-400"• Waiting for price to drop to {formatCurrencyInr(parseFloat(targetPrice))}/span
                   )
                 )}
               </div>
@@ -561,16 +562,16 @@ const TradingModal: React.FC<TradingModalProps> = ({
           const baseText = 'Enter your PIN to confirm ';
           if (orderType === 'market') {
             const action = isBuy ? 'purchasing' : 'selling';
-            const amount = isBuy ? `₹${pendingAmount.toLocaleString('en-IN')} worth of Bitcoin` : `${pendingAmount.toFixed(8)} BTC`;
+            const amount = isBuy ? `${formatCurrencyInr(pendingAmount)} worth of Bitcoin` : `${pendingAmount.toFixed(8)} BTC`;
             return `${baseText}${action} ${amount}`;
           } else if (orderType === 'limit') {
             const action = isBuy ? 'buy' : 'sell';
-            const amount = isBuy ? `₹${pendingAmount.toLocaleString('en-IN')}` : `${pendingAmount.toFixed(8)} BTC`;
-            const price = `₹${(pendingTargetPrice || 0).toLocaleString('en-IN')}/BTC`;
+            const amount = isBuy ? formatCurrencyInr(pendingAmount) : `${pendingAmount.toFixed(8)} BTC`;
+            const price = `${formatCurrencyInr(pendingTargetPrice || 0)}/BTC`;
             return `${baseText}placing a limit ${action} order for ${amount} at ${price}`;
           } else {
             const action = isBuy ? 'buy' : 'sell';
-            const amount = isBuy ? `₹${pendingAmount.toLocaleString('en-IN')}` : `${pendingAmount.toFixed(8)} BTC`;
+            const amount = isBuy ? formatCurrencyInr(pendingAmount) : `${pendingAmount.toFixed(8)} BTC`;
             const frequency = pendingDcaConfig?.frequency?.toLowerCase() || 'weekly';
             const executions = pendingDcaConfig?.totalExecutions ? ` for ${pendingDcaConfig.totalExecutions} executions` : '';
             return `${baseText}starting a ${frequency} DCA ${action} plan of ${amount}${executions}`;
