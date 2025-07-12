@@ -415,13 +415,21 @@ const LoanService = {
       // Calculate minimum interest due for display
       const minimumInterestDue = await this.calculateMinimumInterestDue(loan);
       
+      // Calculate liquidation price dynamically
+      // At 90% LTV: borrowed_amount / (collateral_amount * liquidation_price / 100000000) = 0.9
+      // Therefore: liquidation_price = (borrowed_amount * 100000000) / (collateral_amount * 0.9)
+      let liquidationPrice = 0;
+      if (loan.inr_borrowed_amount > 0) {
+        liquidationPrice = Math.floor((loan.inr_borrowed_amount * 100000000) / (loan.btc_collateral_amount * 0.9));
+      }
+      
       return {
         loanId: loan.id,
         collateralAmount: loan.btc_collateral_amount,
         borrowedAmount: loan.inr_borrowed_amount,
         interestRate: loan.interest_rate,
         ltvRatio: loan.ltv_ratio,
-        liquidationPrice: loan.liquidation_price,
+        liquidationPrice: liquidationPrice,
         maxBorrowable,
         availableCapacity,
         currentLtv,
