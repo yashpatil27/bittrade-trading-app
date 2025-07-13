@@ -42,6 +42,9 @@ const initializeServices = async () => {
     try {
       await createRedisClient();
       systemLogger.serviceStarted('Redis connected');
+      
+      // Initialize rate limit store after Redis is connected
+      await initializeRateLimitStore();
     } catch (error) {
       systemLogger.warn('Redis connection failed - continuing without caching', { error: error.message });
     }
@@ -136,22 +139,114 @@ app.use(cors({
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Rate limiting
-const limiter = rateLimit({
+// Advanced rate limiting with tiered limits
+const RedisStore = require('rate-limit-redis');
+
+// Create Redis store for rate limiting (fallback to memory if Redis unavailable)
+let redisStore;
+
+// Initialize Redis store after services are ready
+const initializeRateLimitStore = async () => {
+  try {
+    const { getRedisClient } = require('./config/redis');
+    const redisClient = getRedisClient();
+    if (redisClient && redisClient.isReady) {
+      redisStore = new RedisStore({
+        sendCommand: (...args) => redisClient.call(...args),
+      });
+      systemLogger.info('Redis store initialized for rate limiting');
+    } else {
+      systemLogger.warn('Redis not available for rate limiting, using memory store');
+      redisStore = undefined;
+    }
+  } catch (error) {
+    systemLogger.warn('Redis unavailable for rate limiting, using memory store', { error: error.message });
+    redisStore = undefined;
+  }
+};
+
+// Initialize with undefined store (will use memory store)
+redisStore = undefined;
+
+// General API rate limiter
+const generalLimiter = rateLimit({
+  store: redisStore,
   windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS) || 900000, // 15 minutes
   max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS) || 100,
   message: {
     success: false,
-    message: 'Too many requests from this IP, please try again later.'
+    message: 'Too many requests from this IP, please try again later.',
+    retryAfter: Math.ceil((parseInt(process.env.RATE_LIMIT_WINDOW_MS) || 900000) / 1000)
   },
-  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
-  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
-  // Skip rate limiting for health checks and static files
+  standardHeaders: true,
+  legacyHeaders: false,
   skip: (req) => {
     return req.path === '/health' || req.path.startsWith('/static/');
+  },
+  keyGenerator: (req) => {
+    // Use user ID if authenticated, otherwise IP
+    return req.user?.id || req.ip;
   }
 });
-app.use('/api/', limiter);
+
+// Strict limiter for authentication endpoints
+const authLimiter = rateLimit({
+  store: redisStore,
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 5, // Only 5 login attempts per window
+  message: {
+    success: false,
+    message: 'Too many authentication attempts, please try again later.',
+    retryAfter: 900 // 15 minutes
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+  skipSuccessfulRequests: true, // Don't count successful requests
+  keyGenerator: (req) => {
+    return req.body?.email || req.ip; // Rate limit by email or IP
+  }
+});
+
+// Moderate limiter for trading operations
+const tradingLimiter = rateLimit({
+  store: redisStore,
+  windowMs: 60 * 1000, // 1 minute
+  max: 10, // 10 trading operations per minute
+  message: {
+    success: false,
+    message: 'Too many trading operations, please wait before placing more orders.',
+    retryAfter: 60
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: (req) => {
+    return req.user?.id || req.ip;
+  }
+});
+
+// Relaxed limiter for public endpoints
+const publicLimiter = rateLimit({
+  store: redisStore,
+  windowMs: 60 * 1000, // 1 minute
+  max: 60, // 60 requests per minute for public data
+  message: {
+    success: false,
+    message: 'Too many requests for public data, please slow down.',
+    retryAfter: 60
+  },
+  standardHeaders: true,
+  legacyHeaders: false
+});
+
+// Apply rate limiters
+app.use('/api/', generalLimiter);
+app.use('/api/auth/login', authLimiter);
+app.use('/api/auth/register', authLimiter);
+app.use('/api/user/buy', tradingLimiter);
+app.use('/api/user/sell', tradingLimiter);
+app.use('/api/user/place-limit-order', tradingLimiter);
+app.use('/api/user/cancel-limit-order', tradingLimiter);
+app.use('/api/public/', publicLimiter);
 
 // API Routes
 app.use('/api/auth', authRoutes);
