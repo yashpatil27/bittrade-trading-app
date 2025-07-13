@@ -248,6 +248,42 @@ app.use('/api/user/place-limit-order', tradingLimiter);
 app.use('/api/user/cancel-limit-order', tradingLimiter);
 app.use('/api/public/', publicLimiter);
 
+// Request logging middleware
+app.use((req, res, next) => {
+  const startTime = Date.now();
+  
+  // Log request details
+  systemLogger.info('API Request', {
+    method: req.method,
+    url: req.originalUrl,
+    ip: req.ip,
+    userAgent: req.get('User-Agent'),
+    userId: req.user?.id || 'anonymous',
+    timestamp: new Date().toISOString()
+  });
+  
+  // Override res.json to log response details
+  const originalJson = res.json;
+  res.json = function(data) {
+    const duration = Date.now() - startTime;
+    
+    // Log response details
+    systemLogger.info('API Response', {
+      method: req.method,
+      url: req.originalUrl,
+      statusCode: res.statusCode,
+      duration: `${duration}ms`,
+      userId: req.user?.id || 'anonymous',
+      success: data?.success !== false,
+      timestamp: new Date().toISOString()
+    });
+    
+    return originalJson.call(this, data);
+  };
+  
+  next();
+});
+
 // API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/user', userRoutes);
@@ -328,11 +364,79 @@ app.get('/health', (req, res) => {
 
 // Global error handler
 app.use((error, req, res, next) => {
-  console.error('Unhandled error:', error);
-  res.status(500).json({
-    success: false,
-    message: 'Internal server error'
+  // Generate error ID for tracking
+  const errorId = Date.now().toString(36) + Math.random().toString(36).substr(2);
+  
+  // Determine error type and status code
+  let statusCode = 500;
+  let message = 'Internal server error';
+  let errorType = 'INTERNAL_ERROR';
+  
+  // Handle specific error types
+  if (error.name === 'ValidationError') {
+    statusCode = 400;
+    message = 'Validation error';
+    errorType = 'VALIDATION_ERROR';
+  } else if (error.name === 'UnauthorizedError' || error.message.includes('token')) {
+    statusCode = 401;
+    message = 'Unauthorized access';
+    errorType = 'UNAUTHORIZED';
+  } else if (error.name === 'ForbiddenError') {
+    statusCode = 403;
+    message = 'Forbidden access';
+    errorType = 'FORBIDDEN';
+  } else if (error.name === 'NotFoundError') {
+    statusCode = 404;
+    message = 'Resource not found';
+    errorType = 'NOT_FOUND';
+  } else if (error.code === 'ECONNREFUSED') {
+    statusCode = 503;
+    message = 'Service temporarily unavailable';
+    errorType = 'SERVICE_UNAVAILABLE';
+  } else if (error.code === 'ER_DUP_ENTRY') {
+    statusCode = 409;
+    message = 'Duplicate entry';
+    errorType = 'DUPLICATE_ENTRY';
+  } else if (error.message.includes('rate limit')) {
+    statusCode = 429;
+    message = 'Rate limit exceeded';
+    errorType = 'RATE_LIMIT';
+  }
+  
+  // Log error with comprehensive details
+  systemLogger.error(`${errorType} - ${errorId}`, {
+    errorId,
+    errorType,
+    statusCode,
+    message: error.message,
+    stack: error.stack,
+    method: req.method,
+    url: req.originalUrl,
+    ip: req.ip,
+    userId: req.user?.id || 'anonymous',
+    userAgent: req.get('User-Agent'),
+    timestamp: new Date().toISOString(),
+    requestBody: req.method === 'POST' ? JSON.stringify(req.body) : undefined
   });
+  
+  // Send error response
+  const errorResponse = {
+    success: false,
+    error: {
+      type: errorType,
+      message: message,
+      errorId: errorId,
+      timestamp: new Date().toISOString()
+    }
+  };
+  
+  // Include more details in development
+  if (process.env.NODE_ENV === 'development') {
+    errorResponse.error.details = error.message;
+    errorResponse.error.stack = error.stack;
+  }
+  
+  res.status(statusCode).json(errorResponse);
 });
 
 // Handle 404
@@ -346,10 +450,67 @@ app.use('*', (req, res) => {
 const PORT = process.env.PORT || 3001;
 const HOST = process.env.HOST || '0.0.0.0';
 
-// Graceful shutdown
-process.on('SIGINT', () => {
-  systemLogger.warn('Received SIGINT. Graceful shutdown...');
+// Process monitoring for uncaught exceptions and unhandled promise rejections
+process.on('uncaughtException', (error) => {
+  const errorId = Date.now().toString(36) + Math.random().toString(36).substr(2);
   
+  systemLogger.error(`UNCAUGHT_EXCEPTION - ${errorId}`, {
+    errorId,
+    message: error.message,
+    stack: error.stack,
+    timestamp: new Date().toISOString(),
+    pid: process.pid,
+    memoryUsage: process.memoryUsage(),
+    uptime: process.uptime()
+  });
+  
+  // Graceful shutdown after uncaught exception
+  systemLogger.warn('Initiating graceful shutdown due to uncaught exception...');
+  gracefulShutdown(1);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  const errorId = Date.now().toString(36) + Math.random().toString(36).substr(2);
+  
+  systemLogger.error(`UNHANDLED_REJECTION - ${errorId}`, {
+    errorId,
+    reason: reason?.message || reason,
+    stack: reason?.stack,
+    promise: promise.toString(),
+    timestamp: new Date().toISOString(),
+    pid: process.pid,
+    memoryUsage: process.memoryUsage(),
+    uptime: process.uptime()
+  });
+  
+  // Don't exit for unhandled promise rejections in production
+  if (process.env.NODE_ENV !== 'production') {
+    systemLogger.warn('Initiating graceful shutdown due to unhandled promise rejection...');
+    gracefulShutdown(1);
+  }
+});
+
+// Memory monitoring
+setInterval(() => {
+  const memUsage = process.memoryUsage();
+  const totalMemMB = Math.round(memUsage.rss / 1024 / 1024);
+  const heapUsedMB = Math.round(memUsage.heapUsed / 1024 / 1024);
+  const heapTotalMB = Math.round(memUsage.heapTotal / 1024 / 1024);
+  
+  // Log memory usage if it exceeds threshold
+  if (totalMemMB > 500) { // 500MB threshold
+    systemLogger.warn('High memory usage detected', {
+      totalMemoryMB: totalMemMB,
+      heapUsedMB: heapUsedMB,
+      heapTotalMB: heapTotalMB,
+      uptime: Math.round(process.uptime()),
+      timestamp: new Date().toISOString()
+    });
+  }
+}, 60000); // Check every minute
+
+// Graceful shutdown function
+const gracefulShutdown = (exitCode = 0) => {
   systemLogger.info('Stopping Bitcoin data service...');
   bitcoinDataService.stopDataUpdates();
   
@@ -369,32 +530,18 @@ process.on('SIGINT', () => {
   JobScheduler.stop();
   
   systemLogger.success('All services stopped gracefully');
-  process.exit(0);
+  process.exit(exitCode);
+};
+
+// Graceful shutdown on signals
+process.on('SIGINT', () => {
+  systemLogger.warn('Received SIGINT. Graceful shutdown...');
+  gracefulShutdown(0);
 });
 
 process.on('SIGTERM', () => {
   systemLogger.warn('Received SIGTERM. Graceful shutdown...');
-  
-  systemLogger.info('Stopping Bitcoin data service...');
-  bitcoinDataService.stopDataUpdates();
-  
-  systemLogger.info('Stopping limit order execution service...');
-  limitOrderExecutionService.stopService();
-  
-  systemLogger.info('Stopping DCA execution service...');
-  dcaExecutionService.stopService();
-  
-  systemLogger.info('Stopping loan monitoring service...');
-  loanMonitoringService.stop();
-  
-  systemLogger.info('Stopping liquidation monitoring service...');
-  liquidationMonitoringService.stop();
-  
-  systemLogger.info('Stopping job scheduler...');
-  JobScheduler.stop();
-  
-  systemLogger.success('All services stopped gracefully');
-  process.exit(0);
+  gracefulShutdown(0);
 });
 
 // Start server
