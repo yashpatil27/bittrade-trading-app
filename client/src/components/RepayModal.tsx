@@ -201,14 +201,14 @@ const RepayModal: React.FC<RepayModalProps> = ({
               pattern="[0-9]*"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
-              className="input-field w-full"
+              className="input-field w-full pr-10"
               placeholder="1000"
               step="1"
               min="0"
               max={getMaxAmount()}
             />
-            <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-zinc-400 text-sm">
-              ₹
+            <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-zinc-400">
+              <span className="text-sm font-medium">₹</span>
             </div>
           </div>
           

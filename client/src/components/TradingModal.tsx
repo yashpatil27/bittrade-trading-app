@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, TrendingUp, TrendingDown, Calculator, Zap, Target, Clock, Repeat, Settings, ChevronRight } from 'lucide-react';
+import { X, TrendingUp, TrendingDown, Calculator, Zap, Target, Clock, Repeat, Settings, ChevronRight, Bitcoin } from 'lucide-react';
 import { Prices } from '../types';
 import { userAPI } from '../services/api';
 import PinConfirmationModal from './PinConfirmationModal';
@@ -259,12 +259,19 @@ const TradingModal: React.FC<TradingModalProps> = ({
               pattern={isBuy ? "[0-9]*" : "[0-9]*[.]?[0-9]*"}
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
-              className="input-field w-full"
+              className="input-field w-full pr-10"
               placeholder={isBuy ? "1000" : "0.001"}
               step={isBuy ? "1" : "0.00000001"}
               min="0"
               max={getMaxAmount()}
             />
+            <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-zinc-400">
+              {isBuy ? (
+                <span className="text-sm font-medium">₹</span>
+              ) : (
+                <Bitcoin className="w-4 h-4" />
+              )}
+            </div>
           </div>
           
           {/* Percentage Quick Select Buttons */}
@@ -309,11 +316,14 @@ const TradingModal: React.FC<TradingModalProps> = ({
                 pattern="[0-9]*"
                 value={targetPrice}
                 onChange={(e) => setTargetPrice(e.target.value)}
-                className="input-field w-full"
+                className="input-field w-full pr-10"
                 placeholder={rate ? formatCurrencyInr(rate) : "0"}
                 step="1"
                 min="1"
               />
+              <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-zinc-400">
+                <span className="text-sm font-medium">₹</span>
+              </div>
             </div>
             
             {/* Quick Price Buttons */}
@@ -632,31 +642,41 @@ const TradingModal: React.FC<TradingModalProps> = ({
                     <label className="block text-sm font-medium mb-2 text-zinc-400">
                       Max Price (₹/BTC)
                     </label>
-                    <input
-                      type="number"
-                      inputMode="numeric"
-                      pattern="[0-9]*"
-                      value={dcaMaxPrice}
-                      onChange={(e) => setDcaMaxPrice(e.target.value)}
-                      className="w-full bg-zinc-700 border border-zinc-600 rounded-lg py-2 px-3 text-white placeholder-zinc-400 focus:outline-none focus:border-white"
-                      placeholder="Optional"
-                      min="1"
-                    />
+                    <div className="relative">
+                      <input
+                        type="number"
+                        inputMode="numeric"
+                        pattern="[0-9]*"
+                        value={dcaMaxPrice}
+                        onChange={(e) => setDcaMaxPrice(e.target.value)}
+                        className="w-full bg-zinc-700 border border-zinc-600 rounded-lg py-2 px-3 pr-10 text-white placeholder-zinc-400 focus:outline-none focus:border-white"
+                        placeholder="Optional"
+                        min="1"
+                      />
+                      <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-zinc-400">
+                        <span className="text-sm font-medium">₹</span>
+                      </div>
+                    </div>
                   </div>
                   <div>
                     <label className="block text-sm font-medium mb-2 text-zinc-400">
                       Min Price (₹/BTC)
                     </label>
-                    <input
-                      type="number"
-                      inputMode="numeric"
-                      pattern="[0-9]*"
-                      value={dcaMinPrice}
-                      onChange={(e) => setDcaMinPrice(e.target.value)}
-                      className="w-full bg-zinc-700 border border-zinc-600 rounded-lg py-2 px-3 text-white placeholder-zinc-400 focus:outline-none focus:border-white"
-                      placeholder="Optional"
-                      min="1"
-                    />
+                    <div className="relative">
+                      <input
+                        type="number"
+                        inputMode="numeric"
+                        pattern="[0-9]*"
+                        value={dcaMinPrice}
+                        onChange={(e) => setDcaMinPrice(e.target.value)}
+                        className="w-full bg-zinc-700 border border-zinc-600 rounded-lg py-2 px-3 pr-10 text-white placeholder-zinc-400 focus:outline-none focus:border-white"
+                        placeholder="Optional"
+                        min="1"
+                      />
+                      <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-zinc-400">
+                        <span className="text-sm font-medium">₹</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
                 <p className="text-zinc-500 text-xs">DCA will only execute when Bitcoin price is within these limits</p>
