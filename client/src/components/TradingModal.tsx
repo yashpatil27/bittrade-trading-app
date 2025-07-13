@@ -175,9 +175,9 @@ const TradingModal: React.FC<TradingModalProps> = ({
               </h2>
               <p className="text-sm text-zinc-400">
                 {orderType === 'market' ? 
-                  `Market Rate: ${formatCurrencyInr(rate || 0)}/BTC` :
+                  `Market Rate: ${formatCurrencyInr(rate || 0)}/₿` :
                   orderType === 'limit' ?
-                  `Current: ${formatCurrencyInr(rate || 0)}/BTC` :
+                  `Current: ${formatCurrencyInr(rate || 0)}/₿` :
                   `Recurring ${dcaFrequency.toLowerCase()} ${isBuy ? 'purchases' : 'sales'}`
                 }
               </p>
@@ -238,7 +238,7 @@ const TradingModal: React.FC<TradingModalProps> = ({
               {isBuy ? (
                 formatCurrencyInr(availableBalance)
               ) : (
-                `${availableBalance.toFixed(8)} BTC`
+                `${availableBalance.toFixed(8)} ₿`
               )}
             </span>
           </div>
@@ -248,8 +248,8 @@ const TradingModal: React.FC<TradingModalProps> = ({
         <div className="mb-6">
           <label className="block text-sm font-medium mb-2">
             {orderType === 'dca' ? 
-              (isBuy ? 'Amount per Purchase (INR)' : 'Amount per Sale (BTC)') :
-              (isBuy ? 'Amount to Spend (INR)' : 'Amount to Sell (BTC)')
+              (isBuy ? 'Amount per Purchase (₹)' : 'Amount per Sale (₿)') :
+              (isBuy ? 'Amount to Spend (₹)' : 'Amount to Sell (₿)')
             }
           </label>
           <div className="relative">
@@ -307,7 +307,7 @@ const TradingModal: React.FC<TradingModalProps> = ({
         {orderType === 'limit' && (
           <div className="mb-6">
             <label className="block text-sm font-medium mb-2">
-              Target Price (₹ per BTC)
+              Target Price (₹ per ₿)
             </label>
             <div className="relative">
               <input
@@ -572,16 +572,16 @@ const TradingModal: React.FC<TradingModalProps> = ({
           const baseText = 'Enter your PIN to confirm ';
           if (orderType === 'market') {
             const action = isBuy ? 'purchasing' : 'selling';
-            const amount = isBuy ? `${formatCurrencyInr(pendingAmount)} worth of Bitcoin` : `${pendingAmount.toFixed(8)} BTC`;
+            const amount = isBuy ? `${formatCurrencyInr(pendingAmount)} worth of Bitcoin` : `${pendingAmount.toFixed(8)} ₿`;
             return `${baseText}${action} ${amount}`;
           } else if (orderType === 'limit') {
             const action = isBuy ? 'buy' : 'sell';
-            const amount = isBuy ? formatCurrencyInr(pendingAmount) : `${pendingAmount.toFixed(8)} BTC`;
-            const price = `${formatCurrencyInr(pendingTargetPrice || 0)}/BTC`;
+            const amount = isBuy ? formatCurrencyInr(pendingAmount) : `${pendingAmount.toFixed(8)} ₿`;
+            const price = `${formatCurrencyInr(pendingTargetPrice || 0)}/₿`;
             return `${baseText}placing a limit ${action} order for ${amount} at ${price}`;
           } else {
             const action = isBuy ? 'buy' : 'sell';
-            const amount = isBuy ? formatCurrencyInr(pendingAmount) : `${pendingAmount.toFixed(8)} BTC`;
+            const amount = isBuy ? formatCurrencyInr(pendingAmount) : `${pendingAmount.toFixed(8)} ₿`;
             const frequency = pendingDcaConfig?.frequency?.toLowerCase() || 'weekly';
             const executions = pendingDcaConfig?.totalExecutions ? ` for ${pendingDcaConfig.totalExecutions} executions` : '';
             return `${baseText}starting a ${frequency} DCA ${action} plan of ${amount}${executions}`;
@@ -640,7 +640,7 @@ const TradingModal: React.FC<TradingModalProps> = ({
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="block text-sm font-medium mb-2 text-zinc-400">
-                      Max Price (₹/BTC)
+                      Max Price (₹/₿)
                     </label>
                     <div className="relative">
                       <input
@@ -660,7 +660,7 @@ const TradingModal: React.FC<TradingModalProps> = ({
                   </div>
                   <div>
                     <label className="block text-sm font-medium mb-2 text-zinc-400">
-                      Min Price (₹/BTC)
+                      Min Price (₹/₿)
                     </label>
                     <div className="relative">
                       <input

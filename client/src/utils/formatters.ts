@@ -3,7 +3,7 @@ import { Transaction } from '../types';
 export const getTransactionDisplayName = (type: Transaction['type'], status?: string): string => {
   const displayNames = {
     'SETUP': 'Account Setup',
-    'DEPOSIT_INR': 'Cash Top-up',
+    'DEPOSIT_INR': '₹ Top-up',
     'BUY': 'Bitcoin Purchase',
     'MARKET_BUY': 'Bitcoin Purchase',
     'SELL': 'Bitcoin Sale', 
@@ -12,11 +12,11 @@ export const getTransactionDisplayName = (type: Transaction['type'], status?: st
                  status === 'CANCELLED' ? 'Limit Buy Cancelled' : 'Limit Buy Filled',
     'LIMIT_SELL': status === 'PENDING' ? 'Limit Sell Order' : 
                   status === 'CANCELLED' ? 'Limit Sell Cancelled' : 'Limit Sell Filled',
-    'WITHDRAW_INR': 'Cash Withdrawal',
-    'DEPOSIT_BTC': 'Bitcoin Deposit',
-    'WITHDRAW_BTC': 'Bitcoin Withdrawal',
-    'DCA_BUY': 'DCA Bitcoin Purchase',
-    'DCA_SELL': 'DCA Bitcoin Sale',
+    'WITHDRAW_INR': '₹ Withdrawal',
+    'DEPOSIT_BTC': '₿ Deposit',
+    'WITHDRAW_BTC': '₿ Withdrawal',
+    'DCA_BUY': 'DCA ₿ Purchase',
+    'DCA_SELL': 'DCA ₿ Sale',
     'LOAN_CREATE': 'Collateral Deposited',
     'LOAN_BORROW': 'Loan Borrowed',
     'LOAN_REPAY': 'Loan Repaid',
@@ -62,8 +62,8 @@ export const getTransactionColor = (type: Transaction['type']): string => {
   return 'text-white';
 };
 
-export const formatCurrency = (amount: number, currency: 'INR' | 'BTC'): string => {
-  if (currency === 'INR') {
+export const formatCurrency = (amount: number, currency: '₹' | '₿'): string => {
+  if (currency === '₹') {
     return formatCurrencyInr(amount);
   } else {
     return formatBitcoinDisplay(amount);

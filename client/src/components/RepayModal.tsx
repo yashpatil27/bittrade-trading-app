@@ -85,7 +85,7 @@ const RepayModal: React.FC<RepayModalProps> = ({
 
     const repayAmount = parseFloat(amount);
     if (repayAmount > availableBalance) {
-      setError('Insufficient INR balance');
+      setError('Insufficient ₹ balance');
       return;
     }
 
@@ -192,7 +192,7 @@ const RepayModal: React.FC<RepayModalProps> = ({
         {/* Amount Input */}
         <div className="mb-6">
           <label className="block text-sm font-medium mb-2">
-            Amount to Repay (INR)
+            Amount to Repay (₹)
           </label>
           <div className="relative">
             <input
