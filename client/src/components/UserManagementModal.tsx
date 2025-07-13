@@ -196,7 +196,7 @@ const UserManagementModal: React.FC<UserManagementModalProps> = ({
 
   const handleExternalBuy = async () => {
     if (!externalInrAmount || !externalBtcAmount || parseFloat(externalInrAmount) <= 0 || parseFloat(externalBtcAmount) <= 0) {
-      setError('Please enter valid INR and BTC amounts');
+      setError('Please enter valid ₹ and ₿ amounts');
       return;
     }
 
@@ -209,7 +209,7 @@ const UserManagementModal: React.FC<UserManagementModalProps> = ({
       const btcAmount = parseFloat(externalBtcAmount);
       
       if (!Number.isInteger(inrAmount)) {
-        setError('INR amount must be a whole number');
+        setError('₹ amount must be a whole number');
         return;
       }
 
@@ -334,7 +334,7 @@ const UserManagementModal: React.FC<UserManagementModalProps> = ({
               <div className="grid grid-cols-2 gap-4">
                 <div className="bg-zinc-800/50 rounded-lg p-4 text-center">
                   <DollarSign className="w-6 h-6 text-white mx-auto mb-2" />
-                  <p className="text-zinc-400 text-sm">INR Balance</p>
+                  <p className="text-zinc-400 text-sm">₹ Balance</p>
             <p className="text-white font-bold">{formatCurrencyInr(user.inr_balance)}</p>
                 </div>
                 <div className="bg-zinc-800/50 rounded-lg p-4 text-center">
@@ -375,7 +375,7 @@ const UserManagementModal: React.FC<UserManagementModalProps> = ({
                 </h3>
                 <div className="grid grid-cols-2 gap-3">
                   <div className="text-center">
-                    <p className="text-zinc-400 text-xs">INR Balance</p>
+                  <p className="text-zinc-400 text-xs">₹ Balance</p>
                     <p className="text-white font-bold text-lg">{formatCurrencyInr(user.inr_balance)}</p>
                   </div>
                   <div className="text-center">
@@ -397,7 +397,7 @@ const UserManagementModal: React.FC<UserManagementModalProps> = ({
                     }`}
                   >
                     <DollarSign className="w-4 h-4" />
-                    INR
+                    ₹
                   </button>
                   <button
                     onClick={() => setBalanceMode('BTC')}
@@ -408,7 +408,7 @@ const UserManagementModal: React.FC<UserManagementModalProps> = ({
                     }`}
                   >
                     <Bitcoin className="w-4 h-4" />
-                    BTC
+                    ₿
                   </button>
                 </div>
 
@@ -481,7 +481,7 @@ const UserManagementModal: React.FC<UserManagementModalProps> = ({
                 </h3>
                 <div className="grid grid-cols-2 gap-3">
                   <div className="text-center">
-                    <p className="text-zinc-400 text-xs">INR Balance</p>
+                    <p className="text-zinc-400 text-xs">₹ Balance</p>
                     <p className="text-white font-bold text-lg">{formatCurrencyInr(user.inr_balance)}</p>
                   </div>
                   <div className="text-center">
@@ -504,7 +504,7 @@ const UserManagementModal: React.FC<UserManagementModalProps> = ({
                 <div className="space-y-4">
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-zinc-400 text-sm mb-2">INR Amount (₹)</label>
+                      <label className="block text-zinc-400 text-sm mb-2">₹ Amount</label>
                       <input
                         type="number"
                         inputMode="numeric"
@@ -517,7 +517,7 @@ const UserManagementModal: React.FC<UserManagementModalProps> = ({
                       />
                     </div>
                     <div>
-                      <label className="block text-zinc-400 text-sm mb-2">Bitcoin Amount (₿)</label>
+                      <label className="block text-zinc-400 text-sm mb-2">₿ Amount</label>
                       <input
                         type="number"
                         inputMode="decimal"
@@ -560,7 +560,7 @@ const UserManagementModal: React.FC<UserManagementModalProps> = ({
               
               <div className="bg-zinc-700/30 rounded-lg p-3">
                 <p className="text-zinc-400 text-xs">
-                  <strong>Note:</strong> This creates two transactions: a deposit of the INR amount (timestamped a few seconds earlier) and a buy transaction for the Bitcoin amount at the calculated rate.
+                  <strong>Note:</strong> This creates two transactions: a deposit of the ₹ amount (timestamped a few seconds earlier) and a buy transaction for the Bitcoin amount at the calculated rate.
                 </p>
               </div>
             </div>

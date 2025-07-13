@@ -127,7 +127,7 @@ const BorrowModal: React.FC<BorrowModalProps> = ({
             <div>
               <h2 className="text-xl font-bold">Borrow Funds</h2>
               <p className="text-sm text-zinc-400">
-                Borrow INR against your collateral
+                Borrow ₹ against your collateral
               </p>
             </div>
           </div>
@@ -166,7 +166,7 @@ const BorrowModal: React.FC<BorrowModalProps> = ({
         {/* Amount Input */}
         <div className="mb-6">
           <label className="block text-sm font-medium mb-2">
-            Amount to Borrow (INR)
+            Amount to Borrow (₹)
           </label>
           <div className="relative">
             <input
@@ -264,7 +264,7 @@ const BorrowModal: React.FC<BorrowModalProps> = ({
               {amount && parseFloat(amount) > 0 && calculateNewLtv() >= 85 ? (
                 <p><strong className="text-yellow-400">High Risk:</strong> LTV near liquidation threshold. Consider borrowing less.</p>
               ) : (
-                <p>Borrowed funds added to INR balance. Interest accrues daily at {loanStatus.interestRate}% APR.</p>
+                <p>Borrowed funds added to ₹ balance. Interest accrues daily at {loanStatus.interestRate}% APR.</p>
               )}
             </div>
           </div>

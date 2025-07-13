@@ -438,7 +438,7 @@ Liquidation @ {formatInr(loanStatus.liquidationPrice)}
             <Wallet className="w-12 h-12 text-zinc-400 mx-auto mb-4" />
             <h2 className="text-xl font-semibold mb-2">No Active Loan</h2>
             <p className="text-zinc-400 mb-6">
-              Deposit Bitcoin as collateral to start borrowing INR
+              Deposit Bitcoin as collateral to start borrowing ₹
             </p>
             <button
               onClick={() => setShowDepositModal(true)}

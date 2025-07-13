@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Zap, Calculator, Info } from 'lucide-react';
+import { X, Zap, Calculator, Info, Bitcoin } from 'lucide-react';
 import { userAPI } from '../services/api';
 import { LoanStatus } from '../types';
 import PinConfirmationModal from './PinConfirmationModal';
@@ -39,7 +39,7 @@ const PartialLiquidationModal: React.FC<PartialLiquidationModalProps> = ({
 
   const handlePartialLiquidation = () => {
     if (!btcAmount || parseFloat(btcAmount) <= 0) {
-      setError('Please enter a valid BTC amount');
+      setError('Please enter a valid ₿ amount');
       return;
     }
 
@@ -110,7 +110,7 @@ const PartialLiquidationModal: React.FC<PartialLiquidationModalProps> = ({
             <div>
               <h2 className="text-xl font-bold">Close Loan</h2>
               <p className="text-sm text-zinc-400">
-                Liquidate your BTC collateral to reduce or close debt
+                Liquidate your ₿ collateral to reduce or close debt
               </p>
             </div>
           </div>
@@ -128,7 +128,7 @@ const PartialLiquidationModal: React.FC<PartialLiquidationModalProps> = ({
         {/* BTC Amount Input */}
         <div className="mb-6">
           <label className="block text-sm font-medium mb-2">
-            BTC to Liquidate
+            ₿ to Liquidate
           </label>
           <div className="relative">
             <input
@@ -143,8 +143,8 @@ const PartialLiquidationModal: React.FC<PartialLiquidationModalProps> = ({
               min="0"
               max={loanStatus.collateralAmount / 100000000}
             />
-            <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-zinc-400 text-sm">
-              BTC
+            <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+              <Bitcoin className="w-4 h-4 text-zinc-400" />
             </div>
           </div>
 
@@ -187,13 +187,13 @@ const PartialLiquidationModal: React.FC<PartialLiquidationModalProps> = ({
 
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
-                <span className="text-zinc-400">BTC Liquidated:</span>
+                <span className="text-zinc-400">₿ Liquidated:</span>
                 <span className="text-white">
                   ₿{formatBitcoin(parseFloat(btcAmount))}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-zinc-400">Est. INR Proceeds:</span>
+                <span className="text-zinc-400">Est. ₹ Proceeds:</span>
                 <span className="text-white">
                   {formatCurrencyInr(Math.round(parseFloat(btcAmount) * loanStatus.currentBtcPrice))}
                 </span>
@@ -253,7 +253,7 @@ const PartialLiquidationModal: React.FC<PartialLiquidationModalProps> = ({
             }
             className="flex-1 bg-white text-black hover:bg-zinc-200 py-2 rounded-lg font-medium transition-colors"
           >
-            {loading ? 'Processing...' : 'Liquidate BTC'}
+            {loading ? 'Processing...' : 'Liquidate ₿'}
           </button>
         </div>
       </div>
@@ -264,7 +264,7 @@ const PartialLiquidationModal: React.FC<PartialLiquidationModalProps> = ({
         onClose={handlePinModalClose}
         onConfirm={handlePinConfirm}
         title="Confirm Liquidation"
-        message={`Enter your PIN to confirm liquidating ${btcAmount} BTC`}
+        message={`Enter your PIN to confirm liquidating ${btcAmount} ₿`}
         isLoading={loading}
       />
     </div>
