@@ -1,4 +1,3 @@
-const cron = require('node-cron');
 const { query, transaction } = require('../config/database');
 const { clearUserCache } = require('../config/redis');
 const bitcoinDataService = require('./bitcoinDataService');
@@ -7,7 +6,7 @@ const { dcaLogger } = require('../utils/logger');
 class DcaExecutionService {
   constructor() {
     this.isRunning = false;
-    this.cronJob = null;
+    this.currentTimeout = null;
     this.executionInProgress = false;
   }
 
@@ -109,23 +108,23 @@ class DcaExecutionService {
     if (plan.plan_type === 'DCA_BUY') {
       if (plan.max_price && currentBuyPrice > plan.max_price) {
         dcaLogger.debug(`DCA Buy Plan ${plan.id} skipped: price too high (${currentBuyPrice} > ${plan.max_price})`);
-        await this.scheduleNextExecution(plan);
+        await this.skipPlanExecution(plan);
         return { executed: false, completed: false, paused: false };
       }
       if (plan.min_price && currentBuyPrice < plan.min_price) {
         dcaLogger.debug(`DCA Buy Plan ${plan.id} skipped: price too low (${currentBuyPrice} < ${plan.min_price})`);
-        await this.scheduleNextExecution(plan);
+        await this.skipPlanExecution(plan);
         return { executed: false, completed: false, paused: false };
       }
     } else if (plan.plan_type === 'DCA_SELL') {
       if (plan.max_price && currentSellPrice > plan.max_price) {
         dcaLogger.debug(`DCA Sell Plan ${plan.id} skipped: price too high (${currentSellPrice} > ${plan.max_price})`);
-        await this.scheduleNextExecution(plan);
+        await this.skipPlanExecution(plan);
         return { executed: false, completed: false, paused: false };
       }
       if (plan.min_price && currentSellPrice < plan.min_price) {
         dcaLogger.debug(`DCA Sell Plan ${plan.id} skipped: price too low (${currentSellPrice} < ${plan.min_price})`);
-        await this.scheduleNextExecution(plan);
+        await this.skipPlanExecution(plan);
         return { executed: false, completed: false, paused: false };
       }
     }
@@ -283,8 +282,8 @@ class DcaExecutionService {
     });
   }
 
-  // Schedule next execution for a plan
-  async scheduleNextExecution(plan) {
+  // Skip plan execution when price conditions aren't met
+  async skipPlanExecution(plan) {
     const nextExecutionAt = new Date(plan.next_execution_at);
     
     if (plan.frequency === 'HOURLY') {
@@ -301,6 +300,65 @@ class DcaExecutionService {
       'UPDATE active_plans SET next_execution_at = ? WHERE id = ?',
       [nextExecutionAt, plan.id]
     );
+  }
+
+  // Calculate time until next execution for the earliest plan
+  async calculateNextExecutionTime() {
+    const plans = await query(`
+      SELECT MIN(next_execution_at) as next_execution_at 
+      FROM active_plans 
+      WHERE status = 'ACTIVE' 
+      AND plan_type IN ('DCA_BUY', 'DCA_SELL')
+    `);
+
+    if (!plans[0] || !plans[0].next_execution_at) {
+      // No active plans, default to 1 hour
+      dcaLogger.debug('No active DCA plans found, scheduling next check in 1 hour');
+      return 60 * 60 * 1000;
+    }
+
+    const nextExecutionAt = new Date(plans[0].next_execution_at);
+    const now = new Date();
+    const diff = nextExecutionAt.getTime() - now.getTime();
+
+    // Ensure we don't wait more than 1 hour, and minimum 1 minute for immediate execution
+    const timeToWait = Math.max(Math.min(diff, 60 * 60 * 1000), 60 * 1000);
+    
+    dcaLogger.info(`Next DCA execution scheduled in ${Math.round(timeToWait / 1000 / 60)} minutes`);
+    return timeToWait;
+  }
+
+  // Schedule the next service run based on calculated time
+  async scheduleService() {
+    if (!this.isRunning) {
+      return;
+    }
+
+    if (this.currentTimeout) {
+      clearTimeout(this.currentTimeout);
+      this.currentTimeout = null;
+    }
+
+    try {
+      const timeUntilNext = await this.calculateNextExecutionTime();
+      this.currentTimeout = setTimeout(async () => {
+        if (this.isRunning) {
+          try {
+            await this.executePendingPlans();
+          } catch (error) {
+            dcaLogger.error('Error in scheduled DCA execution', error);
+          }
+          // Schedule the next run
+          await this.scheduleService();
+        }
+      }, timeUntilNext);
+    } catch (error) {
+      dcaLogger.error('Error scheduling next DCA execution', error);
+      // Fallback to 1 hour if scheduling fails
+      this.currentTimeout = setTimeout(async () => {
+        await this.scheduleService();
+      }, 60 * 60 * 1000);
+    }
   }
 
   // Update plan for next execution with counters
@@ -361,34 +419,31 @@ class DcaExecutionService {
     dcaLogger.info('Starting DCA execution service...');
     this.isRunning = true;
 
-    // Run immediately on startup
-    this.executePendingPlans().catch(error => {
-      dcaLogger.error('Initial DCA execution failed', error);
-    });
-
-    // Schedule to run every 2 minutes (same as price updates)
-    this.cronJob = cron.schedule('*/2 * * * *', async () => {
-      if (this.isRunning) {
-        try {
-          await this.executePendingPlans();
-        } catch (error) {
-          dcaLogger.error('Scheduled DCA execution failed', error);
-        }
-      }
-    });
+    // Run immediately on startup to handle any missed executions
+    this.executePendingPlans()
+      .then(() => {
+        // After initial execution, start dynamic scheduling
+        this.scheduleService();
+      })
+      .catch(error => {
+        dcaLogger.error('Initial DCA execution failed', error);
+        // Still start scheduling even if initial execution fails
+        this.scheduleService();
+      });
 
     dcaLogger.serviceStarted('DCA Execution Service', {
-      interval: 'Every 2 minutes',
-      priceSync: 'Synchronized with market data'
+      mode: 'Dynamic scheduling',
+      maxInterval: '1 hour',
+      minInterval: '1 minute'
     });
   }
 
   // Stop the service
   stopService() {
     this.isRunning = false;
-    if (this.cronJob) {
-      this.cronJob.stop();
-      this.cronJob = null;
+    if (this.currentTimeout) {
+      clearTimeout(this.currentTimeout);
+      this.currentTimeout = null;
     }
     dcaLogger.info('DCA execution service stopped');
   }
@@ -397,6 +452,23 @@ class DcaExecutionService {
   async executeNow() {
     dcaLogger.info('Manual DCA execution triggered...');
     return await this.executePendingPlans();
+  }
+
+  // Trigger reschedule when plans are modified (for immediate response to changes)
+  async triggerReschedule() {
+    if (!this.isRunning) {
+      return;
+    }
+    
+    dcaLogger.debug('Plan modification detected, rescheduling...');
+    // Clear current timeout and reschedule immediately
+    if (this.currentTimeout) {
+      clearTimeout(this.currentTimeout);
+      this.currentTimeout = null;
+    }
+    
+    // Reschedule based on current plans
+    await this.scheduleService();
   }
 }
 

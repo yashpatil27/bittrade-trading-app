@@ -59,7 +59,7 @@ const initializeServices = async () => {
 
     // Start DCA execution service
     dcaExecutionService.startService();
-    systemLogger.serviceStarted('DCA execution service', { checkInterval: '60s' });
+    systemLogger.serviceStarted('DCA execution service', { mode: 'Dynamic scheduling', maxInterval: '1 hour' });
     
     // Start loan monitoring service
     loanMonitoringService.start();
@@ -252,31 +252,100 @@ app.use('/api/public/', publicLimiter);
 app.use((req, res, next) => {
   const startTime = Date.now();
   
-  // Log request details
-  systemLogger.info('API Request', {
-    method: req.method,
-    url: req.originalUrl,
-    ip: req.ip,
-    userAgent: req.get('User-Agent'),
-    userId: req.user?.id || 'anonymous',
-    timestamp: new Date().toISOString()
-  });
+  // Skip logging for static files and health checks
+  if (req.path.includes('.') || req.path === '/health' || req.path.startsWith('/static/')) {
+    return next();
+  }
   
   // Override res.json to log response details
   const originalJson = res.json;
   res.json = function(data) {
     const duration = Date.now() - startTime;
+    const userId = req.user?.id ? `user:${req.user.id}` : 'anon';
+    const status = res.statusCode >= 400 ? '❌' : '✅';
     
-    // Log response details
-    systemLogger.info('API Response', {
-      method: req.method,
-      url: req.originalUrl,
-      statusCode: res.statusCode,
-      duration: `${duration}ms`,
-      userId: req.user?.id || 'anonymous',
-      success: data?.success !== false,
-      timestamp: new Date().toISOString()
-    });
+    // Import chalk for colors
+    const chalk = require('chalk');
+    
+    // User-friendly action mapping
+    const getActionDescription = (method, path) => {
+      const route = `${method} ${path}`;
+      
+      // Authentication actions
+      if (path.includes('/auth/login')) return 'User login';
+      if (path.includes('/auth/register')) return 'User registration';
+      if (path.includes('/auth/logout')) return 'User logout';
+      if (path.includes('/auth/refresh')) return 'Token refresh';
+      if (path.includes('/auth/verify')) return 'Email verification';
+      if (path.includes('/auth/forgot-password')) return 'Password reset request';
+      if (path.includes('/auth/reset-password')) return 'Password reset';
+      
+      // User dashboard and profile
+      if (path.includes('/user/dashboard')) return 'Dashboard loaded';
+      if (path.includes('/user/profile')) {
+        if (method === 'GET') return 'Profile viewed';
+        if (method === 'PUT') return 'Profile updated';
+      }
+      if (path.includes('/user/settings')) {
+        if (method === 'GET') return 'Settings viewed';
+        if (method === 'PUT') return 'Settings updated';
+      }
+      
+      // Trading actions
+      if (path.includes('/user/buy')) return 'Bitcoin purchase';
+      if (path.includes('/user/sell')) return 'Bitcoin sale';
+      if (path.includes('/user/place-limit-order')) return 'Limit order placed';
+      if (path.includes('/user/cancel-limit-order')) return 'Limit order cancelled';
+      if (path.includes('/user/orders')) return 'Orders viewed';
+      if (path.includes('/user/order-history')) return 'Order history viewed';
+      if (path.includes('/user/trade-history')) return 'Trade history viewed';
+      
+      // Portfolio and balance
+      if (path.includes('/user/portfolio')) return 'Portfolio viewed';
+      if (path.includes('/user/balance')) return 'Balance checked';
+      if (path.includes('/user/transactions')) return 'Transactions viewed';
+      
+      // DCA (Dollar Cost Averaging)
+      if (path.includes('/user/dca')) {
+        if (method === 'POST') return 'DCA plan created';
+        if (method === 'PUT') return 'DCA plan updated';
+        if (method === 'DELETE') return 'DCA plan deleted';
+        if (method === 'GET') return 'DCA plans viewed';
+      }
+      
+      // Loans and lending
+      if (path.includes('/user/loans')) {
+        if (method === 'POST') return 'Loan requested';
+        if (method === 'GET') return 'Loans viewed';
+      }
+      if (path.includes('/user/repay-loan')) return 'Loan repayment';
+      if (path.includes('/user/loan-history')) return 'Loan history viewed';
+      
+      // Public data
+      if (path.includes('/public/bitcoin-price')) return 'Bitcoin price fetched';
+      if (path.includes('/public/market-data')) return 'Market data fetched';
+      if (path.includes('/public/fear-greed-index')) return 'Fear & Greed index fetched';
+      
+      // Admin actions
+      if (path.includes('/admin/users')) return 'User management';
+      if (path.includes('/admin/trades')) return 'Trade management';
+      if (path.includes('/admin/system')) return 'System management';
+      if (path.includes('/admin/reports')) return 'Reports accessed';
+      
+      // Notifications
+      if (path.includes('/user/notifications')) {
+        if (method === 'GET') return 'Notifications viewed';
+        if (method === 'PUT') return 'Notification updated';
+      }
+      
+      // Default fallback
+      return `${method} request`;
+    };
+    
+    const action = getActionDescription(req.method, req.originalUrl);
+    
+    // User-friendly log format: [SYSTEM] STATUS ACTION (USER) - DURATION
+    console.log(`${chalk.blue('[SYSTEM]')} ${status} ${action} (${userId}) - ${duration}ms`);
     
     return originalJson.call(this, data);
   };

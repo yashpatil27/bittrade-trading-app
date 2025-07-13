@@ -22,6 +22,9 @@ const API_BASE_URL = process.env.NODE_ENV === 'production'
   ? '/api' 
   : process.env.REACT_APP_API_URL || 'http://localhost:3001/api';
 
+// Request deduplication cache
+const requestCache = new Map();
+
 // Create axios instance
 const api = axios.create({
   baseURL: API_BASE_URL,
