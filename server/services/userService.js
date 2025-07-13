@@ -70,6 +70,13 @@ class UserService {
 
   async getAllTransactions(userId, offset = 0, limit = 50) {
     try {
+      // Get total count for pagination
+      const countResult = await query(
+        'SELECT COUNT(*) as total FROM operations WHERE user_id = ?',
+        [userId]
+      );
+      const totalCount = countResult[0].total;
+
       // Get operations (including pending limit orders)
       const operations = await query(
         `SELECT id, type, status, inr_amount, btc_amount, execution_price, limit_price, loan_id, notes, executed_at, created_at FROM operations WHERE user_id = ? ORDER BY id DESC LIMIT ${parseInt(limit)} OFFSET ${parseInt(offset)}`,
@@ -83,7 +90,11 @@ class UserService {
         btc_price: op.status === 'PENDING' ? op.limit_price : op.execution_price
       }));
       
-      return transactions;
+      return {
+        transactions,
+        totalCount,
+        hasMore: offset + limit < totalCount
+      };
     } catch (error) {
       console.error('Error fetching all transactions:', error);
       throw error;

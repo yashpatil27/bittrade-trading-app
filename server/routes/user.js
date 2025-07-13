@@ -514,8 +514,8 @@ router.get('/transactions', async (req, res) => {
       });
     }
 
-    const transactions = await userService.getAllTransactions(userId, offset, limit);
-    const formattedTransactions = userService.formatTransactionsForDisplay(transactions);
+    const result = await userService.getAllTransactions(userId, offset, limit);
+    const formattedTransactions = userService.formatTransactionsForDisplay(result.transactions);
 
     res.json({
       success: true,
@@ -524,7 +524,10 @@ router.get('/transactions', async (req, res) => {
         pagination: {
           page,
           limit,
-          has_more: transactions.length === limit
+          total: result.totalCount,
+          totalPages: Math.ceil(result.totalCount / limit),
+          hasMore: result.hasMore,
+          hasPrevious: page > 1
         }
       }
     });
