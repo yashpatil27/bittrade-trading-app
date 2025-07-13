@@ -161,24 +161,56 @@ app.use('/api/public', publicRoutes);
 
 // Serve static files from React app in production
 if (process.env.NODE_ENV === 'production') {
-  // Serve static assets with caching headers
+  // Optimized static asset serving with CDN-ready configuration
   app.use(express.static(path.join(__dirname, '../client/build'), {
     maxAge: '1y', // Cache static assets for 1 year
     etag: true,
     lastModified: true,
-    setHeaders: (res, path) => {
-      // Don't cache HTML files
-      if (path.endsWith('.html')) {
+    immutable: true, // Assets are immutable (webpack hashes ensure uniqueness)
+    setHeaders: (res, filePath) => {
+      const ext = path.extname(filePath).toLowerCase();
+      
+      // HTML files - no caching
+      if (ext === '.html') {
         res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+        res.setHeader('Pragma', 'no-cache');
+        res.setHeader('Expires', '0');
       }
+      // JS and CSS files with hash - long-term caching
+      else if (ext === '.js' || ext === '.css') {
+        res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+      }
+      // Images and fonts - medium-term caching
+      else if (['.png', '.jpg', '.jpeg', '.gif', '.ico', '.svg', '.woff', '.woff2', '.ttf', '.eot'].includes(ext)) {
+        res.setHeader('Cache-Control', 'public, max-age=2592000'); // 30 days
+      }
+      // JSON files - short-term caching
+      else if (ext === '.json') {
+        res.setHeader('Cache-Control', 'public, max-age=86400'); // 1 day
+      }
+      
+      // Security headers for all assets
+      res.setHeader('X-Content-Type-Options', 'nosniff');
+      res.setHeader('X-Frame-Options', 'DENY');
+      
       // Enable compression for all files
       res.setHeader('Vary', 'Accept-Encoding');
+      
+      // Add CDN-friendly headers
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      res.setHeader('Access-Control-Allow-Methods', 'GET, HEAD, OPTIONS');
+      res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization, Cache-Control');
+      res.setHeader('Access-Control-Max-Age', '86400');
     }
   }));
   
   // Handle React routing, return all requests to React app
   app.get('*', (req, res) => {
     res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('X-Frame-Options', 'DENY');
     res.sendFile(path.join(__dirname, '../client/build', 'index.html'));
   });
 }
