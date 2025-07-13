@@ -139,11 +139,7 @@ router.post('/users', async (req, res) => {
 
       const userId = userResult.insertId;
 
-      // Create SETUP operation for tracking
-      await connection.execute(
-        'INSERT INTO operations (user_id, type, status, inr_amount, btc_amount, execution_price, executed_at) VALUES (?, ?, ?, ?, ?, ?, ?)',
-        [userId, 'SETUP', 'EXECUTED', 0, 0, 0, new Date()]
-      );
+      // No initial transaction needed - user starts with zero balances
 
       return { userId };
     });

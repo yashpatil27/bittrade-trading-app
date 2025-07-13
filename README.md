@@ -490,7 +490,6 @@ server {
 4. **Balance Updates**: All trades update both available and reserved balances
 
 ### **Transaction Types**
-- `SETUP` - Initial user account creation
 - `DEPOSIT_INR` - Admin deposits INR cash to user account
 - `WITHDRAW_INR` - Admin withdraws INR cash from user account
 - `MARKET_BUY` - User buys Bitcoin at market rate
