@@ -2,26 +2,26 @@ import { Transaction } from '../types';
 
 export const getTransactionDisplayName = (type: Transaction['type'], status?: string): string => {
   const displayNames = {
-    'SETUP': 'Account Setup',
-    'DEPOSIT_INR': '₹ Top-up',
-    'BUY': 'Bitcoin Purchase',
-    'MARKET_BUY': 'Bitcoin Purchase',
-    'SELL': 'Bitcoin Sale', 
-    'MARKET_SELL': 'Bitcoin Sale',
-    'LIMIT_BUY': status === 'PENDING' ? 'Limit Buy Order' : 
-                 status === 'CANCELLED' ? 'Limit Buy Cancelled' : 'Limit Buy Filled',
-    'LIMIT_SELL': status === 'PENDING' ? 'Limit Sell Order' : 
-                  status === 'CANCELLED' ? 'Limit Sell Cancelled' : 'Limit Sell Filled',
-    'WITHDRAW_INR': '₹ Withdrawal',
+    'SETUP': 'Account Setup', // Legacy - can be removed
+    'DEPOSIT_INR': 'Cash Deposit',
+    'BUY': '₿ Market Buy',
+    'MARKET_BUY': '₿ Market Buy',
+    'SELL': '₿ Market Sell', 
+    'MARKET_SELL': '₿ Market Sell',
+    'LIMIT_BUY': status === 'PENDING' ? '₿ Limit Buy Order' : 
+                 status === 'CANCELLED' ? '₿ Limit Buy Cancelled' : '₿ Limit Buy Filled',
+    'LIMIT_SELL': status === 'PENDING' ? '₿ Limit Sell Order' : 
+                  status === 'CANCELLED' ? '₿ Limit Sell Cancelled' : '₿ Limit Sell Filled',
+    'WITHDRAW_INR': 'Cash Withdrawal',
     'DEPOSIT_BTC': '₿ Deposit',
     'WITHDRAW_BTC': '₿ Withdrawal',
-    'DCA_BUY': 'DCA ₿ Purchase',
-    'DCA_SELL': 'DCA ₿ Sale',
-    'LOAN_CREATE': 'Collateral Deposited',
-    'LOAN_BORROW': 'Loan Borrowed',
-    'LOAN_REPAY': 'Loan Repaid',
-    'LOAN_ADD_COLLATERAL': 'Collateral Added',
-    'INTEREST_ACCRUAL': 'Interest Accrued',
+    'DCA_BUY': '₿ DCA Buy',
+    'DCA_SELL': '₿ DCA Sell',
+    'LOAN_CREATE': 'Loan Creation',
+    'LOAN_BORROW': 'Cash Borrowed',
+    'LOAN_REPAY': 'Loan Repay',
+    'LOAN_ADD_COLLATERAL': 'Collateral Deposit',
+    'INTEREST_ACCRUAL': 'Interest Accrual',
     'PARTIAL_LIQUIDATION': 'Partial Liquidation',
     'FULL_LIQUIDATION': 'Full Liquidation'
   };

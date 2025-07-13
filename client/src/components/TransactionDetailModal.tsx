@@ -176,9 +176,9 @@ const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
               {getIconComponent(getTransactionIcon(transaction.type, transaction.status))}
             </div>
             <div>
-              <h2 className="text-base font-semibold text-white">Transaction</h2>
-              <p className={`text-xs font-medium ${getTransactionTypeColor()}`}>
-                {getTransactionDisplayName(transaction.type, transaction.status)}
+              <h2 className="text-base font-semibold text-white">{getTransactionDisplayName(transaction.type, transaction.status)}</h2>
+              <p className="text-xs text-zinc-400">
+                #{transaction.id.toString().padStart(8, '0')}
               </p>
             </div>
           </div>
@@ -192,12 +192,8 @@ const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
 
         {/* Content */}
         <div className="p-4 space-y-3">
-          {/* Transaction ID & Amount */}
+          {/* Transaction Amount */}
           <div className="bg-zinc-800/50 rounded-lg p-3">
-            <div className="mb-2">
-              <span className="text-zinc-400 text-xs">ID: </span>
-              <span className="text-white font-mono text-xs">#{transaction.id.toString().padStart(8, '0')}</span>
-            </div>
             <div className="text-center">
               <p className="text-white font-bold text-lg">{formatAmount()}</p>
             </div>
