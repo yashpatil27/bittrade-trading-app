@@ -70,11 +70,7 @@ router.post('/register', async (req, res) => {
 
       const userId = userResult.insertId;
 
-      // Create SETUP operation
-      await connection.execute(
-        'INSERT INTO operations (user_id, type, status, inr_amount, btc_amount, executed_at) VALUES (?, ?, ?, ?, ?, NOW())',
-        [userId, 'DEPOSIT_INR', 'EXECUTED', 0, 0]
-      );
+      // No initial transaction needed - user starts with zero balances
 
       return { userId };
     });

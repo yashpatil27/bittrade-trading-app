@@ -2,7 +2,6 @@ import { Transaction } from '../types';
 
 export const getTransactionDisplayName = (type: Transaction['type'], status?: string): string => {
   const displayNames = {
-    'SETUP': 'Account Setup', // Legacy - can be removed
     'DEPOSIT_INR': 'Cash Deposit',
     'BUY': '₿ Market Buy',
     'MARKET_BUY': '₿ Market Buy',
@@ -31,7 +30,6 @@ export const getTransactionDisplayName = (type: Transaction['type'], status?: st
 
 export const getTransactionIcon = (type: Transaction['type'], status?: string): string => {
   const icons = {
-    'SETUP': 'User',
     'DEPOSIT_INR': 'ArrowUp',
     'BUY': 'TrendingUp',
     'MARKET_BUY': 'TrendingUp',
