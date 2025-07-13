@@ -31,6 +31,7 @@ const BitcoinChart = forwardRef<BitcoinChartRef, BitcoinChartProps>(({ onPriceRe
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [currentBtcPrice, setCurrentBtcPrice] = useState<number | null>(null);
+  const [chartDataCache, setChartDataCache] = useState<Map<string, { data: ChartDataPoint[], timestamp: number }>>(new Map());
 
   const timeframeTabs = [
     { key: '1d', label: '1D', name: '1 Day' },
@@ -41,9 +42,18 @@ const BitcoinChart = forwardRef<BitcoinChartRef, BitcoinChartProps>(({ onPriceRe
   ];
 
   const fetchChartData = async (timeframe: string) => {
+    // Check if data is already cached
+    const cached = chartDataCache.get(timeframe);
+    const now = Date.now();
+
+    if (cached && (now - cached.timestamp < 300000)) { // Cache valid for 5 minutes
+      setChartData(cached.data);
+      return;
+    }
+
     setIsLoading(true);
     setError('');
-    
+
     try {
       const response = await axios.get(`/api/public/bitcoin/charts?timeframe=${timeframe}`);
       if (response.data.success) {
@@ -88,6 +98,12 @@ const BitcoinChart = forwardRef<BitcoinChartRef, BitcoinChartProps>(({ onPriceRe
         });
         
         setChartData(formattedData);
+        
+        // Cache the processed data
+        setChartDataCache(prev => new Map(prev).set(timeframe, {
+          data: formattedData,
+          timestamp: Date.now()
+        }));
       } else {
         throw new Error('Failed to fetch chart data');
       }

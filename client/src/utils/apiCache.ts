@@ -6,8 +6,16 @@ interface CacheItem<T> {
 
 class ApiCache {
   private cache = new Map<string, CacheItem<any>>();
+  private maxSize = 100; // Maximum cache entries
 
   set<T>(key: string, data: T, ttl: number = 30000): void { // Default 30 seconds
+    // Check if cache is at max capacity
+    if (this.cache.size >= this.maxSize) {
+      // Remove oldest entries (LRU-like behavior)
+      const oldestKey = this.cache.keys().next().value;
+      this.cache.delete(oldestKey);
+    }
+    
     this.cache.set(key, {
       data,
       timestamp: Date.now(),

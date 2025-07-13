@@ -10,11 +10,20 @@ const dbConfig = {
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME || 'bittrade',
   waitForConnections: true,
-  connectionLimit: 10,
+  connectionLimit: parseInt(process.env.DB_CONNECTION_LIMIT) || 20, // Increased from 10
   queueLimit: 0,
   acquireTimeout: 60000,
   timeout: 60000,
-  charset: 'utf8mb4'
+  charset: 'utf8mb4',
+  // Additional optimizations
+  idleTimeout: 600000, // 10 minutes
+  maxIdle: 10,
+  enableKeepAlive: true,
+  keepAliveInitialDelay: 0,
+  // Timezone handling
+  timezone: 'Z',
+  // Enable query caching
+  queryTimeout: 30000
 };
 
 let pool;

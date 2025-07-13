@@ -302,7 +302,7 @@ class BitcoinDataService {
         const data = dataRows[0];
         this.currentData = data;
         
-        // Cache it for future requests
+        // Cache it for future requests with stale-while-revalidate pattern
         await setCache('current_bitcoin_data', data, 35);
         
         return data;

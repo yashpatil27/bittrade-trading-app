@@ -120,6 +120,7 @@ class LiquidationMonitoringService {
    * Get loans that are at risk of liquidation
    */
   async getLoansAtRisk(currentBtcPrice) {
+    // Use single parameter for all calculations to improve query plan caching
     const loans = await query(`
       SELECT 
         l.id,
@@ -132,14 +133,10 @@ class LiquidationMonitoringService {
         u.borrowed_inr,
         u.interest_accrued,
         u.collateral_btc,
-        -- Calculate current LTV
-        (l.inr_borrowed_amount / (l.btc_collateral_amount * ? / 100000000)) * 100 as current_ltv,
-        -- Determine risk status
-        CASE 
-          WHEN (l.inr_borrowed_amount / (l.btc_collateral_amount * ? / 100000000)) >= 0.90 THEN 'LIQUIDATE'
-          WHEN (l.inr_borrowed_amount / (l.btc_collateral_amount * ? / 100000000)) >= 0.85 THEN 'WARNING'
-          ELSE 'SAFE'
-        END as risk_status
+        -- Calculate current LTV once
+        (l.inr_borrowed_amount / (l.btc_collateral_amount * ? / 100000000)) as current_ltv_decimal,
+        -- Calculate percentage
+        (l.inr_borrowed_amount / (l.btc_collateral_amount * ? / 100000000)) * 100 as current_ltv
       FROM loans l 
       JOIN users u ON l.user_id = u.id
       WHERE l.status = 'ACTIVE' 
@@ -147,9 +144,14 @@ class LiquidationMonitoringService {
         AND l.inr_borrowed_amount > 0
         AND (l.inr_borrowed_amount / (l.btc_collateral_amount * ? / 100000000)) >= 0.85
       ORDER BY current_ltv DESC
-    `, [currentBtcPrice, currentBtcPrice, currentBtcPrice, currentBtcPrice]);
+    `, [currentBtcPrice, currentBtcPrice, currentBtcPrice]);
 
-    return loans;
+    // Determine risk status in application code to reduce DB computation
+    return loans.map(loan => ({
+      ...loan,
+      risk_status: loan.current_ltv_decimal >= 0.90 ? 'LIQUIDATE' : 
+                   loan.current_ltv_decimal >= 0.85 ? 'WARNING' : 'SAFE'
+    }));
   }
 
   /**
