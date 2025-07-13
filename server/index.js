@@ -238,6 +238,9 @@ process.on('SIGINT', () => {
   systemLogger.info('Stopping liquidation monitoring service...');
   liquidationMonitoringService.stop();
   
+  systemLogger.info('Stopping job scheduler...');
+  JobScheduler.stop();
+  
   systemLogger.success('All services stopped gracefully');
   process.exit(0);
 });
@@ -259,6 +262,9 @@ process.on('SIGTERM', () => {
   
   systemLogger.info('Stopping liquidation monitoring service...');
   liquidationMonitoringService.stop();
+  
+  systemLogger.info('Stopping job scheduler...');
+  JobScheduler.stop();
   
   systemLogger.success('All services stopped gracefully');
   process.exit(0);
