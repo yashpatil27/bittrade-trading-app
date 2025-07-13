@@ -27,6 +27,7 @@ CREATE TABLE users (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
+CREATE INDEX idx_users_created_at ON users(created_at DESC);
 
 -- Operations table (Unified activity log for all operations)
 CREATE TABLE operations (
@@ -69,8 +70,9 @@ CREATE TABLE operations (
   FOREIGN KEY (parent_id) REFERENCES operations(id) ON DELETE SET NULL,
   INDEX idx_user_operations (user_id, created_at DESC),
   INDEX idx_status_scheduled (status, scheduled_at),
-  INDEX idx_type_status (type, status)
-  
+  INDEX idx_type_status (type, status),
+  INDEX idx_operations_loan_id (loan_id),
+  INDEX idx_operations_created_at (created_at DESC)
 );
 
 -- Active Plans table (For recurring operations like DCA)
@@ -120,7 +122,9 @@ CREATE TABLE loans (
   
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
   INDEX idx_loans_status (status),
-  INDEX idx_loans_liquidation (status, liquidation_price)
+  INDEX idx_loans_user (user_id),
+  INDEX idx_loans_liquidation (status, liquidation_price),
+  INDEX idx_loans_ltv_ratio (ltv_ratio)
 );
 
 
