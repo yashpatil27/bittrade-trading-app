@@ -25,8 +25,7 @@ import {
 import { userAPI } from '../services/api';
 import { Balances, Prices, Transaction, DashboardData } from '../types';
 import MobileTradingModal from '../components/MobileTradingModal';
-import SingleInputModal from '../components/SingleInputModal';
-import ConfirmDetailsModal from '../components/ConfirmDetailsModal';
+import TradingModal from '../components/TradingModal';
 import PriceUpdateTimer from '../components/PriceUpdateTimer';
 import TransactionDetailModal from '../components/TransactionDetailModal';
 import BitcoinChart, { BitcoinChartRef } from '../components/BitcoinChart';
@@ -54,10 +53,8 @@ const Home: React.FC = () => {
   const [modalType, setModalType] = useState<'buy' | 'sell'>('buy');
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
   const [isTransactionModalOpen, setIsTransactionModalOpen] = useState(false);
-  const [isSingleInputModalOpen, setIsSingleInputModalOpen] = useState(false);
-  const [isConfirmDetailsModalOpen, setIsConfirmDetailsModalOpen] = useState(false);
-  const [inputAmount, setInputAmount] = useState('');
-  const [inputType, setInputType] = useState<'buy' | 'sell'>('buy');
+  const [isTradingModalOpen, setIsTradingModalOpen] = useState(false);
+  const [tradingType, setTradingType] = useState<'buy' | 'sell'>('buy');
 
   useEffect(() => {
     const fetchData = async () => {
@@ -76,10 +73,9 @@ const Home: React.FC = () => {
     fetchData();
   }, []);
 
-  const handleOpenSingleInputModal = (type: 'buy' | 'sell') => {
-    setModalType(type);
-    setInputType(type);
-    setIsSingleInputModalOpen(true);
+  const handleOpenTradingModal = (type: 'buy' | 'sell') => {
+    setTradingType(type);
+    setIsTradingModalOpen(true);
   };
 
   const handleTrade = async (amount: number, targetPrice?: number, dcaConfig?: {
@@ -95,7 +91,7 @@ const Home: React.FC = () => {
     try {
       if (dcaConfig) {
         // DCA plan
-        if (inputType === 'buy') {
+        if (modalType === 'buy') {
           await userAPI.createDcaBuyPlan({ 
             amountPerExecution: amount, 
             frequency: dcaConfig.frequency,
@@ -116,7 +112,7 @@ const Home: React.FC = () => {
         }
       } else if (targetPrice) {
         // Limit order
-        if (inputType === 'buy') {
+        if (modalType === 'buy') {
           await userAPI.placeLimitBuyOrder({ inrAmount: amount, targetPrice });
           setSuccess('📊 Limit buy order placed successfully!');
         } else {
@@ -125,7 +121,7 @@ const Home: React.FC = () => {
         }
       } else {
         // Market order
-        if (inputType === 'buy') {
+        if (modalType === 'buy') {
           await userAPI.buyBitcoin({ amount });
           setSuccess('🎉 Bitcoin purchased successfully!');
         } else {
@@ -150,7 +146,7 @@ const Home: React.FC = () => {
       // Trigger balance refresh for persistent top bar
       refreshBalance();
     } catch (error: any) {
-      setError(error.response?.data?.message || `Failed to ${dcaConfig ? 'create DCA plan' : targetPrice ? 'place limit order' : inputType + ' Bitcoin'}`);
+      setError(error.response?.data?.message || `Failed to ${dcaConfig ? 'create DCA plan' : targetPrice ? 'place limit order' : modalType + ' Bitcoin'}`);
     } finally {
       setIsLoading(false);
     }
@@ -259,7 +255,7 @@ const Home: React.FC = () => {
           {/* Trading Action Buttons */}
           <div className="grid grid-cols-2 gap-2">
             <button
-              onClick={() => handleOpenSingleInputModal('buy')}
+              onClick={() => handleOpenTradingModal('buy')}
               className="bg-white text-black hover:bg-zinc-200 font-medium py-2 px-3 rounded-lg transition-colors flex items-center justify-center gap-1.5 text-sm"
             >
               <TrendingUp className="w-4 h-4" />
@@ -267,7 +263,7 @@ const Home: React.FC = () => {
             </button>
             
             <button
-              onClick={() => handleOpenSingleInputModal('sell')}
+              onClick={() => handleOpenTradingModal('sell')}
               className="bg-zinc-700 text-white hover:bg-zinc-600 font-medium py-2 px-3 rounded-lg transition-colors flex items-center justify-center gap-1.5 text-sm"
             >
               <TrendingDown className="w-4 h-4" />
@@ -406,52 +402,19 @@ const Home: React.FC = () => {
         </div>
       </div>
 
-{/* Confirm Details Modal */}
-      <ConfirmDetailsModal
-        isOpen={isConfirmDetailsModalOpen}
-        onClose={() => {
-          setIsConfirmDetailsModalOpen(false);
-          setIsSingleInputModalOpen(true);
+{/* New Trading Modal */}
+      <TradingModal
+        isOpen={isTradingModalOpen}
+        onClose={() => setIsTradingModalOpen(false)}
+        type={tradingType}
+        balances={balances}
+        prices={prices}
+        onSuccess={() => {
+          setSuccess(tradingType === 'buy' ? '🎉 Bitcoin purchased successfully!' : '✅ Bitcoin sold successfully!');
+          refreshData();
         }}
-        title={inputType === 'buy' ? 'Buy Bitcoin' : 'Sell Bitcoin'}
-        amount={inputAmount}
-        amountType={inputType === 'buy' ? 'inr' : 'btc'}
-        subAmount={inputType === 'buy' && prices ? 
-          (parseFloat(inputAmount || '0') / (prices.buy_rate || 1)).toFixed(8) : 
-          inputType === 'sell' && prices ? 
-          (parseFloat(inputAmount || '0') * (prices.sell_rate || 1)).toFixed(2) : undefined
-        }
-        subAmountType={inputType === 'buy' ? 'btc' : 'inr'}
-        details={[
-          {
-            label: 'Bitcoin Price',
-            value: inputType === 'buy' ? 
-              `₹${prices?.buy_rate?.toLocaleString() || 0}` : 
-              `₹${prices?.sell_rate?.toLocaleString() || 0}`,
-            highlight: false
-          },
-          {
-            label: inputType === 'buy' ? '₹ Amount' : '₿ Amount',
-            value: inputType === 'buy' ? 
-              `₹${parseFloat(inputAmount || '0').toLocaleString()}` : 
-              `₿${parseFloat(inputAmount || '0').toFixed(8)}`,
-            highlight: false
-          },
-          {
-            label: inputType === 'buy' ? '₿ Amount' : '₹ Amount',
-            value: inputType === 'buy' ? 
-              `₿${(parseFloat(inputAmount || '0') / (prices?.buy_rate || 1)).toFixed(8)}` : 
-              `₹${(parseFloat(inputAmount || '0') * (prices?.sell_rate || 1)).toLocaleString()}`,
-            highlight: false
-          }
-        ]}
-        confirmText={inputType === 'buy' ? 'Buy Bitcoin' : 'Sell Bitcoin'}
-        onConfirm={async () => {
-          setIsConfirmDetailsModalOpen(false);
-          await handleTrade(parseFloat(inputAmount));
-        }}
+        onError={(message) => setError(message)}
       />
-
 {/* Trading Modal */}
       <MobileTradingModal
         isOpen={isModalOpen}
@@ -470,39 +433,6 @@ const Home: React.FC = () => {
         onTransactionUpdate={refreshData}
       />
       
-      {/* Single Input Modal */}
-      <SingleInputModal
-        isOpen={isSingleInputModalOpen}
-        onClose={() => setIsSingleInputModalOpen(false)}
-        title={inputType === 'buy' ? 'Buy Bitcoin' : 'Sell Bitcoin'}
-        type={inputType === 'buy' ? 'inr' : 'btc'}
-        maxValue={inputType === 'buy' ? (balances?.inr || 0) : (balances?.btc || 0)}
-        confirmText="Next"
-        onConfirm={async (value) => {
-          setInputAmount(value);
-          setIsSingleInputModalOpen(false);
-          setIsConfirmDetailsModalOpen(true);
-        }}
-        validation={(value) => {
-          const numValue = parseFloat(value);
-          if (isNaN(numValue) || numValue <= 0) return 'Please enter a valid amount';
-          const maxValue = inputType === 'buy' ? (balances?.inr || 0) : (balances?.btc || 0);
-          if (numValue > maxValue) return 'Insufficient balance';
-          return null;
-        }}
-        optionalSection={{
-          title: 'Market Rate',
-          details: [
-            {
-              label: 'Price per Bitcoin',
-              value: inputType === 'buy' ? 
-                `₹${prices?.buy_rate?.toLocaleString() || 0}` : 
-                `₹${prices?.sell_rate?.toLocaleString() || 0}`,
-              highlight: true
-            }
-          ]
-        }}
-      />
     </>
   );
 };
