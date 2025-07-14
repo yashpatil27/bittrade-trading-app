@@ -1,11 +1,14 @@
 import React, { useState } from 'react';
 import { Sparkles, Bitcoin, DollarSign } from 'lucide-react';
 import SingleInputModal from '../components/SingleInputModal';
+import ConfirmDetailsModal from '../components/ConfirmDetailsModal';
 
 const ModalDemo: React.FC = () => {
   const [isBtcModalOpen, setIsBtcModalOpen] = useState(false);
   const [isInrModalOpen, setIsInrModalOpen] = useState(false);
   const [lastSubmittedValue, setLastSubmittedValue] = useState<{type: string, value: string} | null>(null);
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleBtcConfirm = async (value: string) => {
     console.log('BTC Value submitted:', value);
@@ -17,6 +20,15 @@ const ModalDemo: React.FC = () => {
     console.log('INR Value submitted:', value);
     setLastSubmittedValue({ type: 'INR', value });
     setIsInrModalOpen(false);
+    setIsConfirmModalOpen(true);
+  };
+
+  const handleFinalConfirm = async () => {
+    setIsLoading(true);
+    await new Promise((resolve) => setTimeout(resolve, 1500));
+    console.log('Final confirmation completed');
+    setIsLoading(false);
+    setIsConfirmModalOpen(false);
   };
 
   return (
@@ -106,11 +118,10 @@ const ModalDemo: React.FC = () => {
           console.log('Section clicked - could show balance details');
         }}
         validation={(value) => {
-          // Allow partial inputs like "." or "0." while typing
           if (value === '.' || value === '0.' || value.endsWith('.')) {
-            return null; // Allow decimal point while typing
+            return null;
           }
-          
+
           const num = parseFloat(value);
           if (isNaN(num) || num <= 0) {
             return "Please enter a valid BTC amount";
@@ -120,6 +131,27 @@ const ModalDemo: React.FC = () => {
           }
           return null;
         }}
+      />
+
+      {/* Confirm Details Modal */}
+      <ConfirmDetailsModal
+        isOpen={isConfirmModalOpen}
+        onClose={() => setIsConfirmModalOpen(false)}
+        title="Confirm Trade"
+        amount="0.025"
+        amountType="btc"
+        subAmount="25000"
+        subAmountType="inr"
+        details={[
+          { label: "Trade Type", value: "Buy Bitcoin", highlight: true },
+          { label: "Rate", value: "₹10,00,000 per BTC" },
+          { label: "Fee", value: "₹250 (1%)" },
+          { label: "Total Cost", value: "₹25,250", highlight: true },
+          { label: "Settlement", value: "Instant" }
+        ]}
+        confirmText="Confirm Trade"
+        onConfirm={handleFinalConfirm}
+        isLoading={isLoading}
       />
 
       {/* INR Input Modal */}
