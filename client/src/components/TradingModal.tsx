@@ -103,10 +103,29 @@ const TradingModal: React.FC<TradingModalProps> = ({
         confirmText="Next"
         onConfirm={handleSingleInputConfirm}
         validation={(value) => {
+          // Allow empty string or strings ending with decimal point during typing
+          if (value === '' || value === '.' || value.endsWith('.')) return null;
+          
           const numValue = parseFloat(value);
-          if (isNaN(numValue) || numValue <= 0) return 'Please enter a valid amount';
+          if (isNaN(numValue)) return 'Please enter a valid number';
+          
+          // Allow very small positive numbers (like 0.000056) for BTC
+          if (numValue < 0) return 'Amount must be greater than or equal to 0';
+          
+          // For BTC, allow very small amounts (minimum 0.00000001 = 1 satoshi)
+          // Only apply minimum validation if the value is greater than 0 (allow 0 during typing)
+          if (type === 'sell' && numValue > 0 && numValue < 0.00000001) {
+            return 'Minimum amount is 0.00000001 BTC';
+          }
+          
+          // For INR, minimum 1 rupee
+          if (type === 'buy' && numValue < 1) {
+            return 'Minimum amount is ₹1';
+          }
+          
           const maxValue = type === 'buy' ? (balances?.inr || 0) : (balances?.btc || 0);
           if (numValue > maxValue) return 'Insufficient balance';
+          
           return null;
         }}
         sectionTitle="Market Rate"

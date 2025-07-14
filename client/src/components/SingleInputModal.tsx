@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { formatCurrencyInr, formatBitcoin } from '../utils/formatters';
+import { formatCurrencyInr, formatBitcoin, formatBitcoinInput, formatInrInput } from '../utils/formatters';
 
 interface SingleInputModalProps {
   isOpen: boolean;
@@ -273,13 +273,7 @@ const SingleInputModal: React.FC<SingleInputModalProps> = ({
               {/* Input Display */}
               <div className="flex items-center justify-center gap-2 mb-4">
                 <span className="text-white text-5xl font-light">
-                  {value ? (
-                    type === 'btc' ? 
-                      (value === '.' || value.endsWith('.')) ? `₿${value}` : `₿${formatBitcoin(parseFloat(value) || 0)}` : 
-                      formatCurrencyInr(parseFloat(value) || 0)
-                  ) : (
-                    type === 'btc' ? '₿0' : '₹0'
-                  )}
+                  {type === 'btc' ? formatBitcoinInput(value) : formatInrInput(value)}
                 </span>
               </div>
               

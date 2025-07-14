@@ -148,3 +148,31 @@ export const formatBitcoinDisplay = (amount: number): string => {
     return `₿${formatBitcoin(amount)}`; // Use existing formatter for small amounts
   }
 };
+
+// Input-specific formatting that preserves trailing zeros for better UX
+export const formatBitcoinInput = (value: string): string => {
+  // If value is empty, return ₿0
+  if (!value || value === '') return '₿0';
+  
+  // If value is just a decimal point, show it as is
+  if (value === '.') return '₿.';
+  
+  // If value ends with decimal point, preserve it
+  if (value.endsWith('.')) return `₿${value}`;
+  
+  // If value has trailing zeros after decimal point, preserve them
+  if (value.includes('.')) {
+    return `₿${value}`;
+  }
+  
+  // For whole numbers, just add the symbol
+  return `₿${value}`;
+};
+
+export const formatInrInput = (value: string): string => {
+  // If value is empty, return ₹0
+  if (!value || value === '') return '₹0';
+  
+  // For INR, just add the symbol (no decimal places needed)
+  return `₹${value}`;
+};
