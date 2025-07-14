@@ -121,7 +121,11 @@ const SingleInputModal: React.FC<SingleInputModalProps> = ({
   // Touch handlers for drag-to-close
   const handleTouchStart = (e: React.TouchEvent) => {
     const target = e.target as HTMLElement;
-    if (target.tagName === 'BUTTON' || target.closest('button')) {
+    
+    // Don't start drag if touching a button or clickable section
+    if (target.tagName === 'BUTTON' || 
+        target.closest('button') || 
+        target.closest('[data-clickable-section]')) {
       return;
     }
     
@@ -299,6 +303,7 @@ const SingleInputModal: React.FC<SingleInputModalProps> = ({
           {/* Optional Section */}
           {sectionTitle && (onSectionClick || sectionAmount || sectionDetail) && (
             <div 
+              data-clickable-section
               onClick={onSectionClick} 
               className="mb-2 bg-black border border-zinc-700 rounded-lg p-4 cursor-pointer hover:bg-zinc-900 transition-colors"
             >

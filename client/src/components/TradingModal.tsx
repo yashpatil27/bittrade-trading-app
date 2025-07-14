@@ -28,7 +28,10 @@ const TradingModal: React.FC<TradingModalProps> = ({
   const { refreshBalance } = useBalance();
   const [isSingleInputModalOpen, setIsSingleInputModalOpen] = useState(false);
   const [isConfirmDetailsModalOpen, setIsConfirmDetailsModalOpen] = useState(false);
+  const [isTargetPriceModalOpen, setIsTargetPriceModalOpen] = useState(false);
   const [inputAmount, setInputAmount] = useState('');
+  const [targetPrice, setTargetPrice] = useState('');
+  const [isLimitOrder, setIsLimitOrder] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   // Reset state when modal opens/closes
@@ -36,12 +39,18 @@ const TradingModal: React.FC<TradingModalProps> = ({
     if (isOpen) {
       setIsSingleInputModalOpen(true);
       setIsConfirmDetailsModalOpen(false);
+      setIsTargetPriceModalOpen(false);
       setInputAmount('');
+      setTargetPrice('');
+      setIsLimitOrder(false);
       setIsLoading(false);
     } else {
       setIsSingleInputModalOpen(false);
       setIsConfirmDetailsModalOpen(false);
+      setIsTargetPriceModalOpen(false);
       setInputAmount('');
+      setTargetPrice('');
+      setIsLimitOrder(false);
       setIsLoading(false);
     }
   }, [isOpen]);
@@ -50,20 +59,35 @@ const TradingModal: React.FC<TradingModalProps> = ({
     setIsLoading(true);
     
     try {
-      if (type === 'buy') {
-        await userAPI.buyBitcoin({ amount });
-        onSuccess();
-        onClose();
+      if (isLimitOrder) {
+        // Limit order
+        const targetPriceNum = parseFloat(targetPrice);
+        if (type === 'buy') {
+          await userAPI.placeLimitBuyOrder({ inrAmount: amount, targetPrice: targetPriceNum });
+          onSuccess();
+          onClose();
+        } else {
+          await userAPI.placeLimitSellOrder({ btcAmount: amount, targetPrice: targetPriceNum });
+          onSuccess();
+          onClose();
+        }
       } else {
-        await userAPI.sellBitcoin({ amount });
-        onSuccess();
-        onClose();
+        // Market order
+        if (type === 'buy') {
+          await userAPI.buyBitcoin({ amount });
+          onSuccess();
+          onClose();
+        } else {
+          await userAPI.sellBitcoin({ amount });
+          onSuccess();
+          onClose();
+        }
       }
       
       // Refresh balance in the context
       refreshBalance();
     } catch (error: any) {
-      onError(error.response?.data?.message || `Failed to ${type} Bitcoin`);
+      onError(error.response?.data?.message || `Failed to ${isLimitOrder ? 'place limit order' : type + ' Bitcoin'}`);
     } finally {
       setIsLoading(false);
     }
@@ -88,7 +112,26 @@ const TradingModal: React.FC<TradingModalProps> = ({
   const handleModalClose = () => {
     setIsSingleInputModalOpen(false);
     setIsConfirmDetailsModalOpen(false);
+    setIsTargetPriceModalOpen(false);
     onClose();
+  };
+
+  const handleSectionClick = () => {
+    // Open target price modal when section is clicked
+    setIsSingleInputModalOpen(false);
+    setIsTargetPriceModalOpen(true);
+  };
+
+  const handleTargetPriceConfirm = (value: string) => {
+    setTargetPrice(value);
+    setIsLimitOrder(true);
+    setIsTargetPriceModalOpen(false);
+    setIsSingleInputModalOpen(true);
+  };
+
+  const handleTargetPriceClose = () => {
+    setIsTargetPriceModalOpen(false);
+    setIsSingleInputModalOpen(true);
   };
 
   return (
@@ -128,8 +171,38 @@ const TradingModal: React.FC<TradingModalProps> = ({
           
           return null;
         }}
-        sectionTitle="Market Rate"
-        sectionDetail="Price per Bitcoin"
+        sectionTitle={isLimitOrder ? 'Target Price' : 'Market Rate'}
+        sectionDetail={isLimitOrder ? 'Your limit order price' : 'Tap to set target price'}
+        sectionAmount={isLimitOrder ? 
+          formatCurrencyInr(parseFloat(targetPrice || '0')) : 
+          (type === 'buy' ? 
+            formatCurrencyInr(prices?.buy_rate || 0) : 
+            formatCurrencyInr(prices?.sell_rate || 0))
+        }
+        onSectionClick={handleSectionClick}
+      />
+
+      {/* Target Price Modal */}
+      <SingleInputModal
+        isOpen={isTargetPriceModalOpen}
+        onClose={handleTargetPriceClose}
+        title="Set Target Price"
+        type="inr"
+        confirmText="Set Price"
+        onConfirm={handleTargetPriceConfirm}
+        validation={(value) => {
+          if (value === '' || value === '.' || value.endsWith('.')) return null;
+          
+          const numValue = parseFloat(value);
+          if (isNaN(numValue)) return 'Please enter a valid number';
+          
+          if (numValue < 0) return 'Price must be greater than or equal to 0';
+          if (numValue < 1) return 'Minimum price is ₹1';
+          
+          return null;
+        }}
+        sectionTitle="Current Market Rate"
+        sectionDetail="Current Bitcoin price"
         sectionAmount={type === 'buy' ? 
           formatCurrencyInr(prices?.buy_rate || 0) : 
           formatCurrencyInr(prices?.sell_rate || 0)
@@ -140,22 +213,36 @@ const TradingModal: React.FC<TradingModalProps> = ({
       <ConfirmDetailsModal
         isOpen={isConfirmDetailsModalOpen}
         onClose={handleConfirmDetailsClose}
-        title={type === 'buy' ? 'Buy Bitcoin' : 'Sell Bitcoin'}
+        title={isLimitOrder ? 
+          (type === 'buy' ? 'Limit Buy Order' : 'Limit Sell Order') : 
+          (type === 'buy' ? 'Buy Bitcoin' : 'Sell Bitcoin')
+        }
         amount={inputAmount}
         amountType={type === 'buy' ? 'inr' : 'btc'}
-        subAmount={type === 'buy' && prices ? 
-          (parseFloat(inputAmount || '0') / (prices.buy_rate || 1)).toFixed(8) : 
-          type === 'sell' && prices ? 
-          (parseFloat(inputAmount || '0') * (prices.sell_rate || 1)).toFixed(2) : undefined
+        subAmount={isLimitOrder ? 
+          (type === 'buy' ? 
+            (parseFloat(inputAmount || '0') / parseFloat(targetPrice || '1')).toFixed(8) : 
+            (parseFloat(inputAmount || '0') * parseFloat(targetPrice || '0')).toFixed(2)) : 
+          (type === 'buy' && prices ? 
+            (parseFloat(inputAmount || '0') / (prices.buy_rate || 1)).toFixed(8) : 
+            type === 'sell' && prices ? 
+            (parseFloat(inputAmount || '0') * (prices.sell_rate || 1)).toFixed(2) : undefined)
         }
         subAmountType={type === 'buy' ? 'btc' : 'inr'}
         details={[
           {
-            label: 'Bitcoin Price',
-            value: type === 'buy' ? 
-              formatCurrencyInr(prices?.buy_rate || 0) : 
-              formatCurrencyInr(prices?.sell_rate || 0),
-            highlight: false
+            label: isLimitOrder ? 'Order Type' : 'Order Type',
+            value: isLimitOrder ? 'Limit Order' : 'Market Order',
+            highlight: true
+          },
+          {
+            label: isLimitOrder ? 'Target Price' : 'Current Price',
+            value: isLimitOrder ? 
+              formatCurrencyInr(parseFloat(targetPrice || '0')) : 
+              (type === 'buy' ? 
+                formatCurrencyInr(prices?.buy_rate || 0) : 
+                formatCurrencyInr(prices?.sell_rate || 0)),
+            highlight: isLimitOrder
           },
           {
             label: type === 'buy' ? '₹ Amount' : '₿ Amount',
@@ -166,13 +253,20 @@ const TradingModal: React.FC<TradingModalProps> = ({
           },
           {
             label: type === 'buy' ? '₿ Amount' : '₹ Amount',
-            value: type === 'buy' ? 
-              `₿${(parseFloat(inputAmount || '0') / (prices?.buy_rate || 1)).toFixed(8)}` : 
-              formatCurrencyInr(parseFloat(inputAmount || '0') * (prices?.sell_rate || 1)),
+            value: isLimitOrder ? 
+              (type === 'buy' ? 
+                `₿${(parseFloat(inputAmount || '0') / parseFloat(targetPrice || '1')).toFixed(8)}` : 
+                formatCurrencyInr(parseFloat(inputAmount || '0') * parseFloat(targetPrice || '0'))) : 
+              (type === 'buy' ? 
+                `₿${(parseFloat(inputAmount || '0') / (prices?.buy_rate || 1)).toFixed(8)}` : 
+                formatCurrencyInr(parseFloat(inputAmount || '0') * (prices?.sell_rate || 1))),
             highlight: false
           }
         ]}
-        confirmText={type === 'buy' ? 'Buy Bitcoin' : 'Sell Bitcoin'}
+        confirmText={isLimitOrder ? 
+          (type === 'buy' ? 'Place Limit Buy' : 'Place Limit Sell') : 
+          (type === 'buy' ? 'Buy Bitcoin' : 'Sell Bitcoin')
+        }
         onConfirm={handleConfirmDetailsConfirm}
         isLoading={isLoading}
       />
