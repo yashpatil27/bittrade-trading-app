@@ -70,15 +70,15 @@ const Layout: React.FC<LayoutProps> = ({ children, isAdmin = false }) => {
   return (
     <div className="min-h-screen bg-black">
       {/* Header */}
-      <header className="bg-black border-b border-black px-4 py-1">
+      <header className="bg-black px-4 py-2">
         <div className="flex items-center justify-between max-w-md mx-auto">
           <button
             onClick={() => navigate(isAdmin ? '/admin' : '/')}
-            className="text-xl font-bold text-white hover:text-zinc-200 transition-colors cursor-pointer"
+            className="text-sm font-semibold text-white hover:text-zinc-200 transition-colors cursor-pointer"
           >
-            ₿itTrade {isAdmin && <span className="text-sm text-zinc-400">Admin</span>}
+            ₿itTrade {isAdmin && <span className="text-xs text-zinc-400">Admin</span>}
           </button>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             <button
               onClick={() => {
                 if (location.pathname === '/profile') {
@@ -87,10 +87,10 @@ const Layout: React.FC<LayoutProps> = ({ children, isAdmin = false }) => {
                   navigate('/profile');
                 }
               }}
-              className="p-2 text-zinc-400 hover:text-white transition-colors"
+              className="p-1.5 text-zinc-400 hover:text-white transition-colors"
               title={location.pathname === '/profile' ? 'Go to Home' : 'Go to Profile'}
             >
-              <User size={20} />
+              <User size={16} />
             </button>
           </div>
         </div>
@@ -98,16 +98,16 @@ const Layout: React.FC<LayoutProps> = ({ children, isAdmin = false }) => {
 
       {/* Persistent Bitcoin Balance Bar */}
       {!isAdmin && (
-        <div className={`fixed top-0 left-0 right-0 bg-black/95 backdrop-blur-sm border-b border-black px-4 py-2 z-40 transition-transform duration-300 ease-in-out ${
+        <div className={`fixed top-0 left-0 right-0 bg-black/95 backdrop-blur-sm px-4 py-1.5 z-40 transition-transform duration-300 ease-in-out ${
           showPersistentBar ? 'translate-y-0' : '-translate-y-full'
         }`}>
           <div className="flex items-center justify-center max-w-md mx-auto">
-            <div className="flex items-center gap-2">
-              <Bitcoin className="w-4 h-4 text-white" />
-              <span className="text-white font-medium">
+            <div className="flex items-center gap-1.5">
+              <Bitcoin className="w-3 h-3 text-white" />
+              <span className="text-white font-semibold text-sm">
                 ₿{formatBitcoin(bitcoinBalance)}
               </span>
-              <span className="text-zinc-400 text-sm">
+              <span className="text-zinc-400 text-xs">
                 ({formatCurrencyInr(bitcoinBalance * sellRate)})
               </span>
             </div>
@@ -134,14 +134,14 @@ const Layout: React.FC<LayoutProps> = ({ children, isAdmin = false }) => {
                 <Link
                   key={item.path}
                   to={item.path}
-                  className={`flex-1 flex flex-col items-center py-3 px-2 transition-colors relative ${
+                  className={`flex-1 flex flex-col items-center py-2.5 px-2 transition-colors relative ${
                     isActive 
                       ? 'text-white' 
                       : 'text-zinc-400 hover:text-white'
                   }`}
                 >
-                  <Icon size={20} />
-                  <span className="text-xs mt-1">{item.name}</span>
+                  <Icon size={18} />
+                  <span className="text-xs mt-0.5">{item.name}</span>
                   {isActive && (
                     <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-white" />
                   )}

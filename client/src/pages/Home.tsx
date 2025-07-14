@@ -179,64 +179,39 @@ const Home: React.FC = () => {
   return (
     <>
       <div className="space-y-6">
-        {/* Header with greeting */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold flex items-center gap-2">
-              <Sparkles className="w-6 h-6 text-white" />
-              Trading Dashboard
-            </h1>
-            <p className="text-zinc-400 text-sm mt-1">Ready to make some moves?</p>
-          </div>
-          <button 
-            onClick={refreshData}
-            className="p-2 hover:bg-zinc-800 rounded-lg transition-colors"
-          >
-            <Activity className="w-5 h-5" />
-          </button>
-        </div>
-
         {/* Status Messages */}
         {error && (
-          <div className="bg-red-900/20 border border-red-800 rounded-lg p-4 flex items-center gap-3">
-            <div className="w-2 h-2 bg-red-400 rounded-full" />
-            <span className="text-red-300">{error}</span>
+          <div className="bg-black border border-red-700 rounded-lg p-3">
+            <span className="text-red-400 text-sm">{error}</span>
           </div>
         )}
         {success && (
-          <div className="bg-green-900/20 border border-green-800 rounded-lg p-4 flex items-center gap-3">
-            <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-            <span className="text-green-300">{success}</span>
+          <div className="bg-black border border-green-700 rounded-lg p-3">
+            <span className="text-green-400 text-sm">{success}</span>
           </div>
         )}
 
         {/* Wallet Balance Cards */}
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-3">
           {/* INR Balance */}
-          <div className="bg-gradient-to-br from-zinc-950 to-zinc-900 border border-zinc-800 rounded-xl p-4 hover:border-zinc-600 transition-all duration-200">
-            <div className="flex items-center justify-between mb-2">
-              <div className="p-2 bg-zinc-700 rounded-lg">
-                <DollarSign className="w-5 h-5 text-white" />
-              </div>
-              <Eye className="w-4 h-4 text-zinc-500" />
+          <div className="bg-black border border-zinc-800 rounded-lg p-3">
+            <div className="flex items-center justify-between mb-1">
+              <DollarSign className="w-4 h-4 text-white" />
             </div>
-            <div className="space-y-1">
-              <p className="text-zinc-400 text-sm">Cash Balance</p>
-              <p className="text-xl font-bold">{formatCurrencyInr(balances?.inr || 0)}</p>
+            <div className="space-y-0.5">
+              <p className="text-zinc-400 text-xs">Cash</p>
+              <p className="text-lg font-semibold text-white">{formatCurrencyInr(balances?.inr || 0)}</p>
             </div>
           </div>
 
           {/* BTC Balance */}
-          <div className="bg-gradient-to-br from-zinc-950 to-zinc-900 border border-zinc-800 rounded-xl p-4 hover:border-zinc-600 transition-all duration-200">
-            <div className="flex items-center justify-between mb-2">
-              <div className="p-2 bg-zinc-700 rounded-lg">
-                <Bitcoin className="w-5 h-5 text-white" />
-              </div>
-              <Eye className="w-4 h-4 text-zinc-500" />
+          <div className="bg-black border border-zinc-800 rounded-lg p-3">
+            <div className="flex items-center justify-between mb-1">
+              <Bitcoin className="w-4 h-4 text-white" />
             </div>
-            <div className="space-y-1">
-              <p className="text-zinc-400 text-sm">Bitcoin Balance</p>
-              <p className="text-xl font-bold">{formatCurrency(balances?.btc || 0, 'BTC')}</p>
+            <div className="space-y-0.5">
+              <p className="text-zinc-400 text-xs">Bitcoin</p>
+              <p className="text-lg font-semibold text-white">{formatCurrency(balances?.btc || 0, 'BTC')}</p>
               {balances && prices && (
                 <p className="text-xs text-zinc-500">
                   ≈ {formatCurrencyInr(Math.floor((balances.btc || 0) * (prices.sell_rate || 0)))}
@@ -247,10 +222,10 @@ const Home: React.FC = () => {
         </div>
 
         {/* Bitcoin Price Card with Trading Actions */}
-        <div className="bg-gradient-to-br from-zinc-950 to-zinc-900 border border-zinc-800 rounded-xl p-4">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-lg font-semibold flex items-center gap-2">
-              <TrendingUp className="w-5 h-5 text-white" />
+        <div className="bg-black border border-zinc-800 rounded-lg p-3">
+          <div className="flex items-center justify-between mb-2">
+            <h2 className="text-white text-sm font-semibold flex items-center gap-2">
+              <TrendingUp className="w-4 h-4 text-white" />
               Bitcoin Price
             </h2>
             <PriceUpdateTimer 
@@ -259,26 +234,26 @@ const Home: React.FC = () => {
             />
           </div>
           
-          <div className="grid grid-cols-3 gap-4 mb-4">
+          <div className="grid grid-cols-3 gap-2 mb-3">
             <div className="text-center">
               <p className="text-zinc-400 text-xs">Buy Rate</p>
-              <p className="font-bold text-white">{formatCurrencyInr(prices?.buy_rate ?? 0)}</p>
+              <p className="font-semibold text-white text-sm">{formatCurrencyInr(prices?.buy_rate ?? 0)}</p>
             </div>
             <div className="text-center">
               <p className="text-zinc-400 text-xs">USD Price</p>
-              <p className="font-bold">${(prices?.btc_usd ?? 0).toLocaleString('en-US')}</p>
+              <p className="font-semibold text-white text-sm">${(prices?.btc_usd ?? 0).toLocaleString('en-US')}</p>
             </div>
             <div className="text-center">
               <p className="text-zinc-400 text-xs">Sell Rate</p>
-              <p className="font-bold text-white">{formatCurrencyInr(prices?.sell_rate ?? 0)}</p>
+              <p className="font-semibold text-white text-sm">{formatCurrencyInr(prices?.sell_rate ?? 0)}</p>
             </div>
           </div>
           
           {/* Trading Action Buttons */}
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-2">
             <button
               onClick={() => openTradingModal('buy')}
-              className="bg-white text-black hover:bg-zinc-200 font-medium py-2.5 px-4 rounded-lg transition-all duration-200 flex items-center justify-center gap-2 text-sm"
+              className="bg-white text-black hover:bg-zinc-200 font-medium py-2 px-3 rounded-lg transition-colors flex items-center justify-center gap-1.5 text-sm"
             >
               <TrendingUp className="w-4 h-4" />
               <span>Buy</span>
@@ -286,7 +261,7 @@ const Home: React.FC = () => {
             
             <button
               onClick={() => openTradingModal('sell')}
-              className="bg-zinc-700 text-white hover:bg-zinc-600 font-medium py-2.5 px-4 rounded-lg transition-all duration-200 flex items-center justify-center gap-2 text-sm"
+              className="bg-zinc-700 text-white hover:bg-zinc-600 font-medium py-2 px-3 rounded-lg transition-colors flex items-center justify-center gap-1.5 text-sm"
             >
               <TrendingDown className="w-4 h-4" />
               <span>Sell</span>
@@ -301,26 +276,26 @@ const Home: React.FC = () => {
         <DcaPlansSection ref={dcaPlansSectionRef} onUpdate={refreshData} />
 
         {/* Recent Activity */}
-        <div className="bg-gradient-to-br from-zinc-950 to-zinc-900 border border-zinc-800 rounded-xl overflow-hidden">
-          <div className="p-4 border-b border-zinc-800">
-            <h2 className="text-lg font-semibold flex items-center gap-2">
-              <Activity className="w-5 h-5 text-white" />
+        <div className="bg-black border border-zinc-800 rounded-lg overflow-hidden">
+          <div className="p-3 border-b border-zinc-800">
+            <h2 className="text-white text-sm font-semibold flex items-center gap-2">
+              <Activity className="w-4 h-4 text-white" />
               Recent Activity
             </h2>
           </div>
           
-          <div className="p-4">
+          <div className="p-3">
             {recentTransactions.length > 0 ? (
-              <div className="space-y-3">
+              <div className="space-y-2">
                 {recentTransactions.map((transaction) => (
                   <div 
                     key={transaction.id} 
                     onClick={() => handleTransactionClick(transaction)}
-                    className="bg-zinc-800/50 rounded-lg p-4 hover:bg-zinc-800 transition-colors cursor-pointer"
+                    className="bg-zinc-800/50 rounded-lg p-3 hover:bg-zinc-800 transition-colors cursor-pointer"
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <div className="p-1.5 bg-zinc-700 rounded-lg">
+                        <div className="p-1 bg-zinc-700 rounded">
                         {getTransactionIcon(transaction.type, transaction.status) === 'User' && <User className="w-3 h-3 text-white" />}
                         {getTransactionIcon(transaction.type, transaction.status) === 'ArrowUp' && <ArrowUp className="w-3 h-3 text-white" />}
                         {getTransactionIcon(transaction.type, transaction.status) === 'TrendingUp' && <TrendingUp className="w-3 h-3 text-white" />}
@@ -356,7 +331,7 @@ const Home: React.FC = () => {
                       <div className="text-right">
                         {(transaction.type === 'BUY' || transaction.type === 'SELL' || transaction.type === 'MARKET_BUY' || transaction.type === 'MARKET_SELL' || transaction.type === 'LIMIT_BUY' || transaction.type === 'LIMIT_SELL' || transaction.type === 'DCA_BUY' || transaction.type === 'DCA_SELL') ? (
                           <div>
-                            <p className="font-bold text-sm text-white">
+                            <p className="font-semibold text-sm text-white">
                               {formatCurrencyInr(transaction.inr_amount)}
                             </p>
                             <p className="text-xs text-zinc-400">
@@ -370,7 +345,7 @@ const Home: React.FC = () => {
                           </div>
                         ) : transaction.type === 'LOAN_CREATE' ? (
                           <div>
-                            <p className="font-bold text-sm text-white">
+                            <p className="font-semibold text-sm text-white">
                               {formatCurrency(transaction.btc_amount, 'BTC')}
                             </p>
                             <p className="text-xs text-zinc-400">
@@ -379,7 +354,7 @@ const Home: React.FC = () => {
                           </div>
                         ) : transaction.type === 'LOAN_ADD_COLLATERAL' ? (
                           <div>
-                            <p className="font-bold text-sm text-white">
+                            <p className="font-semibold text-sm text-white">
                               {formatCurrency(transaction.btc_amount, 'BTC')}
                             </p>
                             <p className="text-xs text-zinc-400">
@@ -389,7 +364,7 @@ const Home: React.FC = () => {
                         ) : transaction.type.includes('LOAN') || transaction.type.includes('INTEREST') || transaction.type.includes('LIQUIDATION') ? (
                           <div>
                             {transaction.inr_amount > 0 && (
-                              <p className="font-bold text-sm text-white">
+                              <p className="font-semibold text-sm text-white">
                                 {formatCurrencyInr(transaction.inr_amount)}
                               </p>
                             )}
@@ -400,7 +375,7 @@ const Home: React.FC = () => {
                             )}
                           </div>
                         ) : (
-                          <p className="font-bold text-sm text-white">
+                          <p className="font-semibold text-sm text-white">
                             {transaction.type.includes('INR') ? (
                               formatCurrencyInr(transaction.inr_amount)
                             ) : (
@@ -414,10 +389,10 @@ const Home: React.FC = () => {
                 ))}
               </div>
             ) : (
-              <div className="text-center py-8">
-                <Wallet className="w-12 h-12 text-zinc-600 mx-auto mb-3" />
-                <p className="text-zinc-400">No recent activity</p>
-                <p className="text-zinc-500 text-sm">Start trading to see your activity here!</p>
+              <div className="text-center py-6">
+                <Wallet className="w-10 h-10 text-zinc-600 mx-auto mb-2" />
+                <p className="text-zinc-400 text-sm">No recent activity</p>
+                <p className="text-zinc-500 text-xs">Start trading to see your activity here!</p>
               </div>
             )}
           </div>

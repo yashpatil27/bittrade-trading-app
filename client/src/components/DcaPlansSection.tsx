@@ -171,36 +171,36 @@ const DcaPlansSection = forwardRef<DcaPlansSectionRef, DcaPlansSectionProps>(({ 
 
   if (loading) {
     return (
-      <div className="bg-gradient-to-br from-zinc-950 to-zinc-900 border border-zinc-800 rounded-xl overflow-hidden">
-        <div className="p-4 border-b border-zinc-800">
-          <h2 className="text-lg font-semibold flex items-center gap-2">
-            <Repeat className="w-5 h-5 text-white" />
+      <div className="bg-black border border-zinc-800 rounded-lg overflow-hidden">
+        <div className="p-3 border-b border-zinc-800">
+          <h2 className="text-white text-sm font-semibold flex items-center gap-2">
+            <Repeat className="w-4 h-4 text-white" />
             Active DCA Plans
           </h2>
         </div>
-        <div className="p-4 text-center">
-          <div className="animate-spin w-6 h-6 border-2 border-zinc-600 border-t-white rounded-full mx-auto"></div>
-          <p className="text-zinc-400 text-sm mt-2">Loading DCA plans...</p>
+        <div className="p-3 text-center">
+          <div className="animate-spin w-5 h-5 border-2 border-zinc-600 border-t-white rounded-full mx-auto"></div>
+          <p className="text-zinc-400 text-xs mt-2">Loading DCA plans...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="bg-gradient-to-br from-zinc-950 to-zinc-900 border border-zinc-800 rounded-xl overflow-hidden">
-      <div className="p-4 border-b border-zinc-800">
-        <h2 className="text-lg font-semibold flex items-center gap-2">
-          <Repeat className="w-5 h-5 text-white" />
+    <div className="bg-black border border-zinc-800 rounded-lg overflow-hidden">
+      <div className="p-3 border-b border-zinc-800">
+        <h2 className="text-white text-sm font-semibold flex items-center gap-2">
+          <Repeat className="w-4 h-4 text-white" />
           Active DCA Plans
           {dcaPlans.length > 0 && (
-            <span className="px-2 py-0.5 text-xs bg-zinc-700 text-zinc-300 rounded-full">
+            <span className="px-1.5 py-0.5 text-xs bg-zinc-700 text-zinc-300 rounded-full">
               {dcaPlans.length}
             </span>
           )}
         </h2>
       </div>
       
-      <div className="p-4">
+      <div className="p-3">
         {error && (
           <div className="bg-red-900/20 border border-red-800 rounded-lg p-3 mb-4">
             <div className="flex items-center gap-2 mb-2">
@@ -223,16 +223,16 @@ const DcaPlansSection = forwardRef<DcaPlansSectionRef, DcaPlansSectionProps>(({ 
         )}
 
         {dcaPlans.length > 0 ? (
-          <div className="space-y-3">
+          <div className="space-y-2">
             {dcaPlans.map((plan) => (
               <div 
                 key={plan.id} 
-                className="bg-zinc-800/50 rounded-lg p-4 hover:bg-zinc-800 transition-colors cursor-pointer"
+                className="bg-zinc-800/50 rounded-lg p-3 hover:bg-zinc-800 transition-colors cursor-pointer"
                 onClick={() => { setSelectedPlan(plan); setShowDetailsModal(true); }}
               >
-                <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2">
-                    <div className="p-1.5 bg-zinc-700 rounded-lg">
+                    <div className="p-1 bg-zinc-700 rounded">
                       {plan.plan_type === 'DCA_BUY' ? (
                         <TrendingUp className="w-3 h-3 text-green-400" />
                       ) : (
@@ -256,10 +256,10 @@ const DcaPlansSection = forwardRef<DcaPlansSectionRef, DcaPlansSectionProps>(({ 
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4 text-sm">
+                <div className="grid grid-cols-2 gap-3 text-xs">
                   <div>
                     <p className="text-zinc-400">Amount per execution</p>
-                    <p className="font-bold text-white">
+                    <p className="font-semibold text-white">
                       {plan.plan_type === 'DCA_BUY' 
                         ? formatCurrencyInr(plan.amount_per_execution)
                         : formatCurrency(plan.amount_per_execution, 'BTC')
@@ -269,7 +269,7 @@ const DcaPlansSection = forwardRef<DcaPlansSectionRef, DcaPlansSectionProps>(({ 
                   
                   <div>
                     <p className="text-zinc-400">Next execution</p>
-                    <p className="font-bold text-white flex items-center gap-1">
+                    <p className="font-semibold text-white flex items-center gap-1">
                       <Clock className="w-3 h-3" />
                       {formatNextExecution(plan.next_execution_at)}
                     </p>
@@ -278,7 +278,7 @@ const DcaPlansSection = forwardRef<DcaPlansSectionRef, DcaPlansSectionProps>(({ 
                   {plan.remaining_executions !== null && (
                     <div>
                       <p className="text-zinc-400">Remaining</p>
-                      <p className="font-bold text-white">
+                      <p className="font-semibold text-white">
                         {plan.remaining_executions} of {plan.total_executions}
                       </p>
                     </div>
@@ -287,7 +287,7 @@ const DcaPlansSection = forwardRef<DcaPlansSectionRef, DcaPlansSectionProps>(({ 
                   {(plan.max_price || plan.min_price) && (
                     <div>
                       <p className="text-zinc-400">Price limits</p>
-                      <div className="font-bold text-white text-xs">
+                      <div className="font-semibold text-white text-xs">
                         {plan.max_price && (
                           <p>Max: {formatCurrencyInr(plan.max_price)}</p>
                         )}
@@ -302,10 +302,10 @@ const DcaPlansSection = forwardRef<DcaPlansSectionRef, DcaPlansSectionProps>(({ 
             ))}
           </div>
         ) : (
-          <div className="text-center py-8">
-            <Calendar className="w-12 h-12 text-zinc-600 mx-auto mb-3" />
-            <p className="text-zinc-400">No active DCA plans</p>
-            <p className="text-zinc-500 text-sm">Create a DCA plan to start automated investing!</p>
+          <div className="text-center py-6">
+            <Calendar className="w-10 h-10 text-zinc-600 mx-auto mb-2" />
+            <p className="text-zinc-400 text-sm">No active DCA plans</p>
+            <p className="text-zinc-500 text-xs">Create a DCA plan to start automated investing!</p>
           </div>
         )}
       </div>

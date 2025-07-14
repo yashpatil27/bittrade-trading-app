@@ -175,16 +175,14 @@ const BitcoinChart = forwardRef<BitcoinChartRef, BitcoinChartProps>(({ onPriceRe
   };
 
   return (
-    <div className="bg-gradient-to-br from-zinc-950 to-zinc-900 border border-zinc-800 rounded-xl overflow-hidden">
+    <div className="bg-black border border-zinc-800 rounded-lg overflow-hidden">
       {/* Header */}
       <div className="p-3 border-b border-zinc-800">
-        <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center justify-between mb-1">
           <div className="flex items-center gap-2">
-            <div className="p-1.5 bg-zinc-700 rounded-lg">
-              <LineChartIcon className="w-4 h-4 text-white" />
-            </div>
+            <LineChartIcon className="w-4 h-4 text-white" />
             <div>
-              <h3 className="text-base font-semibold text-white">Price Chart</h3>
+              <h3 className="text-white text-sm font-semibold">Price Chart</h3>
               <p className="text-zinc-400 text-xs">
                 {timeframeTabs.find(tab => tab.key === activeTab)?.name} trend
               </p>
@@ -194,7 +192,7 @@ const BitcoinChart = forwardRef<BitcoinChartRef, BitcoinChartProps>(({ onPriceRe
           {/* Price Change Indicator */}
           {currentBtcPrice && (
             <div className="text-right">
-              <p className="text-white font-bold text-base">
+              <p className="text-white font-semibold text-sm">
                 ${currentBtcPrice.toLocaleString('en-US')}
               </p>
               {chartData.length > 0 && getChangePercentage() !== null && (
@@ -210,8 +208,8 @@ const BitcoinChart = forwardRef<BitcoinChartRef, BitcoinChartProps>(({ onPriceRe
       </div>
 
       {/* Chart Area */}
-      <div className="p-4">
-        <div className="h-64 w-full">
+      <div className="p-3">
+        <div className="h-48 w-full">
           {isLoading ? (
             <div className="h-full flex items-center justify-center">
               <div className="flex items-center gap-3 text-zinc-400">
@@ -282,15 +280,15 @@ const BitcoinChart = forwardRef<BitcoinChartRef, BitcoinChartProps>(({ onPriceRe
       </div>
 
       {/* Timeframe Tabs - moved below chart */}
-      <div className="p-4 pt-0">
+      <div className="p-3 pt-0">
         <div className="flex bg-zinc-700/50 rounded-lg p-1 gap-1">
           {timeframeTabs.map((tab) => (
             <button
               key={tab.key}
               onClick={() => handleTabChange(tab.key)}
-              className={`flex-1 py-2 px-3 rounded-md text-sm font-medium transition-all duration-200 ${
+              className={`flex-1 py-1.5 px-2 rounded text-xs font-medium transition-colors ${
                 activeTab === tab.key
-                  ? 'bg-white text-black shadow-sm'
+                  ? 'bg-white text-black'
                   : 'text-zinc-400 hover:text-white hover:bg-zinc-600/50'
               }`}
             >
