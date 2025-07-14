@@ -79,6 +79,45 @@ const SingleInputModal: React.FC<SingleInputModalProps> = ({
     }
   }, [isOpen]);
 
+  // Keyboard event handler
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Prevent default behavior for handled keys
+      if (/^[0-9]$/.test(e.key) || e.key === 'Backspace' || e.key === 'Delete' || e.key === 'Enter' || (e.key === '.' && type === 'btc')) {
+        e.preventDefault();
+      }
+
+      // Handle number keys
+      if (/^[0-9]$/.test(e.key)) {
+        handleKeypadPress(e.key);
+      }
+      // Handle backspace/delete
+      else if (e.key === 'Backspace' || e.key === 'Delete') {
+        handleKeypadPress('backspace');
+      }
+      // Handle decimal point for BTC
+      else if (e.key === '.' && type === 'btc') {
+        handleKeypadPress('.');
+      }
+      // Handle enter key to confirm
+      else if (e.key === 'Enter') {
+        if (!isConfirmDisabled) {
+          handleConfirm();
+        }
+      }
+    };
+
+    // Add event listener
+    window.addEventListener('keydown', handleKeyDown);
+
+    // Cleanup
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isOpen, type, value, validation, isLoading]); // Using validation and isLoading instead of isConfirmDisabled
+
   // Prevent body scroll when modal is open
   useEffect(() => {
     if (isOpen) {
@@ -243,7 +282,7 @@ const SingleInputModal: React.FC<SingleInputModalProps> = ({
       {/* Modal */}
       <div
         ref={modalRef}
-        className="absolute inset-0 bg-black"
+        className="absolute inset-x-0 bottom-0 top-0 bg-black max-w-md mx-auto"
         style={{
           transform: `translateY(${isClosing ? '100%' : isAnimating ? `${dragOffset}px` : '100%'})`,
           transition: isDragging ? 'none' : (isAnimating || isClosing) ? 'transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)' : 'none'
