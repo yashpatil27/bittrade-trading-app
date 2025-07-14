@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import {
   User,
   Mail,
@@ -16,6 +17,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { userAPI } from '../services/api';
 import TextInputModal from '../components/TextInputModal';
+import SingleInputModal from '../components/SingleInputModal';
 import ChangePinModal from '../components/ChangePinModal';
 
 const Profile: React.FC = () => {
@@ -26,6 +28,7 @@ const Profile: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
+  const [isSingleInputModalOpen, setIsSingleInputModalOpen] = useState(false);
 
   const handleExportData = async () => {
     try {
@@ -208,248 +211,240 @@ const Profile: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-white text-sm font-semibold">Profile</h1>
-      </div>
+    <>
+      <div className="space-y-6">
+        {/* Status Messages */}
+        {error && (
+          <div className="bg-red-900/20 border border-red-800 rounded-lg p-3 flex items-center gap-3">
+            <div className="w-2 h-2 bg-red-400 rounded-full" />
+            <span className="text-red-300 text-sm">{error}</span>
+          </div>
+        )}
+        {message && (
+          <div className="bg-green-900/20 border border-green-800 rounded-lg p-3 flex items-center gap-3">
+            <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
+            <span className="text-green-300 text-sm">{message}</span>
+          </div>
+        )}
 
-      {/* Status Messages */}
-      {error && (
-        <div className="bg-red-900/20 border border-red-800 rounded-lg p-3 flex items-center gap-3">
-          <div className="w-2 h-2 bg-red-400 rounded-full" />
-          <span className="text-red-300 text-sm">{error}</span>
-        </div>
-      )}
-      {message && (
-        <div className="bg-green-900/20 border border-green-800 rounded-lg p-3 flex items-center gap-3">
-          <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-          <span className="text-green-300 text-sm">{message}</span>
-        </div>
-      )}
+        {/* Profile Information */}
+        <div className="bg-black border border-zinc-800 rounded-xl p-3">
+          <h2 className="text-sm font-semibold mb-3 flex items-center gap-2">
+            <User className="w-4 h-4 text-white" />
+            Account Information
+          </h2>
 
-      {/* Profile Information */}
-      <div className="bg-black border border-zinc-800 rounded-xl p-3">
-        <h2 className="text-sm font-semibold mb-3 flex items-center gap-2">
-          <User className="w-4 h-4 text-white" />
-          Account Information
-        </h2>
+          <div className="space-y-4">
+            {/* Name */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="p-1.5 bg-zinc-800 rounded-lg">
+                  <User className="w-3 h-3 text-white" />
+                </div>
+                <div>
+                  <p className="text-zinc-400 text-xs">Name</p>
+                  <p className="font-medium text-sm">{user.name}</p>
+                </div>
+              </div>
+              <button
+                onClick={() => {
+                  clearMessages();
+                  setActiveModal('name');
+                }}
+                className="p-1.5 text-zinc-400 hover:text-white transition-colors"
+              >
+                <Edit3 className="w-3 h-3" />
+              </button>
+            </div>
 
-        <div className="space-y-4">
-          {/* Name */}
-          <div className="flex items-center justify-between">
+            {/* Email */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="p-1.5 bg-zinc-800 rounded-lg">
+                  <Mail className="w-3 h-3 text-white" />
+                </div>
+                <div>
+                  <p className="text-zinc-400 text-xs">Email</p>
+                  <p className="font-medium text-sm">{user.email}</p>
+                </div>
+              </div>
+              <button
+                onClick={() => {
+                  clearMessages();
+                  setActiveModal('email');
+                }}
+                className="p-1.5 text-zinc-400 hover:text-white transition-colors"
+              >
+                <Edit3 className="w-3 h-3" />
+              </button>
+            </div>
+
+            {/* Account Created */}
             <div className="flex items-center gap-2">
               <div className="p-1.5 bg-zinc-800 rounded-lg">
-                <User className="w-3 h-3 text-white" />
+                <Calendar className="w-3 h-3 text-white" />
               </div>
               <div>
-                <p className="text-zinc-400 text-xs">Name</p>
-                <p className="font-medium text-sm">{user.name}</p>
+                <p className="text-zinc-400 text-xs">Member Since</p>
+                <p className="font-medium text-sm">
+                  {user.created_at ? formatDate(user.created_at) : 'N/A'}
+                </p>
               </div>
             </div>
-            <button
-              onClick={() => {
-                clearMessages();
-                setActiveModal('name');
-              }}
-              className="p-1.5 text-zinc-400 hover:text-white transition-colors"
-            >
-              <Edit3 className="w-3 h-3" />
-            </button>
-          </div>
 
-          {/* Email */}
-          <div className="flex items-center justify-between">
+            {/* Admin Badge */}
+            {(user.is_admin === true || user.is_admin === 1) && (
+              <div className="bg-blue-900/20 border border-blue-800 rounded-lg p-2 flex items-center gap-2">
+                <Shield className="w-3 h-3 text-blue-400" />
+                <span className="text-blue-300 font-medium text-xs">Administrator Account</span>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Admin Dashboard Access */}
+        {(user.is_admin === true || user.is_admin === 1) && (
+          <button
+            onClick={() => {
+              clearMessages();
+              navigate('/admin');
+            }}
+            className="w-full bg-black border border-zinc-800 rounded-xl p-3 flex items-center justify-between hover:bg-zinc-800 transition-colors"
+          >
             <div className="flex items-center gap-2">
               <div className="p-1.5 bg-zinc-800 rounded-lg">
-                <Mail className="w-3 h-3 text-white" />
+                <UserCog className="w-3 h-3 text-white" />
               </div>
-              <div>
-                <p className="text-zinc-400 text-xs">Email</p>
-                <p className="font-medium text-sm">{user.email}</p>
+              <div className="text-left">
+                <p className="font-medium text-sm">Access Admin Dashboard</p>
+                <p className="text-zinc-400 text-xs">Manage users, transactions, and system settings</p>
               </div>
             </div>
-            <button
-              onClick={() => {
-                clearMessages();
-                setActiveModal('email');
-              }}
-              className="p-1.5 text-zinc-400 hover:text-white transition-colors"
-            >
-              <Edit3 className="w-3 h-3" />
-            </button>
-          </div>
+            <UserCog className="w-3 h-3 text-zinc-400" />
+          </button>
+        )}
 
-          {/* Account Created */}
-          <div className="flex items-center gap-2">
-            <div className="p-1.5 bg-zinc-800 rounded-lg">
-              <Calendar className="w-3 h-3 text-white" />
+        {/* Account Actions */}
+        <div className="space-y-3">
+          {/* Change Password */}
+          <button
+            onClick={() => {
+              clearMessages();
+              setActiveModal('password');
+            }}
+            className="w-full bg-black border border-zinc-800 rounded-xl p-3 flex items-center justify-between hover:bg-zinc-800 transition-colors"
+          >
+            <div className="flex items-center gap-2">
+              <div className="p-1.5 bg-zinc-800 rounded-lg">
+                <Key className="w-3 h-3 text-white" />
+              </div>
+              <div className="text-left">
+                <p className="font-medium text-sm">Change Password</p>
+                <p className="text-zinc-400 text-xs">Update your account password</p>
+              </div>
             </div>
-            <div>
-              <p className="text-zinc-400 text-xs">Member Since</p>
-              <p className="font-medium text-sm">
-                {user.created_at ? formatDate(user.created_at) : 'N/A'}
-              </p>
-            </div>
-          </div>
+            <Edit3 className="w-3 h-3 text-zinc-400" />
+          </button>
 
-          {/* Admin Badge */}
-          {(user.is_admin === true || user.is_admin === 1) && (
-            <div className="bg-blue-900/20 border border-blue-800 rounded-lg p-2 flex items-center gap-2">
-              <Shield className="w-3 h-3 text-blue-400" />
-              <span className="text-blue-300 font-medium text-xs">Administrator Account</span>
+          {/* Change PIN */}
+          <button
+            onClick={() => {
+              clearMessages();
+              setActiveModal('pin');
+            }}
+            className="w-full bg-black border border-zinc-800 rounded-xl p-3 flex items-center justify-between hover:bg-zinc-800 transition-colors"
+          >
+            <div className="flex items-center gap-2">
+              <div className="p-1.5 bg-zinc-800 rounded-lg">
+                <Shield className="w-3 h-3 text-white" />
+              </div>
+              <div className="text-left">
+                <p className="font-medium text-sm">Change PIN</p>
+                <p className="text-zinc-400 text-xs">Update your 4-digit security PIN</p>
+              </div>
             </div>
-          )}
-        </div>
-      </div>
+            <Edit3 className="w-3 h-3 text-zinc-400" />
+          </button>
 
-      {/* Admin Dashboard Access */}
-      {(user.is_admin === true || user.is_admin === 1) && (
-        <button
-          onClick={() => {
-            clearMessages();
-            navigate('/admin');
-          }}
-          className="w-full bg-black border border-zinc-800 rounded-xl p-3 flex items-center justify-between hover:bg-zinc-800 transition-colors"
-        >
-          <div className="flex items-center gap-2">
-            <div className="p-1.5 bg-zinc-800 rounded-lg">
-              <UserCog className="w-3 h-3 text-white" />
+          {/* TEST: SingleInputModal */}
+          <button
+            onClick={() => setIsSingleInputModalOpen(true)}
+            className="w-full bg-black border border-zinc-800 rounded-xl p-3 flex items-center justify-between hover:bg-zinc-800 transition-colors"
+          >
+            <div className="flex items-center gap-2">
+              <div className="p-1.5 bg-zinc-800 rounded-lg">
+                <Download className="w-3 h-3 text-white" />
+              </div>
+              <div className="text-left">
+                <p className="font-medium text-sm">Test SingleInputModal</p>
+                <p className="text-zinc-400 text-xs">Test if SingleInputModal goes to top on Profile page</p>
+              </div>
             </div>
-            <div className="text-left">
-              <p className="font-medium text-sm">Access Admin Dashboard</p>
-              <p className="text-zinc-400 text-xs">Manage users, transactions, and system settings</p>
-            </div>
-          </div>
-          <UserCog className="w-3 h-3 text-zinc-400" />
-        </button>
-      )}
-
-      {/* Account Actions */}
-      <div className="space-y-3">
-        {/* Change Password */}
-        <button
-          onClick={() => {
-            clearMessages();
-            setActiveModal('password');
-          }}
-          className="w-full bg-black border border-zinc-800 rounded-xl p-3 flex items-center justify-between hover:bg-zinc-800 transition-colors"
-        >
-          <div className="flex items-center gap-2">
-            <div className="p-1.5 bg-zinc-800 rounded-lg">
-              <Key className="w-3 h-3 text-white" />
-            </div>
-            <div className="text-left">
-              <p className="font-medium text-sm">Change Password</p>
-              <p className="text-zinc-400 text-xs">Update your account password</p>
-            </div>
-          </div>
-          <Edit3 className="w-3 h-3 text-zinc-400" />
-        </button>
-
-        {/* Change PIN */}
-        <button
-          onClick={() => {
-            clearMessages();
-            setActiveModal('pin');
-          }}
-          className="w-full bg-black border border-zinc-800 rounded-xl p-3 flex items-center justify-between hover:bg-zinc-800 transition-colors"
-        >
-          <div className="flex items-center gap-2">
-            <div className="p-1.5 bg-zinc-800 rounded-lg">
-              <Shield className="w-3 h-3 text-white" />
-            </div>
-            <div className="text-left">
-              <p className="font-medium text-sm">Change PIN</p>
-              <p className="text-zinc-400 text-xs">Update your 4-digit security PIN</p>
-            </div>
-          </div>
-          <Edit3 className="w-3 h-3 text-zinc-400" />
-        </button>
-
-        {/* Export Data */}
-        <button
-          onClick={handleExportData}
-          disabled={isExporting}
-          className="w-full bg-black border border-zinc-800 rounded-xl p-3 flex items-center justify-between hover:bg-zinc-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          <div className="flex items-center gap-2">
-            <div className="p-1.5 bg-zinc-800 rounded-lg">
-              <Download className="w-3 h-3 text-white" />
-            </div>
-            <div className="text-left">
-              <p className="font-medium text-sm">Export Trading Data</p>
-              <p className="text-zinc-400 text-xs">Download your transaction history as CSV</p>
-            </div>
-          </div>
-          {isExporting ? (
-            <div className="w-3 h-3 border-2 border-zinc-600 border-t-white rounded-full animate-spin" />
-          ) : (
             <Download className="w-3 h-3 text-zinc-400" />
-          )}
-        </button>
+          </button>
 
-        {/* Logout Button */}
-        <button
-          onClick={async () => {
-            clearMessages();
-            await logout();
-          }}
-          className="w-full bg-black border border-zinc-800 rounded-xl p-3 flex items-center justify-between hover:bg-zinc-800 transition-colors"
-        >
-          <div className="flex items-center gap-2">
-            <div className="p-1.5 bg-zinc-800 rounded-lg">
-              <LogOut className="w-3 h-3 text-white" />
+          {/* Logout Button */}
+          <button
+            onClick={async () => {
+              clearMessages();
+              await logout();
+            }}
+            className="w-full bg-black border border-zinc-800 rounded-xl p-3 flex items-center justify-between hover:bg-zinc-800 transition-colors"
+          >
+            <div className="flex items-center gap-2">
+              <div className="p-1.5 bg-zinc-800 rounded-lg">
+                <LogOut className="w-3 h-3 text-white" />
+              </div>
+              <div className="text-left">
+                <p className="font-medium text-sm">Logout</p>
+                <p className="text-zinc-400 text-xs">Sign out of your account</p>
+              </div>
             </div>
-            <div className="text-left">
-              <p className="font-medium text-sm">Logout</p>
-              <p className="text-zinc-400 text-xs">Sign out of your account</p>
-            </div>
+            <LogOut className="w-3 h-3 text-zinc-400" />
+          </button>
+        </div>
+
+        {/* Educational Resources */}
+        <div className="space-y-3">
+          <h3 className="text-sm font-semibold flex items-center gap-2">
+            <BookOpen className="w-4 h-4 text-white" />
+            Educational Resources
+          </h3>
+
+          <div className="grid grid-cols-1 gap-2">
+            <a 
+              href="https://casebitcoin.com" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 p-3 bg-zinc-800/50 rounded-lg hover:bg-zinc-800 transition-colors"
+            >
+              <BookOpen className="w-4 h-4 text-orange-400" />
+              <div className="flex-1">
+                <p className="font-medium text-sm">The Case for Bitcoin</p>
+                <p className="text-zinc-400 text-xs">Learn why Bitcoin matters</p>
+              </div>
+              <ExternalLink className="w-3 h-3 text-zinc-400" />
+            </a>
+            
+            <a 
+              href="https://endthefud.org" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 p-3 bg-zinc-800/50 rounded-lg hover:bg-zinc-800 transition-colors"
+            >
+              <Shield className="w-4 h-4 text-blue-400" />
+              <div className="flex-1">
+                <p className="font-medium text-sm">End The FUD</p>
+                <p className="text-zinc-400 text-xs">Bitcoin education & resources</p>
+              </div>
+              <ExternalLink className="w-3 h-3 text-zinc-400" />
+            </a>
           </div>
-          <LogOut className="w-3 h-3 text-zinc-400" />
-        </button>
-      </div>
-
-      {/* Educational Resources */}
-      <div className="space-y-3">
-        <h3 className="text-sm font-semibold flex items-center gap-2">
-          <BookOpen className="w-4 h-4 text-white" />
-          Educational Resources
-        </h3>
-
-        <div className="grid grid-cols-1 gap-2">
-          <a 
-            href="https://casebitcoin.com" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="flex items-center gap-2 p-3 bg-zinc-800/50 rounded-lg hover:bg-zinc-800 transition-colors"
-          >
-            <BookOpen className="w-4 h-4 text-orange-400" />
-            <div className="flex-1">
-              <p className="font-medium text-sm">The Case for Bitcoin</p>
-              <p className="text-zinc-400 text-xs">Learn why Bitcoin matters</p>
-            </div>
-            <ExternalLink className="w-3 h-3 text-zinc-400" />
-          </a>
-          
-          <a 
-            href="https://endthefud.org" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="flex items-center gap-2 p-3 bg-zinc-800/50 rounded-lg hover:bg-zinc-800 transition-colors"
-          >
-            <Shield className="w-4 h-4 text-blue-400" />
-            <div className="flex-1">
-              <p className="font-medium text-sm">End The FUD</p>
-              <p className="text-zinc-400 text-xs">Bitcoin education & resources</p>
-            </div>
-            <ExternalLink className="w-3 h-3 text-zinc-400" />
-          </a>
         </div>
       </div>
 
-      {/* Modals */}
-      {modalConfig && (
+      {/* Modals - Rendered via Portal to bypass Layout constraints */}
+      {modalConfig && createPortal(
         <TextInputModal
           isOpen={activeModal === 'name' || activeModal === 'email' || activeModal === 'password'}
           onClose={() => setActiveModal(null)}
@@ -457,18 +452,46 @@ const Profile: React.FC = () => {
           fields={modalConfig.fields}
           onConfirm={handleTextInputConfirm}
           isLoading={isLoading}
-        />
+        />,
+        document.body
       )}
 
-      <ChangePinModal
-        isOpen={activeModal === 'pin'}
-        onClose={() => setActiveModal(null)}
-        onSuccess={() => {
-          setMessage('✅ PIN changed successfully!');
-          setActiveModal(null);
-        }}
-      />
-    </div>
+      {createPortal(
+        <ChangePinModal
+          isOpen={activeModal === 'pin'}
+          onClose={() => setActiveModal(null)}
+          onSuccess={() => {
+            setMessage('✅ PIN changed successfully!');
+            setActiveModal(null);
+          }}
+        />,
+        document.body
+      )}
+      
+      {/* SingleInputModal Test - Rendered via Portal */}
+      {createPortal(
+        <SingleInputModal
+          isOpen={isSingleInputModalOpen}
+          onClose={() => setIsSingleInputModalOpen(false)}
+          title="Test SingleInputModal"
+          type="inr"
+          maxValue={10000}
+          confirmText="Test Confirm"
+          onConfirm={async (value) => {
+            console.log('SingleInputModal test value:', value);
+            setMessage(`✅ SingleInputModal test completed with value: ${value}`);
+            setIsSingleInputModalOpen(false);
+          }}
+          validation={(value) => {
+            const numValue = parseFloat(value);
+            if (isNaN(numValue) || numValue <= 0) return 'Please enter a valid amount';
+            if (numValue > 10000) return 'Amount cannot exceed 10,000';
+            return null;
+          }}
+        />,
+        document.body
+      )}
+    </>
   );
 };
 

@@ -127,7 +127,7 @@ const TextInputModal: React.FC<TextInputModalProps> = ({
   // Touch handlers for drag-to-close
   const handleTouchStart = (e: React.TouchEvent) => {
     const target = e.target as HTMLElement;
-    if (target.tagName === 'BUTTON' || target.closest('button') || target.tagName === 'INPUT') {
+    if (target.tagName === 'BUTTON' || target.closest('button')) {
       return;
     }
     
@@ -217,7 +217,7 @@ const TextInputModal: React.FC<TextInputModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50">
+    <div className="fixed inset-0" style={{ zIndex: 9999 }}>
       {/* Backdrop */}
       <div 
         className="absolute inset-0 bg-black/50 backdrop-blur-sm"

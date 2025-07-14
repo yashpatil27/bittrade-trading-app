@@ -25,6 +25,7 @@ import {
 import { userAPI } from '../services/api';
 import { Balances, Prices, Transaction, DashboardData } from '../types';
 import MobileTradingModal from '../components/MobileTradingModal';
+import SingleInputModal from '../components/SingleInputModal';
 import PriceUpdateTimer from '../components/PriceUpdateTimer';
 import TransactionDetailModal from '../components/TransactionDetailModal';
 import BitcoinChart, { BitcoinChartRef } from '../components/BitcoinChart';
@@ -52,6 +53,7 @@ const Home: React.FC = () => {
   const [modalType, setModalType] = useState<'buy' | 'sell'>('buy');
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
   const [isTransactionModalOpen, setIsTransactionModalOpen] = useState(false);
+  const [isSingleInputModalOpen, setIsSingleInputModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -252,7 +254,7 @@ const Home: React.FC = () => {
           {/* Trading Action Buttons */}
           <div className="grid grid-cols-2 gap-2">
             <button
-              onClick={() => openTradingModal('buy')}
+              onClick={() => setIsSingleInputModalOpen(true)}
               className="bg-white text-black hover:bg-zinc-200 font-medium py-2 px-3 rounded-lg transition-colors flex items-center justify-center gap-1.5 text-sm"
             >
               <TrendingUp className="w-4 h-4" />
@@ -415,6 +417,26 @@ const Home: React.FC = () => {
         onClose={() => setIsTransactionModalOpen(false)}
         transaction={selectedTransaction}
         onTransactionUpdate={refreshData}
+      />
+      
+      {/* Single Input Modal for Testing */}
+      <SingleInputModal
+        isOpen={isSingleInputModalOpen}
+        onClose={() => setIsSingleInputModalOpen(false)}
+        title="Buy Bitcoin"
+        type="inr"
+        maxValue={balances?.inr || 0}
+        confirmText="Buy Bitcoin"
+        onConfirm={async (value) => {
+          console.log('Buy Bitcoin amount:', value);
+          setIsSingleInputModalOpen(false);
+        }}
+        validation={(value) => {
+          const numValue = parseFloat(value);
+          if (isNaN(numValue) || numValue <= 0) return 'Please enter a valid amount';
+          if (numValue > (balances?.inr || 0)) return 'Insufficient balance';
+          return null;
+        }}
       />
     </>
   );
