@@ -137,9 +137,6 @@ const Loans: React.FC = () => {
   if (loading) {
     return (
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <h1 className="text-white text-sm font-semibold">Bitcoin Loans</h1>
-        </div>
         <div className="bg-zinc-800/50 rounded-lg p-4 animate-pulse">
           <div className="h-4 bg-zinc-700 rounded w-1/4 mb-4"></div>
           <div className="space-y-2">
@@ -153,10 +150,6 @@ const Loans: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <h1 className="text-white text-sm font-semibold">Bitcoin Loans</h1>
-      </div>
 
       {error && (
         <div className="bg-red-900/50 border border-red-700 rounded-lg p-4">
