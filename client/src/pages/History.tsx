@@ -257,20 +257,14 @@ const History: React.FC = () => {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold flex items-center gap-2">
-            <Activity className="w-6 h-6 text-white" />
-            Transaction History
-          </h1>
-          <p className="text-zinc-400 text-sm mt-1">Track all your trading activity</p>
-        </div>
+        <h1 className="text-white text-sm font-semibold">Transaction History</h1>
         <button 
           onClick={() => setIsFilterOpen(true)}
-          className="relative p-2 hover:bg-zinc-800 rounded-lg transition-colors"
+          className="relative p-1.5 hover:bg-zinc-700 rounded transition-colors"
         >
-          <Filter className="w-5 h-5" />
+          <Filter className="w-4 h-4" />
           {activeFiltersCount > 0 && (
-            <div className="absolute -top-1 -right-1 w-5 h-5 bg-white text-black text-xs font-bold rounded-full flex items-center justify-center">
+            <div className="absolute -top-1 -right-1 w-4 h-4 bg-white text-black text-xs font-bold rounded-full flex items-center justify-center">
               {activeFiltersCount}
             </div>
           )}
@@ -291,7 +285,7 @@ const History: React.FC = () => {
               setFilters(prev => ({ ...prev, types: buyTypes }));
             }
           }}
-          className={`bg-gradient-to-br from-zinc-950 to-zinc-900 border rounded-lg p-3 flex items-center gap-3 transition-all hover:border-green-600 ${
+          className={`bg-black border rounded-lg p-3 flex items-center gap-2 transition-all hover:border-green-600 ${
             ['MARKET_BUY', 'LIMIT_BUY', 'DCA_BUY'].every(type => filters.types.includes(type as TransactionType)) && 
             filters.types.length === 3 && !filters.types.includes('ALL')
               ? 'border-green-500 bg-green-950/20'
@@ -321,7 +315,7 @@ const History: React.FC = () => {
               setFilters(prev => ({ ...prev, types: sellTypes }));
             }
           }}
-          className={`bg-gradient-to-br from-zinc-950 to-zinc-900 border rounded-lg p-3 flex items-center gap-3 transition-all hover:border-red-600 ${
+          className={`bg-black border rounded-lg p-3 flex items-center gap-2 transition-all hover:border-red-600 ${
             ['MARKET_SELL', 'LIMIT_SELL', 'DCA_SELL'].every(type => filters.types.includes(type as TransactionType)) && 
             filters.types.length === 3 && !filters.types.includes('ALL')
               ? 'border-red-500 bg-red-950/20'
@@ -351,7 +345,7 @@ const History: React.FC = () => {
               setFilters(prev => ({ ...prev, types: loanTypes }));
             }
           }}
-          className={`bg-gradient-to-br from-zinc-950 to-zinc-900 border rounded-lg p-3 flex items-center gap-3 transition-all hover:border-yellow-600 ${
+          className={`bg-black border rounded-lg p-3 flex items-center gap-2 transition-all hover:border-yellow-600 ${
             ['LOAN_CREATE', 'LOAN_BORROW', 'LOAN_REPAY', 'LOAN_ADD_COLLATERAL', 'INTEREST_ACCRUAL', 'PARTIAL_LIQUIDATION', 'FULL_LIQUIDATION'].some(type => filters.types.includes(type as TransactionType)) && 
             !filters.types.includes('ALL')
               ? 'border-yellow-500 bg-yellow-950/20'
@@ -381,7 +375,7 @@ const History: React.FC = () => {
               setFilters(prev => ({ ...prev, types: balanceTypes }));
             }
           }}
-          className={`bg-gradient-to-br from-zinc-950 to-zinc-900 border rounded-lg p-3 flex items-center gap-3 transition-all hover:border-blue-600 ${
+          className={`bg-black border rounded-lg p-3 flex items-center gap-2 transition-all hover:border-blue-600 ${
             ['DEPOSIT_INR', 'DEPOSIT_BTC', 'WITHDRAW_INR', 'WITHDRAW_BTC'].every(type => filters.types.includes(type as TransactionType)) && 
             filters.types.length === 4 && !filters.types.includes('ALL')
               ? 'border-blue-500 bg-blue-950/20'
@@ -410,9 +404,9 @@ const History: React.FC = () => {
       )}
 
       {/* Transactions List */}
-      <div className="bg-gradient-to-br from-zinc-950 to-zinc-900 border border-zinc-800 rounded-xl overflow-hidden">
-        <div className="p-4 border-b border-zinc-800">
-          <h2 className="text-lg font-semibold">All Transactions</h2>
+      <div className="bg-black border border-zinc-800 rounded-xl overflow-hidden">
+        <div className="p-3 border-b border-zinc-800">
+          <h2 className="text-sm font-semibold text-white">All Transactions</h2>
         </div>
         
         <div className="p-4">
@@ -422,11 +416,11 @@ const History: React.FC = () => {
                 <div 
                   key={transaction.id} 
                   onClick={() => handleTransactionClick(transaction)}
-                  className="bg-zinc-800/50 rounded-lg p-4 hover:bg-zinc-800 transition-colors cursor-pointer"
+                  className="bg-zinc-800/50 rounded-lg p-3 hover:bg-zinc-800 transition-colors cursor-pointer"
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <div className="p-1.5 bg-zinc-700 rounded-lg">
+                      <div className="p-1 bg-zinc-700 rounded-lg">
                         {getTransactionIcon(transaction.type, transaction.status) === 'User' && <User className="w-3 h-3 text-white" />}
                         {getTransactionIcon(transaction.type, transaction.status) === 'ArrowUp' && <ArrowUp className="w-3 h-3 text-white" />}
                         {getTransactionIcon(transaction.type, transaction.status) === 'TrendingUp' && <TrendingUp className="w-3 h-3 text-white" />}
@@ -550,23 +544,23 @@ const History: React.FC = () => {
       {isFilterOpen && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setIsFilterOpen(false)}>
           {/* Modal */}
-          <div className="bg-gradient-to-br from-zinc-950 to-zinc-900 rounded-2xl border border-zinc-800 w-full max-w-md max-h-[80vh] overflow-hidden" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-black rounded-2xl border border-zinc-800 w-full max-w-md max-h-[80vh] overflow-hidden" onClick={(e) => e.stopPropagation()}>
             {/* Header */}
-            <div className="flex items-center justify-between p-4 border-b border-zinc-800">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-zinc-800 rounded-lg">
-                  <Filter className="w-5 h-5 text-white" />
+            <div className="flex items-center justify-between p-3 border-b border-zinc-800">
+              <div className="flex items-center gap-2">
+                <div className="p-1.5 bg-zinc-800 rounded-lg">
+                  <Filter className="w-4 h-4 text-white" />
                 </div>
                 <div>
-                  <h2 className="text-xl font-bold">Filter Transactions</h2>
-                  <p className="text-sm text-zinc-400">Customize your transaction view</p>
+                  <h2 className="text-sm font-bold text-white">Filter Transactions</h2>
+                  <p className="text-xs text-zinc-400">Customize your transaction view</p>
                 </div>
               </div>
               <button
                 onClick={() => setIsFilterOpen(false)}
-                className="p-2 hover:bg-zinc-800 rounded-lg transition-colors"
+                className="p-1.5 hover:bg-zinc-800 rounded-lg transition-colors"
               >
-                <X className="w-5 h-5" />
+                <X className="w-4 h-4" />
               </button>
             </div>
 
