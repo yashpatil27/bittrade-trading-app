@@ -108,7 +108,6 @@ const ModalDemo: React.FC = () => {
         title="Enter Bitcoin Amount"
         type="btc"
         maxValue={2.5}
-        confirmText="Confirm BTC"
         onConfirm={handleBtcConfirm}
         isLoading={false}
         sectionTitle="Available Balance"
@@ -149,7 +148,6 @@ const ModalDemo: React.FC = () => {
           { label: "Total Cost", value: "₹25,250", highlight: true },
           { label: "Settlement", value: "Instant" }
         ]}
-        confirmText="Confirm Trade"
         onConfirm={handleFinalConfirm}
         isLoading={isLoading}
       />
@@ -161,7 +159,6 @@ const ModalDemo: React.FC = () => {
         title="Enter INR Amount"
         type="inr"
         maxValue={125000}
-        confirmText="Confirm INR"
         onConfirm={handleInrConfirm}
         isLoading={false}
         sectionTitle="Wallet Balance"
