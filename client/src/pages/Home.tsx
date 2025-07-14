@@ -409,34 +409,40 @@ const Home: React.FC = () => {
 {/* Confirm Details Modal */}
       <ConfirmDetailsModal
         isOpen={isConfirmDetailsModalOpen}
-        onClose={() => setIsConfirmDetailsModalOpen(false)}
+        onClose={() => {
+          setIsConfirmDetailsModalOpen(false);
+          setIsSingleInputModalOpen(true);
+        }}
         title={inputType === 'buy' ? 'Buy Bitcoin' : 'Sell Bitcoin'}
         amount={inputAmount}
         amountType={inputType === 'buy' ? 'inr' : 'btc'}
         subAmount={inputType === 'buy' && prices ? 
-          (parseFloat(inputAmount) / (prices.buy_rate || 1)).toFixed(8) : 
+          (parseFloat(inputAmount || '0') / (prices.buy_rate || 1)).toFixed(8) : 
           inputType === 'sell' && prices ? 
-          (parseFloat(inputAmount) * (prices.sell_rate || 1)).toFixed(2) : undefined
+          (parseFloat(inputAmount || '0') * (prices.sell_rate || 1)).toFixed(2) : undefined
         }
         subAmountType={inputType === 'buy' ? 'btc' : 'inr'}
         details={[
           {
-            label: 'Rate',
+            label: 'Bitcoin Price',
             value: inputType === 'buy' ? 
               `₹${prices?.buy_rate?.toLocaleString() || 0}` : 
               `₹${prices?.sell_rate?.toLocaleString() || 0}`,
-            highlight: true
+            highlight: false
           },
           {
-            label: 'Fee',
-            value: '₹0',
-          },
-          {
-            label: 'Total',
+            label: inputType === 'buy' ? '₹ Amount' : '₿ Amount',
             value: inputType === 'buy' ? 
               `₹${parseFloat(inputAmount || '0').toLocaleString()}` : 
-              `₹${((parseFloat(inputAmount || '0') * (prices?.sell_rate || 1))).toLocaleString()}`,
-            highlight: true
+              `₿${parseFloat(inputAmount || '0').toFixed(8)}`,
+            highlight: false
+          },
+          {
+            label: inputType === 'buy' ? '₿ Amount' : '₹ Amount',
+            value: inputType === 'buy' ? 
+              `₿${(parseFloat(inputAmount || '0') / (prices?.buy_rate || 1)).toFixed(8)}` : 
+              `₹${(parseFloat(inputAmount || '0') * (prices?.sell_rate || 1)).toLocaleString()}`,
+            highlight: false
           }
         ]}
         confirmText={inputType === 'buy' ? 'Buy Bitcoin' : 'Sell Bitcoin'}
@@ -471,7 +477,7 @@ const Home: React.FC = () => {
         title={inputType === 'buy' ? 'Buy Bitcoin' : 'Sell Bitcoin'}
         type={inputType === 'buy' ? 'inr' : 'btc'}
         maxValue={inputType === 'buy' ? (balances?.inr || 0) : (balances?.btc || 0)}
-        confirmText={inputType === 'buy' ? 'Continue' : 'Continue'}
+        confirmText="Next"
         onConfirm={async (value) => {
           setInputAmount(value);
           setIsSingleInputModalOpen(false);
@@ -483,6 +489,18 @@ const Home: React.FC = () => {
           const maxValue = inputType === 'buy' ? (balances?.inr || 0) : (balances?.btc || 0);
           if (numValue > maxValue) return 'Insufficient balance';
           return null;
+        }}
+        optionalSection={{
+          title: 'Market Rate',
+          details: [
+            {
+              label: 'Price per Bitcoin',
+              value: inputType === 'buy' ? 
+                `₹${prices?.buy_rate?.toLocaleString() || 0}` : 
+                `₹${prices?.sell_rate?.toLocaleString() || 0}`,
+              highlight: true
+            }
+          ]
         }}
       />
     </>
