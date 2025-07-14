@@ -16,16 +16,27 @@ async function accrueInterestDaily() {
   try {
     systemLogger.info('Starting daily interest accrual job...');
 
-    // Fetch all active loans in a single query
+    // Get today's date in IST for consistency
+    const today = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
+    
+    // Fetch all active loans that haven't had interest accrued today
     const loans = await query(`
-      SELECT id, user_id, inr_borrowed_amount, interest_rate 
-      FROM loans 
-      WHERE status = 'ACTIVE' AND inr_borrowed_amount > 0
-      ORDER BY id
-    `);
+      SELECT l.id, l.user_id, l.inr_borrowed_amount, l.interest_rate 
+      FROM loans l
+      WHERE l.status = 'ACTIVE' 
+        AND l.inr_borrowed_amount > 0
+        AND l.id NOT IN (
+          SELECT DISTINCT o.loan_id 
+          FROM operations o 
+          WHERE o.type = 'INTEREST_ACCRUAL' 
+            AND o.loan_id IS NOT NULL
+            AND DATE(o.executed_at) = ?
+        )
+      ORDER BY l.id
+    `, [today]);
 
     if (loans.length === 0) {
-      systemLogger.info('No active loans found for interest accrual');
+      systemLogger.info('No active loans found for interest accrual (may have already been processed today)');
       return { processedLoans: 0, totalInterestAccrued: 0 };
     }
 
