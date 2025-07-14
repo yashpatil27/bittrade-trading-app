@@ -137,14 +137,10 @@ const Loans: React.FC = () => {
   if (loading) {
     return (
       <div className="space-y-6">
-        <div className="flex items-center gap-3">
-          <Wallet className="w-8 h-8 text-white" />
-          <div>
-            <h1 className="text-2xl font-bold">Bitcoin Loans</h1>
-            <p className="text-zinc-400">Borrow against your Bitcoin</p>
-          </div>
+        <div className="flex items-center justify-between">
+          <h1 className="text-white text-sm font-semibold">Bitcoin Loans</h1>
         </div>
-        <div className="bg-zinc-800/50 rounded-lg p-6 animate-pulse">
+        <div className="bg-zinc-800/50 rounded-lg p-4 animate-pulse">
           <div className="h-4 bg-zinc-700 rounded w-1/4 mb-4"></div>
           <div className="space-y-2">
             <div className="h-3 bg-zinc-700 rounded"></div>
@@ -158,12 +154,8 @@ const Loans: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center gap-3">
-        <Wallet className="w-8 h-8 text-white" />
-        <div>
-          <h1 className="text-2xl font-bold">Bitcoin Loans</h1>
-          <p className="text-zinc-400">Borrow against your Bitcoin</p>
-        </div>
+      <div className="flex items-center justify-between">
+        <h1 className="text-white text-sm font-semibold">Bitcoin Loans</h1>
       </div>
 
       {error && (
@@ -176,15 +168,15 @@ const Loans: React.FC = () => {
       {loanStatus ? (
         <div className="space-y-6">
           {/* Loan Overview Header */}
-      <div className="bg-gradient-to-br from-zinc-950 to-zinc-900 border border-zinc-800 rounded-xl p-4">
+          <div className="bg-black border border-zinc-800 rounded-xl p-3">
             <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-zinc-700 rounded-lg">
-                  <Lock className="w-5 h-5 text-white" />
+              <div className="flex items-center gap-2">
+                <div className="p-1.5 bg-zinc-700 rounded-lg">
+                  <Lock className="w-4 h-4 text-white" />
                 </div>
                 <div>
-                  <h2 className="text-xl font-bold">Active Loan</h2>
-                  <p className="text-zinc-400 text-sm">Loan ID: #{loanStatus.loanId || 'N/A'}</p>
+                  <h2 className="text-sm font-bold text-white">Active Loan</h2>
+                  <p className="text-zinc-400 text-xs">Loan ID: #{loanStatus.loanId || 'N/A'}</p>
                 </div>
               </div>
               <div className={`flex items-center gap-2 ${getRiskColor(loanStatus.riskStatus)}`}>
@@ -203,7 +195,7 @@ const Loans: React.FC = () => {
               <div>
                 <p className="text-zinc-400">Next Interest</p>
                 <p className="text-white font-medium">
-Daily at 12:00 AM (+{formatInr((loanStatus.borrowedAmount * loanStatus.interestRate / 100) / 365)})
+                  Daily at 12:00 AM (+{formatInr((loanStatus.borrowedAmount * loanStatus.interestRate / 100) / 365)})
                 </p>
                 <p className="text-yellow-400 text-xs mt-1">
                   ⚠️ Minimum 30-day interest applies
@@ -215,19 +207,19 @@ Daily at 12:00 AM (+{formatInr((loanStatus.borrowedAmount * loanStatus.interestR
           {/* Financial Summary - Reordered 6 boxes */}
           <div className="grid grid-cols-2 gap-4">
             {/* Row 1: Collateral Value, Total Due */}
-            <div className="bg-gradient-to-br from-zinc-950 to-zinc-900 border border-zinc-700 rounded-xl p-4 flex flex-col">
+            <div className="bg-black border border-zinc-800 rounded-xl p-3 flex flex-col">
               <div className="flex items-center gap-2 mb-2">
                 <Shield className="w-4 h-4 text-white" />
                 <p className="text-zinc-400 text-sm">Collateral Value</p>
               </div>
-              <p className="text-white font-bold text-lg">
+              <p className="text-white font-bold text-sm">
                 ₿{formatBitcoin(loanStatus.collateralAmount / 100000000)}
               </p>
               <p className="text-zinc-500 text-xs">
-{formatInr((loanStatus.collateralAmount * loanStatus.currentBtcPrice) / 100000000)}
+                {formatInr((loanStatus.collateralAmount * loanStatus.currentBtcPrice) / 100000000)}
               </p>
               <p className="text-zinc-400 text-xs mt-1">
-{formatInr(loanStatus.currentBtcPrice)}
+                {formatInr(loanStatus.currentBtcPrice)}
               </p>
               <div className="mt-auto pt-3">
                 <button
@@ -240,13 +232,13 @@ Daily at 12:00 AM (+{formatInr((loanStatus.borrowedAmount * loanStatus.interestR
               </div>
             </div>
 
-            <div className="bg-gradient-to-br from-zinc-950 to-zinc-900 border border-zinc-700 rounded-xl p-4 flex flex-col">
+            <div className="bg-black border border-zinc-800 rounded-xl p-3 flex flex-col">
               <div className="flex items-center gap-2 mb-2">
                 <DollarSign className="w-4 h-4 text-white" />
                 <p className="text-zinc-400 text-sm">Total Due</p>
               </div>
-              <p className="text-white font-bold text-lg">
-{formatInr(loanStatus.borrowedAmount + (loanStatus.minimumInterestDue || 0))}
+              <p className="text-white font-bold text-sm">
+                {formatInr(loanStatus.borrowedAmount + (loanStatus.minimumInterestDue || 0))}
               </p>
               <p className="text-zinc-500 text-xs">
                 Principal + Minimum Interest
@@ -267,19 +259,19 @@ Daily at 12:00 AM (+{formatInr((loanStatus.borrowedAmount * loanStatus.interestR
             </div>
 
             {/* Row 2: Available to Borrow, Liquidation Health */}
-            <div className="bg-gradient-to-br from-zinc-950 to-zinc-900 border border-zinc-700 rounded-xl p-4 flex flex-col">
+            <div className="bg-black border border-zinc-800 rounded-xl p-3 flex flex-col">
               <div className="flex items-center gap-2 mb-2">
                 <Plus className="w-4 h-4 text-white" />
                 <p className="text-zinc-400 text-sm">Available to Borrow</p>
               </div>
-              <p className="text-white font-bold text-lg">
-{formatInr(loanStatus.availableCapacity)}
+              <p className="text-white font-bold text-sm">
+                {formatInr(loanStatus.availableCapacity)}
               </p>
               <p className="text-zinc-500 text-xs">
                 Max {loanStatus.ltvRatio}% LTV
               </p>
               <p className="text-zinc-400 text-xs mt-1">
-{formatPercentage((loanStatus.availableCapacity / ((loanStatus.collateralAmount * loanStatus.currentBtcPrice) / 100000000)) * 100)} capacity used
+                {formatPercentage((loanStatus.availableCapacity / ((loanStatus.collateralAmount * loanStatus.currentBtcPrice) / 100000000)) * 100)} capacity used
               </p>
               <div className="mt-auto pt-3">
                 <button
@@ -293,19 +285,19 @@ Daily at 12:00 AM (+{formatInr((loanStatus.borrowedAmount * loanStatus.interestR
               </div>
             </div>
 
-            <div className="bg-gradient-to-br from-zinc-950 to-zinc-900 border border-zinc-700 rounded-xl p-4 flex flex-col">
+            <div className="bg-black border border-zinc-800 rounded-xl p-3 flex flex-col">
               <div className="flex items-center gap-2 mb-2">
                 <AlertTriangle className="w-4 h-4 text-white" />
                 <p className="text-zinc-400 text-sm">Liquidation Health</p>
               </div>
-              <p className="text-white font-bold text-lg">
-{formatPercentage((loanStatus.currentBtcPrice - loanStatus.liquidationPrice) / loanStatus.currentBtcPrice * 100)} buffer
+              <p className="text-white font-bold text-sm">
+                {formatPercentage((loanStatus.currentBtcPrice - loanStatus.liquidationPrice) / loanStatus.currentBtcPrice * 100)} buffer
               </p>
               <p className="text-zinc-500 text-xs">
-{formatInr(loanStatus.currentBtcPrice - loanStatus.liquidationPrice)} margin
+                {formatInr(loanStatus.currentBtcPrice - loanStatus.liquidationPrice)} margin
               </p>
               <p className="text-zinc-400 text-xs mt-1">
-Liquidation @ {formatInr(loanStatus.liquidationPrice)}
+                Liquidation @ {formatInr(loanStatus.liquidationPrice)}
               </p>
               <div className="mt-auto pt-3">
                 <button
@@ -319,28 +311,28 @@ Liquidation @ {formatInr(loanStatus.liquidationPrice)}
             </div>
 
             {/* Row 3: Interest Accrued, Principal Borrowed (no buttons) */}
-      <div className="bg-gradient-to-br from-zinc-950 to-zinc-900 border border-zinc-800 rounded-xl p-4">
+            <div className="bg-black border border-zinc-800 rounded-xl p-3">
               <div className="flex items-center gap-2 mb-2">
                 <Clock className="w-4 h-4 text-white" />
                 <p className="text-zinc-400 text-sm">Interest Accrued</p>
               </div>
-              <p className="text-white font-bold text-lg">
-{formatInr(loanStatus.minimumInterestDue || 0)}
+              <p className="text-white font-bold text-sm">
+                {formatInr(loanStatus.minimumInterestDue || 0)}
               </p>
               <p className="text-zinc-500 text-xs">
-{formatInr((loanStatus.borrowedAmount * loanStatus.interestRate / 100) / 365)}/day
+                {formatInr((loanStatus.borrowedAmount * loanStatus.interestRate / 100) / 365)}/day
               </p>
               <p className="text-zinc-400 text-xs mt-1">
                 {loanStatus.interestRate}% APR (30-day minimum)
               </p>
             </div>
 
-      <div className="bg-gradient-to-br from-zinc-950 to-zinc-900 border border-zinc-800 rounded-xl p-4">
+            <div className="bg-black border border-zinc-800 rounded-xl p-3">
               <div className="flex items-center gap-2 mb-2">
                 <ArrowDown className="w-4 h-4 text-white" />
                 <p className="text-zinc-400 text-sm">Principal Borrowed</p>
               </div>
-              <p className="text-white font-bold text-lg">
+              <p className="text-white font-bold text-sm">
                 {formatInr(loanStatus.borrowedAmount)}
               </p>
               <p className="text-zinc-500 text-xs">
@@ -356,22 +348,22 @@ Liquidation @ {formatInr(loanStatus.liquidationPrice)}
           </div>
 
           {/* Enhanced Risk Visualization */}
-      <div className="bg-gradient-to-br from-zinc-950 to-zinc-900 border border-zinc-800 rounded-xl p-4">
-            <div className="flex items-center gap-2 mb-3">
-              <TrendingUp className="w-5 h-5 text-white" />
-              <h3 className="text-lg font-semibold">Liquidation Risk Monitor</h3>
+          <div className="bg-black border border-zinc-800 rounded-xl p-3">
+            <div className="flex items-center gap-2 mb-2">
+              <TrendingUp className="w-4 h-4 text-white" />
+              <h3 className="text-sm font-semibold">Liquidation Risk Monitor</h3>
             </div>
             
-            <div className="space-y-3">
-              <div className="flex items-center justify-between text-sm">
+            <div className="space-y-2">
+              <div className="flex items-center justify-between text-xs">
                 <span className="text-zinc-400">Current Price</span>
                 <span className="text-white font-medium">{formatInr(loanStatus.currentBtcPrice)}</span>
               </div>
               
               <div className="relative">
-                <div className="w-full bg-zinc-700 rounded-full h-3">
+                <div className="w-full bg-zinc-700 rounded-full h-2">
                   <div 
-                    className={`h-3 rounded-full transition-all duration-300 ${
+                    className={`h-2 rounded-full transition-all duration-300 ${
                       loanStatus.riskStatus === 'SAFE' ? 'bg-green-500' :
                       loanStatus.riskStatus === 'WARNING' ? 'bg-yellow-500' : 'bg-red-500'
                     }`}
@@ -385,15 +377,15 @@ Liquidation @ {formatInr(loanStatus.liquidationPrice)}
                 </div>
               </div>
               
-              <div className="flex items-center justify-between text-sm">
+              <div className="flex items-center justify-between text-xs">
                 <span className="text-zinc-400">Liquidation Price</span>
                 <span className="text-white font-medium">{formatInr(loanStatus.liquidationPrice)}</span>
               </div>
               
-              <div className="flex items-center justify-between text-sm">
+              <div className="flex items-center justify-between text-xs">
                 <span className="text-zinc-400">Safety Margin</span>
                 <span className="text-white font-medium">
-{formatInr(loanStatus.currentBtcPrice - loanStatus.liquidationPrice)}
+                  {formatInr(loanStatus.currentBtcPrice - loanStatus.liquidationPrice)}
                   ({formatPercentage((loanStatus.currentBtcPrice - loanStatus.liquidationPrice) / loanStatus.currentBtcPrice * 100)})
                 </span>
               </div>
@@ -401,16 +393,16 @@ Liquidation @ {formatInr(loanStatus.liquidationPrice)}
           </div>
 
           {/* Performance Tracking */}
-      <div className="bg-gradient-to-br from-zinc-950 to-zinc-900 border border-zinc-800 rounded-xl p-4">
-            <div className="flex items-center gap-2 mb-3">
-              <TrendingUp className="w-5 h-5 text-white" />
-              <h3 className="text-lg font-semibold">Loan Performance</h3>
+          <div className="bg-black border border-zinc-800 rounded-xl p-3">
+            <div className="flex items-center gap-2 mb-2">
+              <TrendingUp className="w-4 h-4 text-white" />
+              <h3 className="text-sm font-semibold">Loan Performance</h3>
             </div>
             
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-3">
               <div>
-                <p className="text-zinc-400 text-sm">Interest Paid to Date</p>
-                <p className="text-white font-semibold">
+                <p className="text-zinc-400 text-xs">Interest Paid to Date</p>
+                <p className="text-white font-semibold text-sm">
                   {formatInr(0)}
                 </p>
                 <p className="text-zinc-500 text-xs">
@@ -419,8 +411,8 @@ Liquidation @ {formatInr(loanStatus.liquidationPrice)}
               </div>
               
               <div>
-                <p className="text-zinc-400 text-sm">Effective Interest Rate</p>
-                <p className="text-white font-semibold">
+                <p className="text-zinc-400 text-xs">Effective Interest Rate</p>
+                <p className="text-white font-semibold text-sm">
                   {loanStatus.interestRate}% APR
                 </p>
                 <p className="text-zinc-500 text-xs">
@@ -433,16 +425,16 @@ Liquidation @ {formatInr(loanStatus.liquidationPrice)}
         </div>
       ) : (
         /* No Active Loan */
-        <div className="space-y-4">
-          <div className="bg-gradient-to-br from-zinc-950 to-zinc-900 border border-zinc-700 rounded-lg p-6 text-center">
-            <Wallet className="w-12 h-12 text-zinc-400 mx-auto mb-4" />
-            <h2 className="text-xl font-semibold mb-2">No Active Loan</h2>
-            <p className="text-zinc-400 mb-6">
+        <div className="space-y-3">
+          <div className="bg-black border border-zinc-800 rounded-xl p-4 text-center">
+            <Wallet className="w-8 h-8 text-zinc-400 mx-auto mb-2" />
+            <h2 className="text-sm font-semibold">No Active Loan</h2>
+            <p className="text-zinc-400 mb-4">
               Deposit Bitcoin as collateral to start borrowing ₹
             </p>
             <button
               onClick={() => setShowDepositModal(true)}
-              className="bg-white text-black hover:bg-zinc-200 py-3 px-6 rounded-lg font-medium transition-colors flex items-center gap-2 mx-auto"
+              className="bg-white text-black hover:bg-zinc-200 py-2 px-4 rounded-lg font-medium transition-colors flex items-center gap-2 mx-auto"
             >
               <Plus className="w-4 h-4" />
               Deposit Collateral
@@ -450,14 +442,14 @@ Liquidation @ {formatInr(loanStatus.liquidationPrice)}
           </div>
           
           {/* 30-Day Minimum Policy Notice */}
-          <div className="bg-gradient-to-br from-yellow-900/30 to-orange-900/30 border border-yellow-700/50 rounded-lg p-4">
-            <div className="flex items-start gap-3">
-              <div className="p-2 bg-yellow-800/50 rounded-lg flex-shrink-0">
-                <AlertTriangle className="w-5 h-5 text-yellow-400" />
+          <div className="bg-yellow-900/30 border border-yellow-700/50 rounded-lg p-3">
+            <div className="flex items-start gap-2">
+              <div className="p-1 bg-yellow-800/50 rounded-lg flex-shrink-0">
+                <AlertTriangle className="w-4 h-4 text-yellow-400" />
               </div>
               <div>
                 <h3 className="text-yellow-400 font-semibold mb-1">Important: 30-Day Minimum Interest</h3>
-                <p className="text-yellow-200 text-sm mb-2">
+                <p className="text-yellow-200 text-xs mb-2">
                   All loans are subject to a minimum 30-day interest charge, regardless of repayment timing.
                   This encourages longer-term borrowing and helps us provide better rates.
                 </p>
@@ -474,31 +466,31 @@ Liquidation @ {formatInr(loanStatus.liquidationPrice)}
 
       {/* Loan History */}
       {loanHistory.length > 0 && (
-      <div className="bg-gradient-to-br from-zinc-950 to-zinc-900 border border-zinc-800 rounded-xl overflow-hidden">
-          <div className="p-4 border-b border-zinc-800">
-            <h2 className="text-lg font-semibold">Loan History</h2>
+        <div className="bg-black border border-zinc-800 rounded-xl overflow-hidden">
+          <div className="p-3 border-b border-zinc-800">
+            <h2 className="text-sm font-semibold">Loan History</h2>
           </div>
           
-          <div className="p-4">
-            <div className="space-y-3">
+          <div className="p-3">
+            <div className="space-y-2">
               {loanHistory.map((item, index) => (
                 <div 
                   key={index} 
                   onClick={() => handleTransactionClick(item)}
-                  className="bg-zinc-800/50 rounded-lg p-4 hover:bg-zinc-800 transition-colors cursor-pointer"
+                  className="bg-zinc-800/50 rounded-lg p-3 hover:bg-zinc-800 transition-colors cursor-pointer"
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <div className="p-1.5 bg-zinc-700 rounded-lg">
+                      <div className="p-1 bg-zinc-700 rounded-lg">
                         {getIconComponent(getTransactionIcon(item.type, item.status))}
                       </div>
                       <div>
                         <div className="flex items-center gap-2">
-                          <p className="font-medium text-white text-sm">
+                          <p className="font-medium text-white text-xs">
                             {getTransactionDisplayName(item.type, item.status)}
                           </p>
                           {item.status === 'PENDING' && (
-                            <span className="px-1.5 py-0.5 text-xs bg-orange-900/20 border border-orange-800 text-orange-300 rounded">
+                            <span className="px-1 py-0.5 text-xs bg-orange-900/20 border border-orange-800 text-orange-300 rounded">
                               PENDING
                             </span>
                           )}
@@ -511,7 +503,7 @@ Liquidation @ {formatInr(loanStatus.liquidationPrice)}
                     <div className="text-right">
                       {item.type === 'LOAN_CREATE' ? (
                         <div>
-                          <p className="font-bold text-sm text-white">
+                          <p className="font-bold text-xs text-white">
                             {formatCurrency(item.btc_amount / 100000000, 'BTC')}
                           </p>
                           <p className="text-xs text-zinc-400">
@@ -520,7 +512,7 @@ Liquidation @ {formatInr(loanStatus.liquidationPrice)}
                         </div>
                       ) : item.type === 'LOAN_ADD_COLLATERAL' ? (
                         <div>
-                          <p className="font-bold text-sm text-white">
+                          <p className="font-bold text-xs text-white">
                             {formatCurrency(item.btc_amount / 100000000, 'BTC')}
                           </p>
                           <p className="text-xs text-zinc-400">
@@ -530,8 +522,8 @@ Liquidation @ {formatInr(loanStatus.liquidationPrice)}
                       ) : item.type.includes('LOAN') || item.type.includes('INTEREST') || item.type.includes('LIQUIDATION') ? (
                         <div>
                           {item.inr_amount > 0 && (
-                            <p className="font-bold text-sm text-white">
-{formatInr(item.inr_amount)}
+                            <p className="font-bold text-xs text-white">
+                              {formatInr(item.inr_amount)}
                             </p>
                           )}
                           {item.btc_amount > 0 && (
@@ -541,8 +533,8 @@ Liquidation @ {formatInr(loanStatus.liquidationPrice)}
                           )}
                         </div>
                       ) : (
-                        <p className="font-bold text-sm text-white">
-{item.inr_amount > 0 ? formatInr(item.inr_amount) : 
+                        <p className="font-bold text-xs text-white">
+                          {item.inr_amount > 0 ? formatInr(item.inr_amount) : 
                            item.btc_amount > 0 ? formatCurrency(item.btc_amount / 100000000, 'BTC') : 'N/A'}
                         </p>
                       )}
