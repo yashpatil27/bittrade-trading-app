@@ -852,8 +852,10 @@ router.get('/dca-plans', async (req, res) => {
     const plans = await query(`
       SELECT 
         id, plan_type, status, frequency, amount_per_execution,
-        next_execution_at, total_executions, remaining_executions,
-        max_price, min_price, created_at
+        CONVERT_TZ(next_execution_at, '+05:30', '+00:00') as next_execution_at, 
+        total_executions, remaining_executions,
+        max_price, min_price, 
+        CONVERT_TZ(created_at, '+05:30', '+00:00') as created_at
       FROM active_plans 
       WHERE user_id = ? 
       AND status IN ('ACTIVE', 'PAUSED')
