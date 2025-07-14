@@ -17,7 +17,6 @@ import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { userAPI } from '../services/api';
 import TextInputModal from '../components/TextInputModal';
-import SingleInputModal from '../components/SingleInputModal';
 import ChangePinModal from '../components/ChangePinModal';
 
 const Profile: React.FC = () => {
@@ -28,7 +27,6 @@ const Profile: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
-  const [isSingleInputModalOpen, setIsSingleInputModalOpen] = useState(false);
 
   const handleExportData = async () => {
     try {
@@ -366,23 +364,6 @@ const Profile: React.FC = () => {
             <Edit3 className="w-3 h-3 text-zinc-400" />
           </button>
 
-          {/* TEST: SingleInputModal */}
-          <button
-            onClick={() => setIsSingleInputModalOpen(true)}
-            className="w-full bg-black border border-zinc-800 rounded-xl p-3 flex items-center justify-between hover:bg-zinc-800 transition-colors"
-          >
-            <div className="flex items-center gap-2">
-              <div className="p-1.5 bg-zinc-800 rounded-lg">
-                <Download className="w-3 h-3 text-white" />
-              </div>
-              <div className="text-left">
-                <p className="font-medium text-sm">Test SingleInputModal</p>
-                <p className="text-zinc-400 text-xs">Test if SingleInputModal goes to top on Profile page</p>
-              </div>
-            </div>
-            <Download className="w-3 h-3 text-zinc-400" />
-          </button>
-
           {/* Logout Button */}
           <button
             onClick={async () => {
@@ -468,29 +449,6 @@ const Profile: React.FC = () => {
         document.body
       )}
       
-      {/* SingleInputModal Test - Rendered via Portal */}
-      {createPortal(
-        <SingleInputModal
-          isOpen={isSingleInputModalOpen}
-          onClose={() => setIsSingleInputModalOpen(false)}
-          title="Test SingleInputModal"
-          type="inr"
-          maxValue={10000}
-          confirmText="Test Confirm"
-          onConfirm={async (value) => {
-            console.log('SingleInputModal test value:', value);
-            setMessage(`✅ SingleInputModal test completed with value: ${value}`);
-            setIsSingleInputModalOpen(false);
-          }}
-          validation={(value) => {
-            const numValue = parseFloat(value);
-            if (isNaN(numValue) || numValue <= 0) return 'Please enter a valid amount';
-            if (numValue > 10000) return 'Amount cannot exceed 10,000';
-            return null;
-          }}
-        />,
-        document.body
-      )}
     </>
   );
 };
