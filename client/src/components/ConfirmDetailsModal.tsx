@@ -174,10 +174,10 @@ const ConfirmDetailsModal: React.FC<ConfirmDetailsModalProps> = ({
         onTouchEnd={handleTouchEnd}
       >
         {/* Header */}
-        <div className="px-6 pt-6 pb-4">
+        <div className="px-6 pt-2 pb-4">
           <div className="flex items-center justify-between">
             <div className="w-10"></div> {/* Spacer for centering */}
-            <h2 className="text-white text-xl font-semibold text-center flex-1">{title}</h2>
+            <h2 className="text-white text-sm font-semibold text-center flex-1">{title}</h2>
             <button
               onClick={animateClose}
               className="text-zinc-400 hover:text-white p-2 w-10 h-10 flex items-center justify-center"
@@ -235,7 +235,7 @@ const ConfirmDetailsModal: React.FC<ConfirmDetailsModalProps> = ({
           </div>
 
           {/* Confirm Button */}
-          <div className="mb-4 pb-24 flex justify-center">
+          <div className="mb-4 pb-20 flex justify-center">
             <button
               onClick={handleConfirm}
               disabled={isLoading}

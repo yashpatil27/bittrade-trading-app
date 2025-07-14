@@ -249,10 +249,10 @@ const SingleInputModal: React.FC<SingleInputModalProps> = ({
         onTouchEnd={handleTouchEnd}
       >
         {/* Header */}
-        <div className="px-6 pt-6 pb-4">
+        <div className="px-6 pt-2 pb-4">
           <div className="flex items-center justify-between">
             <div className="w-10"></div> {/* Spacer for centering */}
-            <h2 className="text-white text-xl font-semibold text-center flex-1">{title}</h2>
+            <h2 className="text-white text-sm font-semibold text-center flex-1">{title}</h2>
             <button
               onClick={animateClose}
               className="text-zinc-400 hover:text-white p-2 w-10 h-10 flex items-center justify-center"
@@ -306,14 +306,14 @@ const SingleInputModal: React.FC<SingleInputModalProps> = ({
           {sectionTitle && (onSectionClick || sectionAmount || sectionDetail) && (
             <div 
               onClick={onSectionClick} 
-              className="mb-2 px-4 py-2 bg-zinc-800 rounded-lg text-white cursor-pointer hover:bg-zinc-700"
+              className="mb-2 bg-black border border-zinc-700 rounded-lg p-4 cursor-pointer hover:bg-zinc-900 transition-colors"
             >
               <div className="flex justify-between items-center">
                 <div>
-                  <h3 className="font-semibold text-sm">{sectionTitle}</h3>
-                  <p className="text-xs text-zinc-400">{sectionDetail}</p>
+                  <span className="text-zinc-400 text-sm">{sectionTitle}</span>
+                  {sectionDetail && <p className="text-xs text-zinc-500 mt-1">{sectionDetail}</p>}
                 </div>
-                {sectionAmount && <span className="text-lg font-medium">{sectionAmount}</span>}
+                {sectionAmount && <span className="text-sm font-medium text-zinc-300">{sectionAmount}</span>}
               </div>
             </div>
           )}
@@ -336,7 +336,7 @@ const SingleInputModal: React.FC<SingleInputModalProps> = ({
           </div>
 
           {/* Confirm Button */}
-          <div className="mb-4 pb-24 flex justify-center">
+          <div className="mb-4 pb-20 flex justify-center">
             <button
               onClick={handleConfirm}
               disabled={isConfirmDisabled}
