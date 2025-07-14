@@ -249,7 +249,7 @@ const SingleInputModal: React.FC<SingleInputModalProps> = ({
         onTouchEnd={handleTouchEnd}
       >
         {/* Header */}
-        <div className="px-6 pt-2 pb-4">
+        <div className="px-6 modal-safe-top pb-4">
           <div className="flex items-center justify-between">
             <div className="w-10"></div> {/* Spacer for centering */}
             <h2 className="text-white text-sm font-semibold text-center flex-1">{title}</h2>

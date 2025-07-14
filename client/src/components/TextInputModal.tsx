@@ -1,39 +1,38 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { formatCurrencyInr, formatBitcoin } from '../utils/formatters';
 
-interface DetailItem {
+interface TextInputField {
+  id: string;
   label: string;
+  type: 'text' | 'email' | 'password';
+  placeholder?: string;
   value: string;
-  highlight?: boolean; // Optional highlighting for important details
+  required?: boolean;
+  validation?: (value: string) => string | null; // Returns error message or null if valid
 }
 
-interface ConfirmDetailsModalProps {
+interface TextInputModalProps {
   isOpen: boolean;
   onClose: () => void;
   title: string;
-  amount: string;
-  amountType: 'btc' | 'inr';
-  subAmount?: string; // Smaller amount below main amount
-  subAmountType?: 'btc' | 'inr';
-  details: DetailItem[]; // Array of 2-5 details to show
+  fields: TextInputField[]; // Up to 4 fields
   confirmText?: string;
-  onConfirm: () => void | Promise<void>;
+  onConfirm: (values: Record<string, string>) => void | Promise<void>;
   isLoading?: boolean;
+  onFieldChange?: (fieldId: string, value: string) => void;
 }
 
-const ConfirmDetailsModal: React.FC<ConfirmDetailsModalProps> = ({
+const TextInputModal: React.FC<TextInputModalProps> = ({
   isOpen,
   onClose,
   title,
-  amount,
-  amountType,
-  subAmount,
-  subAmountType,
-  details,
+  fields,
   confirmText = "Confirm",
   onConfirm,
   isLoading = false,
+  onFieldChange
 }) => {
+  const [values, setValues] = useState<Record<string, string>>({});
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const [dragStartY, setDragStartY] = useState(0);
   const [dragOffset, setDragOffset] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
@@ -42,11 +41,11 @@ const ConfirmDetailsModal: React.FC<ConfirmDetailsModalProps> = ({
   const [screenHeight] = useState(window.innerHeight);
   const modalRef = useRef<HTMLDivElement>(null);
 
-  // Layout calculations to match SingleInputModal button position
+  // Layout calculations - match SingleInputModal pattern
   const layoutConfig = {
     header: 80, // Title area
     padding: 24, // px-6 = 24px on each side
-    keypadSpace: 200, // Same keypad space as SingleInputModal to maintain button position
+    keypadSpace: 200, // Reserve space like keypad in SingleInputModal
     confirmButton: 60, // Button height + margins
     safeArea: 20, // Safe area for mobile browsers
   };
@@ -59,11 +58,21 @@ const ConfirmDetailsModal: React.FC<ConfirmDetailsModalProps> = ({
   const availableContentHeight = screenHeight - totalFixedHeight;
   const contentHeight = Math.max(availableContentHeight, 200); // Minimum 200px for content
 
-  // Animation control
+  // Initialize values from fields
+  useEffect(() => {
+    const initialValues: Record<string, string> = {};
+    fields.forEach(field => {
+      initialValues[field.id] = field.value || '';
+    });
+    setValues(initialValues);
+  }, [fields]);
+
+  // Animation control - match SingleInputModal pattern
   useEffect(() => {
     if (isOpen) {
       setDragOffset(0);
       setIsAnimating(false);
+      setErrors({});
       setTimeout(() => {
         setIsAnimating(true);
       }, 50);
@@ -91,6 +100,20 @@ const ConfirmDetailsModal: React.FC<ConfirmDetailsModalProps> = ({
     };
   }, [isOpen]);
 
+  // Validate fields when values change
+  useEffect(() => {
+    const newErrors: Record<string, string> = {};
+    fields.forEach(field => {
+      if (field.validation && values[field.id]) {
+        const errorMessage = field.validation(values[field.id]);
+        if (errorMessage) {
+          newErrors[field.id] = errorMessage;
+        }
+      }
+    });
+    setErrors(newErrors);
+  }, [values, fields]);
+
   // Close animation function
   const animateClose = () => {
     setIsClosing(true);
@@ -104,7 +127,7 @@ const ConfirmDetailsModal: React.FC<ConfirmDetailsModalProps> = ({
   // Touch handlers for drag-to-close
   const handleTouchStart = (e: React.TouchEvent) => {
     const target = e.target as HTMLElement;
-    if (target.tagName === 'BUTTON' || target.closest('button')) {
+    if (target.tagName === 'BUTTON' || target.closest('button') || target.tagName === 'INPUT') {
       return;
     }
     
@@ -136,20 +159,60 @@ const ConfirmDetailsModal: React.FC<ConfirmDetailsModalProps> = ({
     }
   };
 
+  const handleInputChange = (fieldId: string, value: string) => {
+    setValues(prev => ({
+      ...prev,
+      [fieldId]: value
+    }));
+    
+    if (onFieldChange) {
+      onFieldChange(fieldId, value);
+    }
+  };
+
   const handleConfirm = async () => {
     if (isLoading) return;
     
+    // Validate all required fields
+    const newErrors: Record<string, string> = {};
+    let hasErrors = false;
+    
+    fields.forEach(field => {
+      const value = values[field.id] || '';
+      
+      // Check required fields
+      if (field.required && !value.trim()) {
+        newErrors[field.id] = `${field.label} is required`;
+        hasErrors = true;
+      }
+      
+      // Check validation
+      if (field.validation && value) {
+        const errorMessage = field.validation(value);
+        if (errorMessage) {
+          newErrors[field.id] = errorMessage;
+          hasErrors = true;
+        }
+      }
+    });
+    
+    if (hasErrors) {
+      setErrors(newErrors);
+      return;
+    }
+    
     try {
-      await onConfirm();
+      await onConfirm(values);
     } catch (error) {
       console.error('Confirmation error:', error);
     }
   };
 
-  const formatAmount = (value: string, type: 'btc' | 'inr') => {
-    const numValue = parseFloat(value) || 0;
-    return type === 'btc' ? `₿${formatBitcoin(numValue)}` : formatCurrencyInr(numValue);
-  };
+  const isConfirmDisabled = isLoading || 
+                           fields.some(field => 
+                             field.required && !values[field.id]?.trim()
+                           ) ||
+                           Object.keys(errors).length > 0;
 
   if (!isOpen) return null;
 
@@ -189,41 +252,39 @@ const ConfirmDetailsModal: React.FC<ConfirmDetailsModalProps> = ({
 
         {/* Content */}
         <div className="flex flex-col h-full px-6">
-          {/* Amount Display Area */}
+          {/* Input Fields Area */}
           <div 
-            className="flex flex-col justify-start items-center pt-4" 
+            className="flex flex-col justify-start pt-4" 
             style={{ height: `${contentHeight}px` }}
           >
-            <div className="text-center w-full">
-              {/* Main Amount Display */}
-              <div className="flex items-center justify-center gap-2 mb-4">
-                <span className="text-white text-5xl font-light">
-                  {formatAmount(amount, amountType)}
-                </span>
-              </div>
-              
-              {/* Sub Amount Display */}
-              {subAmount && subAmountType && (
-                <div className="flex items-center justify-center gap-2 mb-4">
-                  <span className="text-zinc-400 text-lg font-light">
-                    {formatAmount(subAmount, subAmountType)}
-                  </span>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Details Section - positioned exactly like SingleInputModal section */}
-          <div className="mb-2 bg-black border border-zinc-700 rounded-lg p-4">
-            <div className="space-y-4">
-              {details.map((detail, index) => (
-                <div key={index} className="flex justify-between items-center">
-                  <span className="text-zinc-400 text-sm">{detail.label}</span>
-                  <span className={`text-sm font-medium ${
-                    detail.highlight ? 'text-white' : 'text-zinc-300'
-                  }`}>
-                    {detail.value}
-                  </span>
+            <div className="space-y-6 w-full max-w-md mx-auto">
+              {fields.map((field) => (
+                <div key={field.id} className="space-y-2">
+                  <label 
+                    htmlFor={field.id}
+                    className="block text-sm font-medium text-zinc-400"
+                  >
+                    {field.label}
+                    {field.required && <span className="text-red-400 ml-1">*</span>}
+                  </label>
+                  
+                  <input
+                    id={field.id}
+                    type={field.type}
+                    placeholder={field.placeholder}
+                    value={values[field.id] || ''}
+                    onChange={(e) => handleInputChange(field.id, e.target.value)}
+                    className={`w-full px-4 py-3 bg-zinc-900 border rounded-lg text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent transition-all ${
+                      errors[field.id] ? 'border-red-500' : 'border-zinc-700'
+                    }`}
+                    disabled={isLoading}
+                  />
+                  
+                  {errors[field.id] && (
+                    <div className="text-red-400 text-sm">
+                      {errors[field.id]}
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -238,7 +299,7 @@ const ConfirmDetailsModal: React.FC<ConfirmDetailsModalProps> = ({
           <div className="mb-4 pb-20 flex justify-center">
             <button
               onClick={handleConfirm}
-              disabled={isLoading}
+              disabled={isConfirmDisabled}
               className="px-8 h-12 bg-white text-black text-base font-medium rounded-lg transition-all disabled:opacity-50 disabled:bg-zinc-800 disabled:text-zinc-500"
             >
               {isLoading ? 'Processing...' : confirmText}
@@ -250,4 +311,4 @@ const ConfirmDetailsModal: React.FC<ConfirmDetailsModalProps> = ({
   );
 };
 
-export default ConfirmDetailsModal;
+export default TextInputModal;
