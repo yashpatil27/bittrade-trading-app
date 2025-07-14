@@ -26,6 +26,7 @@ import { userAPI } from '../services/api';
 import { Balances, Prices, Transaction, DashboardData } from '../types';
 import MobileTradingModal from '../components/MobileTradingModal';
 import SingleInputModal from '../components/SingleInputModal';
+import ConfirmDetailsModal from '../components/ConfirmDetailsModal';
 import PriceUpdateTimer from '../components/PriceUpdateTimer';
 import TransactionDetailModal from '../components/TransactionDetailModal';
 import BitcoinChart, { BitcoinChartRef } from '../components/BitcoinChart';
@@ -54,6 +55,9 @@ const Home: React.FC = () => {
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
   const [isTransactionModalOpen, setIsTransactionModalOpen] = useState(false);
   const [isSingleInputModalOpen, setIsSingleInputModalOpen] = useState(false);
+  const [isConfirmDetailsModalOpen, setIsConfirmDetailsModalOpen] = useState(false);
+  const [inputAmount, setInputAmount] = useState('');
+  const [inputType, setInputType] = useState<'buy' | 'sell'>('buy');
 
   useEffect(() => {
     const fetchData = async () => {
@@ -72,9 +76,10 @@ const Home: React.FC = () => {
     fetchData();
   }, []);
 
-  const openTradingModal = (type: 'buy' | 'sell') => {
+  const handleOpenSingleInputModal = (type: 'buy' | 'sell') => {
     setModalType(type);
-    setIsModalOpen(true);
+    setInputType(type);
+    setIsSingleInputModalOpen(true);
   };
 
   const handleTrade = async (amount: number, targetPrice?: number, dcaConfig?: {
@@ -90,7 +95,7 @@ const Home: React.FC = () => {
     try {
       if (dcaConfig) {
         // DCA plan
-        if (modalType === 'buy') {
+        if (inputType === 'buy') {
           await userAPI.createDcaBuyPlan({ 
             amountPerExecution: amount, 
             frequency: dcaConfig.frequency,
@@ -111,7 +116,7 @@ const Home: React.FC = () => {
         }
       } else if (targetPrice) {
         // Limit order
-        if (modalType === 'buy') {
+        if (inputType === 'buy') {
           await userAPI.placeLimitBuyOrder({ inrAmount: amount, targetPrice });
           setSuccess('📊 Limit buy order placed successfully!');
         } else {
@@ -120,7 +125,7 @@ const Home: React.FC = () => {
         }
       } else {
         // Market order
-        if (modalType === 'buy') {
+        if (inputType === 'buy') {
           await userAPI.buyBitcoin({ amount });
           setSuccess('🎉 Bitcoin purchased successfully!');
         } else {
@@ -145,7 +150,7 @@ const Home: React.FC = () => {
       // Trigger balance refresh for persistent top bar
       refreshBalance();
     } catch (error: any) {
-      setError(error.response?.data?.message || `Failed to ${dcaConfig ? 'create DCA plan' : targetPrice ? 'place limit order' : modalType + ' Bitcoin'}`);
+      setError(error.response?.data?.message || `Failed to ${dcaConfig ? 'create DCA plan' : targetPrice ? 'place limit order' : inputType + ' Bitcoin'}`);
     } finally {
       setIsLoading(false);
     }
@@ -254,7 +259,7 @@ const Home: React.FC = () => {
           {/* Trading Action Buttons */}
           <div className="grid grid-cols-2 gap-2">
             <button
-              onClick={() => setIsSingleInputModalOpen(true)}
+              onClick={() => handleOpenSingleInputModal('buy')}
               className="bg-white text-black hover:bg-zinc-200 font-medium py-2 px-3 rounded-lg transition-colors flex items-center justify-center gap-1.5 text-sm"
             >
               <TrendingUp className="w-4 h-4" />
@@ -262,7 +267,7 @@ const Home: React.FC = () => {
             </button>
             
             <button
-              onClick={() => openTradingModal('sell')}
+              onClick={() => handleOpenSingleInputModal('sell')}
               className="bg-zinc-700 text-white hover:bg-zinc-600 font-medium py-2 px-3 rounded-lg transition-colors flex items-center justify-center gap-1.5 text-sm"
             >
               <TrendingDown className="w-4 h-4" />
@@ -401,6 +406,46 @@ const Home: React.FC = () => {
         </div>
       </div>
 
+{/* Confirm Details Modal */}
+      <ConfirmDetailsModal
+        isOpen={isConfirmDetailsModalOpen}
+        onClose={() => setIsConfirmDetailsModalOpen(false)}
+        title={inputType === 'buy' ? 'Buy Bitcoin' : 'Sell Bitcoin'}
+        amount={inputAmount}
+        amountType={inputType === 'buy' ? 'inr' : 'btc'}
+        subAmount={inputType === 'buy' && prices ? 
+          (parseFloat(inputAmount) / (prices.buy_rate || 1)).toFixed(8) : 
+          inputType === 'sell' && prices ? 
+          (parseFloat(inputAmount) * (prices.sell_rate || 1)).toFixed(2) : undefined
+        }
+        subAmountType={inputType === 'buy' ? 'btc' : 'inr'}
+        details={[
+          {
+            label: 'Rate',
+            value: inputType === 'buy' ? 
+              `₹${prices?.buy_rate?.toLocaleString() || 0}` : 
+              `₹${prices?.sell_rate?.toLocaleString() || 0}`,
+            highlight: true
+          },
+          {
+            label: 'Fee',
+            value: '₹0',
+          },
+          {
+            label: 'Total',
+            value: inputType === 'buy' ? 
+              `₹${parseFloat(inputAmount || '0').toLocaleString()}` : 
+              `₹${((parseFloat(inputAmount || '0') * (prices?.sell_rate || 1))).toLocaleString()}`,
+            highlight: true
+          }
+        ]}
+        confirmText={inputType === 'buy' ? 'Buy Bitcoin' : 'Sell Bitcoin'}
+        onConfirm={async () => {
+          setIsConfirmDetailsModalOpen(false);
+          await handleTrade(parseFloat(inputAmount));
+        }}
+      />
+
 {/* Trading Modal */}
       <MobileTradingModal
         isOpen={isModalOpen}
@@ -419,22 +464,24 @@ const Home: React.FC = () => {
         onTransactionUpdate={refreshData}
       />
       
-      {/* Single Input Modal for Testing */}
+      {/* Single Input Modal */}
       <SingleInputModal
         isOpen={isSingleInputModalOpen}
         onClose={() => setIsSingleInputModalOpen(false)}
-        title="Buy Bitcoin"
-        type="inr"
-        maxValue={balances?.inr || 0}
-        confirmText="Buy Bitcoin"
+        title={inputType === 'buy' ? 'Buy Bitcoin' : 'Sell Bitcoin'}
+        type={inputType === 'buy' ? 'inr' : 'btc'}
+        maxValue={inputType === 'buy' ? (balances?.inr || 0) : (balances?.btc || 0)}
+        confirmText={inputType === 'buy' ? 'Continue' : 'Continue'}
         onConfirm={async (value) => {
-          console.log('Buy Bitcoin amount:', value);
+          setInputAmount(value);
           setIsSingleInputModalOpen(false);
+          setIsConfirmDetailsModalOpen(true);
         }}
         validation={(value) => {
           const numValue = parseFloat(value);
           if (isNaN(numValue) || numValue <= 0) return 'Please enter a valid amount';
-          if (numValue > (balances?.inr || 0)) return 'Insufficient balance';
+          const maxValue = inputType === 'buy' ? (balances?.inr || 0) : (balances?.btc || 0);
+          if (numValue > maxValue) return 'Insufficient balance';
           return null;
         }}
       />
