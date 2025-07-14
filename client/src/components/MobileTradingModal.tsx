@@ -32,6 +32,7 @@ const MobileTradingModal: React.FC<MobileTradingModalProps> = ({
   const [targetPrice, setTargetPrice] = useState('');
   const [estimation, setEstimation] = useState<number>(0);
   const [showPinPad, setShowPinPad] = useState(false);
+  const [currentStep, setCurrentStep] = useState<'targetPrice' | 'amount'>('amount');
   const [pin, setPin] = useState('');
   const [dragStartY, setDragStartY] = useState(0);
   const [dragOffset, setDragOffset] = useState(0);
@@ -196,8 +197,8 @@ const MobileTradingModal: React.FC<MobileTradingModalProps> = ({
         setPin(prev => prev + value);
       }
     } else {
-      // Determine which field we're editing
-      const isEditingTargetPrice = orderType === 'limit' && !targetPrice;
+      // Determine which field we're editing based on currentStep
+      const isEditingTargetPrice = orderType === 'limit' && currentStep === 'targetPrice';
       const currentValue = isEditingTargetPrice ? targetPrice : amount;
       const setValue = isEditingTargetPrice ? setTargetPrice : setAmount;
       
@@ -224,6 +225,14 @@ const MobileTradingModal: React.FC<MobileTradingModalProps> = ({
   };
 
   const handleConfirm = async () => {
+    // Handle limit order step progression
+    if (orderType === 'limit' && currentStep === 'targetPrice') {
+      if (!targetPrice || parseFloat(targetPrice) <= 0) return;
+      setCurrentStep('amount');
+      return;
+    }
+    
+    // Handle final confirmation
     if (!amount || parseFloat(amount) <= 0) return;
     if (orderType === 'limit' && (!targetPrice || parseFloat(targetPrice) <= 0)) return;
     
@@ -300,6 +309,7 @@ const MobileTradingModal: React.FC<MobileTradingModalProps> = ({
                 onClick={() => {
                   setOrderType('limit');
                   setAmount('');
+                  setCurrentStep('targetPrice');
                 }}
                 className={`flex-1 py-2 px-4 rounded-full text-sm font-medium transition-all ${
                   orderType === 'limit'
@@ -337,14 +347,14 @@ const MobileTradingModal: React.FC<MobileTradingModalProps> = ({
                 {orderType === 'limit' && (
                   <div className="mb-4">
                     <div className="text-zinc-400 text-sm mb-2">
-                      {!targetPrice ? 'Step 1: Set Target Price' : 'Step 2: Enter Amount'}
+                      {currentStep === 'targetPrice' ? 'Step 1: Set Target Price' : 'Step 2: Enter Amount'}
                     </div>
                     <div className="flex justify-center gap-2">
                       <div className={`w-2 h-2 rounded-full ${
-                        !targetPrice ? 'bg-white' : 'bg-zinc-600'
+                        currentStep === 'targetPrice' ? 'bg-white' : 'bg-zinc-600'
                       }`} />
                       <div className={`w-2 h-2 rounded-full ${
-                        targetPrice ? 'bg-white' : 'bg-zinc-600'
+                        currentStep === 'amount' ? 'bg-white' : 'bg-zinc-600'
                       }`} />
                     </div>
                   </div>
@@ -353,7 +363,7 @@ const MobileTradingModal: React.FC<MobileTradingModalProps> = ({
                 {/* Input Display */}
                 <div className="flex items-center justify-center gap-2 mb-4">
                   {/* Show currency symbol based on current input */}
-                  {orderType === 'limit' && !targetPrice ? (
+                  {orderType === 'limit' && currentStep === 'targetPrice' ? (
                     // Target price input - always INR
                     <span className="text-white text-4xl font-light">₹</span>
                   ) : (
@@ -364,8 +374,8 @@ const MobileTradingModal: React.FC<MobileTradingModalProps> = ({
                     </>
                   )}
                   <span className="text-white text-5xl font-light">
-                    {orderType === 'limit' && !targetPrice 
-                      ? '0'
+                    {orderType === 'limit' && currentStep === 'targetPrice'
+                      ? (targetPrice || '0')
                       : (amount || '0')
                     }
                   </span>
@@ -373,14 +383,10 @@ const MobileTradingModal: React.FC<MobileTradingModalProps> = ({
                 
                 {/* Label */}
                 <div className="text-zinc-400 text-sm mb-4">
-                  {orderType === 'limit' && !targetPrice 
-                    ? 'Target price per Bitcoin'
-                    : `${isBuy ? 'Amount to spend' : 'Amount to sell'}`
-                  }
                 </div>
                 
                 {/* Max button - only for amount input */}
-                {(orderType === 'market' || (orderType === 'limit' && targetPrice)) && (
+                {(orderType === 'market' || (orderType === 'limit' && currentStep === 'amount')) && (
                   <button
                     onClick={handleMaxAmount}
                     className="bg-zinc-800 text-zinc-300 px-4 py-2 rounded-lg text-sm font-medium hover:bg-zinc-700 transition-colors"
@@ -426,10 +432,10 @@ const MobileTradingModal: React.FC<MobileTradingModalProps> = ({
             <div className="grid grid-cols-3 gap-1">
               {['1', '2', '3', '4', '5', '6', '7', '8', '9', '', '0', 'backspace'].map((key, index) => (
                 key === '' ? (
-                  <div key={index} className="h-16" />
+                  <div key={`empty-${index}`} className="h-16" />
                 ) : (
                   <KeypadButton
-                    key={key}
+                    key={`key-${index}-${key}`}
                     value={key === 'backspace' ? '⌫' : key}
                     onPress={() => handleKeypadPress(key)}
                   />
@@ -442,7 +448,13 @@ const MobileTradingModal: React.FC<MobileTradingModalProps> = ({
           <div className="mb-16 pb-12 flex justify-center">
             <button
               onClick={showPinPad ? handlePinConfirm : handleConfirm}
-              disabled={isLoading || !amount || (showPinPad && pin.length !== 4)}
+              disabled={
+                isLoading || 
+                (showPinPad && pin.length !== 4) ||
+                (orderType === 'limit' && currentStep === 'targetPrice' && (!targetPrice || parseFloat(targetPrice) <= 0)) ||
+                (orderType !== 'limit' && (!amount || parseFloat(amount) <= 0)) ||
+                (orderType === 'limit' && currentStep === 'amount' && (!amount || parseFloat(amount) <= 0))
+              }
               className="px-8 h-12 bg-white text-black text-base font-medium rounded-lg transition-all disabled:opacity-50 disabled:bg-zinc-800 disabled:text-zinc-500"
             >
               {isLoading ? 'Processing...' : 'Next'}
