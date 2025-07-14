@@ -24,7 +24,7 @@ import {
 } from 'lucide-react';
 import { userAPI } from '../services/api';
 import { Balances, Prices, Transaction, DashboardData } from '../types';
-import TradingModal from '../components/TradingModal';
+import MobileTradingModal from '../components/MobileTradingModal';
 import PriceUpdateTimer from '../components/PriceUpdateTimer';
 import TransactionDetailModal from '../components/TransactionDetailModal';
 import BitcoinChart, { BitcoinChartRef } from '../components/BitcoinChart';
@@ -425,7 +425,7 @@ const Home: React.FC = () => {
       </div>
 
       {/* Trading Modal */}
-      <TradingModal
+      <MobileTradingModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         type={modalType}
