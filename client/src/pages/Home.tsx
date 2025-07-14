@@ -424,7 +424,7 @@ const Home: React.FC = () => {
         </div>
       </div>
 
-      {/* Trading Modal */}
+{/* Trading Modal */}
       <MobileTradingModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
@@ -435,7 +435,6 @@ const Home: React.FC = () => {
         isLoading={isLoading}
       />
 
-      {/* Transaction Detail Modal */}
       <TransactionDetailModal
         isOpen={isTransactionModalOpen}
         onClose={() => setIsTransactionModalOpen(false)}
