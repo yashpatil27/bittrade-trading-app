@@ -79,6 +79,8 @@ const ModalDemo: React.FC = () => {
             <ul className="text-zinc-300 space-y-2 text-sm">
               <li>• <strong>BTC Modal:</strong> Includes a decimal point (.) button for precise Bitcoin amounts</li>
               <li>• <strong>INR Modal:</strong> Only integer input, no decimal point for rupee amounts</li>
+              <li>• <strong>Max Button:</strong> Shows formatted max amount when input is empty (Max ₿2.5 / Max ₹1,25,000)</li>
+              <li>• <strong>Section Feature:</strong> Both modals show a clickable section above the keypad with balance info</li>
               <li>• Both modals format the display value automatically using existing formatters</li>
               <li>• Drag down or tap the X to close modals</li>
               <li>• Values are logged to console and displayed above when submitted</li>
@@ -92,11 +94,17 @@ const ModalDemo: React.FC = () => {
         isOpen={isBtcModalOpen}
         onClose={() => setIsBtcModalOpen(false)}
         title="Enter Bitcoin Amount"
-        placeholder="Enter BTC amount"
         type="btc"
+        maxValue={2.5}
         confirmText="Confirm BTC"
         onConfirm={handleBtcConfirm}
         isLoading={false}
+        sectionTitle="Available Balance"
+        sectionDetail="Your current BTC balance"
+        sectionAmount="₿2.5"
+        onSectionClick={() => {
+          console.log('Section clicked - could show balance details');
+        }}
         validation={(value) => {
           // Allow partial inputs like "." or "0." while typing
           if (value === '.' || value === '0.' || value.endsWith('.')) {
@@ -119,11 +127,17 @@ const ModalDemo: React.FC = () => {
         isOpen={isInrModalOpen}
         onClose={() => setIsInrModalOpen(false)}
         title="Enter INR Amount"
-        placeholder="Enter rupee amount"
         type="inr"
+        maxValue={125000}
         confirmText="Confirm INR"
         onConfirm={handleInrConfirm}
         isLoading={false}
+        sectionTitle="Wallet Balance"
+        sectionDetail="Available INR in your wallet"
+        sectionAmount="₹1,25,000"
+        onSectionClick={() => {
+          console.log('INR Section clicked - could show transaction history');
+        }}
         validation={(value) => {
           const num = parseFloat(value);
           if (isNaN(num) || num <= 0) {

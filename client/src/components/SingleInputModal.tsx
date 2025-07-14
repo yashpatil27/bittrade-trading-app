@@ -5,30 +5,33 @@ interface SingleInputModalProps {
   isOpen: boolean;
   onClose: () => void;
   title: string;
-  placeholder?: string;
   type: 'btc' | 'inr';
   maxValue?: number;
-  maxLabel?: string;
-  showMaxButton?: boolean;
   confirmText?: string;
   onConfirm: (value: string) => void | Promise<void>;
   isLoading?: boolean;
   validation?: (value: string) => string | null; // Returns error message or null if valid
+  // Optional section above keypad
+  sectionTitle?: string;
+  sectionDetail?: string;
+  sectionAmount?: string;
+  onSectionClick?: () => void;
 }
 
 const SingleInputModal: React.FC<SingleInputModalProps> = ({
   isOpen,
   onClose,
   title,
-  placeholder = "Enter value",
   type,
   maxValue,
-  maxLabel,
-  showMaxButton = false,
   confirmText = "Next",
   onConfirm,
   isLoading = false,
-  validation
+  validation,
+  sectionTitle,
+  sectionDetail,
+  sectionAmount,
+  onSectionClick
 }) => {
   const [value, setValue] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -44,15 +47,19 @@ const SingleInputModal: React.FC<SingleInputModalProps> = ({
   const layoutConfig = {
     header: 80, // Title area
     padding: 24, // px-6 = 24px on each side
-    keypad: 232, // 4 rows × 64px (h-16) + gaps + mb-6 (24px)
-    confirmButton: 88, // Button height + margins
-    safeArea: 40, // Additional safe area for mobile browsers
+    keypad: 200, // Reduced from 232 to shift keypad up
+    confirmButton: 60, // Reduced from 88 to shift button up
+    safeArea: 20, // Reduced from 40 to shift everything up
+    maxButton: maxValue !== undefined ? 44 : 0, // Max button height (py-2 = 8px + 8px, text height ~20px, mb-2 = 8px)
+    section: sectionTitle ? 64 : 0, // Section height when present
   };
 
   const totalFixedHeight = layoutConfig.header + 
                           layoutConfig.keypad + 
                           layoutConfig.confirmButton + 
-                          layoutConfig.safeArea;
+                          layoutConfig.safeArea + 
+                          layoutConfig.maxButton + 
+                          layoutConfig.section;
 
   const availableContentHeight = screenHeight - totalFixedHeight;
   const contentHeight = Math.max(availableContentHeight, 200); // Minimum 200px for content
@@ -276,11 +283,14 @@ const SingleInputModal: React.FC<SingleInputModalProps> = ({
                 </span>
               </div>
               
-              {/* Placeholder/Helper Text */}
-              {!value && (
-                <div className="text-zinc-400 text-sm mb-4">
-                  {placeholder}
-                </div>
+              {/* Max Button */}
+              {!value && maxValue !== undefined && (
+                <button
+                  onClick={handleMaxAmount}
+                  className="bg-zinc-800 text-zinc-300 px-6 py-2 rounded-full text-sm font-medium hover:bg-zinc-700 transition-colors mb-2 inline-flex items-center justify-center min-w-fit"
+                >
+                  Max {type === 'btc' ? `₿${formatBitcoin(maxValue)}` : formatCurrencyInr(maxValue)}
+                </button>
               )}
               
               {/* Error Message */}
@@ -289,21 +299,27 @@ const SingleInputModal: React.FC<SingleInputModalProps> = ({
                   {error}
                 </div>
               )}
-              
-              {/* Max Button */}
-              {showMaxButton && maxValue !== undefined && (
-                <button
-                  onClick={handleMaxAmount}
-                  className="bg-zinc-800 text-zinc-300 px-4 py-2 rounded-lg text-sm font-medium hover:bg-zinc-700 transition-colors"
-                >
-                  Max {maxLabel || maxValue}
-                </button>
-              )}
             </div>
           </div>
 
+          {/* Optional Section */}
+          {sectionTitle && (onSectionClick || sectionAmount || sectionDetail) && (
+            <div 
+              onClick={onSectionClick} 
+              className="mb-2 px-4 py-2 bg-zinc-800 rounded-lg text-white cursor-pointer hover:bg-zinc-700"
+            >
+              <div className="flex justify-between items-center">
+                <div>
+                  <h3 className="font-semibold text-sm">{sectionTitle}</h3>
+                  <p className="text-xs text-zinc-400">{sectionDetail}</p>
+                </div>
+                {sectionAmount && <span className="text-lg font-medium">{sectionAmount}</span>}
+              </div>
+            </div>
+          )}
+
           {/* Keypad */}
-          <div className="mb-6">
+          <div className="mb-3">
             <div className="grid grid-cols-3 gap-1">
               {['1', '2', '3', '4', '5', '6', '7', '8', '9', type === 'btc' ? '.' : '', '0', 'backspace'].map((key, index) => (
                 key === '' ? (
@@ -320,7 +336,7 @@ const SingleInputModal: React.FC<SingleInputModalProps> = ({
           </div>
 
           {/* Confirm Button */}
-          <div className="mb-8 pb-8 flex justify-center">
+          <div className="mb-4 pb-24 flex justify-center">
             <button
               onClick={handleConfirm}
               disabled={isConfirmDisabled}
