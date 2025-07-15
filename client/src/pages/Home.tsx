@@ -276,7 +276,7 @@ const Home: React.FC = () => {
         <BitcoinChart ref={bitcoinChartRef} />
 
         {/* Active DCA Plans */}
-        <DcaPlansSection ref={dcaPlansSectionRef} onUpdate={refreshData} />
+        <DcaPlansSection ref={dcaPlansSectionRef} onUpdate={refreshData} balances={balances} prices={prices} />
 
         {/* Recent Activity */}
         <div className="bg-black border border-zinc-800 rounded-lg overflow-hidden">

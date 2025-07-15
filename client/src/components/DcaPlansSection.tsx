@@ -8,21 +8,27 @@ import {
   X, 
   AlertTriangle,
   CheckCircle,
-  Pause
+  Pause,
+  Plus
 } from 'lucide-react';
 import { userAPI } from '../services/api';
-import { DcaPlan } from '../types';
+import { DcaPlan, Balances, Prices } from '../types';
 import { formatCurrency, formatTimeAgo, formatCurrencyInr } from '../utils/formatters';
+import DcaPlanModal from './DcaPlanModal';
+import { useBalance } from '../contexts/BalanceContext';
 
 interface DcaPlansSectionProps {
   onUpdate?: () => void;
+  balances?: Balances | null;
+  prices?: Prices | null;
 }
 
 export interface DcaPlansSectionRef {
   refresh: () => Promise<void>;
 }
 
-const DcaPlansSection = forwardRef<DcaPlansSectionRef, DcaPlansSectionProps>(({ onUpdate }, ref) => {
+const DcaPlansSection = forwardRef<DcaPlansSectionRef, DcaPlansSectionProps>(({ onUpdate, balances, prices }, ref) => {
+  const { refreshBalance } = useBalance();
   const [dcaPlans, setDcaPlans] = useState<DcaPlan[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedPlan, setSelectedPlan] = useState<DcaPlan | null>(null);
@@ -31,6 +37,9 @@ const DcaPlansSection = forwardRef<DcaPlansSectionRef, DcaPlansSectionProps>(({ 
   const [pausingPlan, setPausingPlan] = useState<number | null>(null);
   const [resumingPlan, setResumingPlan] = useState<number | null>(null);
   const [error, setError] = useState('');
+  const [isDcaPlanModalOpen, setIsDcaPlanModalOpen] = useState(false);
+  const [dcaPlanType, setDcaPlanType] = useState<'buy' | 'sell'>('buy');
+  const [success, setSuccess] = useState('');
 
   useEffect(() => {
     fetchDcaPlans();
@@ -117,6 +126,25 @@ const DcaPlansSection = forwardRef<DcaPlansSectionRef, DcaPlansSectionProps>(({ 
     }
   };
 
+  const handleDcaPlanSuccess = () => {
+    setSuccess('DCA plan created successfully!');
+    fetchDcaPlans();
+    onUpdate?.();
+    // Clear success message after 5 seconds
+    setTimeout(() => setSuccess(''), 5000);
+  };
+
+  const handleDcaPlanError = (message: string) => {
+    setError(message);
+    // Clear error message after 5 seconds
+    setTimeout(() => setError(''), 5000);
+  };
+
+  const handleOpenDcaPlanModal = (type: 'buy' | 'sell') => {
+    setDcaPlanType(type);
+    setIsDcaPlanModalOpen(true);
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'ACTIVE':
@@ -189,18 +217,36 @@ const DcaPlansSection = forwardRef<DcaPlansSectionRef, DcaPlansSectionProps>(({ 
   return (
     <div className="bg-black border border-zinc-800 rounded-lg overflow-hidden">
       <div className="p-3 border-b border-zinc-800">
-        <h2 className="text-white text-sm font-semibold flex items-center gap-2">
-          <Repeat className="w-4 h-4 text-white" />
-          Active DCA Plans
-          {dcaPlans.length > 0 && (
-            <span className="px-1.5 py-0.5 text-xs bg-zinc-700 text-zinc-300 rounded-full">
-              {dcaPlans.length}
-            </span>
-          )}
-        </h2>
+        <div className="flex items-center justify-between">
+          <h2 className="text-white text-sm font-semibold flex items-center gap-2">
+            <Repeat className="w-4 h-4 text-white" />
+            Active DCA Plans
+            {dcaPlans.length > 0 && (
+              <span className="px-1.5 py-0.5 text-xs bg-zinc-700 text-zinc-300 rounded-full">
+                {dcaPlans.length}
+              </span>
+            )}
+          </h2>
+          <button
+            onClick={() => handleOpenDcaPlanModal('buy')}
+            className="flex items-center gap-1 px-2 py-1 bg-blue-600 hover:bg-blue-700 text-white text-xs rounded-lg transition-colors"
+          >
+            <Plus className="w-3 h-3" />
+            Add DCA Plan
+          </button>
+        </div>
       </div>
       
       <div className="p-3">
+        {success && (
+          <div className="bg-green-900/20 border border-green-800 rounded-lg p-3 mb-4">
+            <div className="flex items-center gap-2">
+              <CheckCircle className="w-4 h-4 text-green-400" />
+              <span className="text-green-300 text-sm">{success}</span>
+            </div>
+          </div>
+        )}
+        
         {error && (
           <div className="bg-red-900/20 border border-red-800 rounded-lg p-3 mb-4">
             <div className="flex items-center gap-2 mb-2">
@@ -435,6 +481,17 @@ const DcaPlansSection = forwardRef<DcaPlansSectionRef, DcaPlansSectionProps>(({ 
             </div>
           </div>
         </div>
+      )}
+      {isDcaPlanModalOpen && (
+        <DcaPlanModal
+          isOpen={isDcaPlanModalOpen}
+          onClose={() => setIsDcaPlanModalOpen(false)}
+          type={dcaPlanType}
+          balances={balances || null}
+          prices={prices || null}
+          onSuccess={handleDcaPlanSuccess}
+          onError={handleDcaPlanError}
+        />
       )}
     </div>
   );
