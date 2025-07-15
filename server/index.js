@@ -1,5 +1,7 @@
 const express = require('express');
 const cors = require('cors');
+const http = require('http');
+const SocketServer = require('./websocket/socketServer');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const compression = require('compression');
@@ -27,6 +29,7 @@ const JobScheduler = require('./schedulers/jobScheduler');
 dotenv.config();
 
 const app = express();
+const server = http.createServer(app);
 
 // Initialize services
 const initializeServices = async () => {
@@ -617,7 +620,11 @@ process.on('SIGTERM', () => {
 const startServer = async () => {
   await initializeServices();
   
-  app.listen(PORT, HOST, () => {
+  // Initialize WebSocket server
+  SocketServer.initialize(server);
+  systemLogger.serviceStarted('WebSocket server initialized');
+  
+  server.listen(PORT, HOST, () => {
     systemLogger.table('Server Information', [
       { icon: '🚀', label: 'Server Status', value: 'Running' },
       { icon: '🌐', label: 'Port', value: PORT },

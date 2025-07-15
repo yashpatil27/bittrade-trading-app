@@ -2,6 +2,7 @@ import React, { Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import { BalanceProvider } from './contexts/BalanceContext';
+import { WebSocketProvider } from './contexts/WebSocketContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import Layout from './components/Layout';
 import LoadingSpinner from './components/LoadingSpinner';
@@ -26,7 +27,8 @@ function App() {
     <ErrorBoundary>
       <AuthProvider>
         <BalanceProvider>
-          <Router>
+          <WebSocketProvider>
+            <Router>
             <div className="min-h-screen bg-black text-white">
             <Suspense fallback={<LoadingSpinner message="Loading page..." size="lg" className="min-h-screen" />}>
               <Routes>
@@ -121,7 +123,8 @@ function App() {
               </Routes>
             </Suspense>
             </div>
-          </Router>
+            </Router>
+          </WebSocketProvider>
         </BalanceProvider>
       </AuthProvider>
     </ErrorBoundary>

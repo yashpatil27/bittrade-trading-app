@@ -4,6 +4,7 @@ import { Home, History, Settings, Users, BarChart3, Bitcoin, PieChart, User, Wal
 import { useBalance } from '../contexts/BalanceContext';
 import { userAPI } from '../services/api';
 import { formatBitcoin, formatCurrencyInr } from '../utils/formatters';
+import WebSocketStatusIndicator from './WebSocketStatusIndicator';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -79,6 +80,7 @@ const Layout: React.FC<LayoutProps> = ({ children, isAdmin = false }) => {
             ₿itTrade {isAdmin && <span className="text-xs text-zinc-400">Admin</span>}
           </button>
           <div className="flex items-center gap-2">
+            <WebSocketStatusIndicator className="mr-2" />
             <button
               onClick={() => {
                 if (location.pathname === '/profile') {
