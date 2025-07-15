@@ -29,7 +29,6 @@ const DcaPlanModal: React.FC<DcaPlanModalProps> = ({
   const { refreshBalance } = useBalance();
   const [isSingleInputModalOpen, setIsSingleInputModalOpen] = useState(false);
   const [isConfirmDetailsModalOpen, setIsConfirmDetailsModalOpen] = useState(false);
-  const [isFrequencyModalOpen, setIsFrequencyModalOpen] = useState(false);
   const [inputAmount, setInputAmount] = useState('');
   const [selectedFrequency, setSelectedFrequency] = useState<'HOURLY' | 'DAILY' | 'WEEKLY' | 'MONTHLY'>('DAILY');
   const [isLoading, setIsLoading] = useState(false);
@@ -37,21 +36,23 @@ const DcaPlanModal: React.FC<DcaPlanModalProps> = ({
   // Reset state when modal opens/closes
   useEffect(() => {
     if (isOpen) {
-      setIsSingleInputModalOpen(true);
-      setIsConfirmDetailsModalOpen(false);
-      setIsFrequencyModalOpen(false);
-      setInputAmount('');
-      setSelectedFrequency('DAILY');
-      setIsLoading(false);
+      // Only reset if we're actually opening the modal for the first time
+      if (!isSingleInputModalOpen && !isConfirmDetailsModalOpen) {
+        setIsSingleInputModalOpen(true);
+        setIsConfirmDetailsModalOpen(false);
+        setInputAmount('');
+        setSelectedFrequency('DAILY');
+        setIsLoading(false);
+      }
     } else {
+      // Only reset when truly closing the modal
       setIsSingleInputModalOpen(false);
       setIsConfirmDetailsModalOpen(false);
-      setIsFrequencyModalOpen(false);
       setInputAmount('');
       setSelectedFrequency('DAILY');
       setIsLoading(false);
     }
-  }, [isOpen]);
+  }, [isOpen, isSingleInputModalOpen, isConfirmDetailsModalOpen]);
 
   const handleCreateDcaPlan = async (amount: number, frequency: 'HOURLY' | 'DAILY' | 'WEEKLY' | 'MONTHLY') => {
     setIsLoading(true);
@@ -105,22 +106,6 @@ const DcaPlanModal: React.FC<DcaPlanModalProps> = ({
 
   const handleFrequencySelect = (frequency: 'HOURLY' | 'DAILY' | 'WEEKLY' | 'MONTHLY') => {
     setSelectedFrequency(frequency);
-    setIsFrequencyModalOpen(false);
-  };
-
-  const handleFrequencyModalClose = () => {
-    setIsFrequencyModalOpen(false);
-  };
-
-  const handleSectionClick = () => {
-    setIsSingleInputModalOpen(false);
-    setIsFrequencyModalOpen(true);
-  };
-
-  const handleFrequencyModalConfirm = (frequency: 'HOURLY' | 'DAILY' | 'WEEKLY' | 'MONTHLY') => {
-    setSelectedFrequency(frequency);
-    setIsFrequencyModalOpen(false);
-    setIsSingleInputModalOpen(true);
   };
 
   const getFrequencyIcon = (frequency: string) => {
@@ -188,10 +173,26 @@ const DcaPlanModal: React.FC<DcaPlanModalProps> = ({
           
           return null;
         }}
-        sectionTitle="Frequency"
-        sectionDetail="Select execution frequency"
-        sectionAmount={selectedFrequency}
-        onSectionClick={handleSectionClick}
+        tabSwitcher={
+          <div className="bg-zinc-900 p-1 rounded-2xl flex gap-1">
+            {(['HOURLY', 'DAILY', 'WEEKLY', 'MONTHLY'] as const).map((frequency) => {
+              const displayName = frequency.charAt(0) + frequency.slice(1).toLowerCase();
+              return (
+                <button
+                  key={frequency}
+                  onClick={() => handleFrequencySelect(frequency)}
+                  className={`flex-1 px-3 py-2 rounded-xl transition-all duration-200 text-xs font-medium ${
+                    selectedFrequency === frequency
+                      ? 'bg-white text-black shadow-sm'
+                      : 'text-zinc-400 hover:text-zinc-300 hover:bg-zinc-800'
+                  }`}
+                >
+                  {displayName}
+                </button>
+              );
+            })}
+          </div>
+        }
       />
 
       {/* Confirm Details Modal */}
@@ -250,44 +251,6 @@ const DcaPlanModal: React.FC<DcaPlanModalProps> = ({
         isLoading={isLoading}
       />
 
-      {/* Frequency Selector Modal */}
-      <ConfirmDetailsModal
-        isOpen={isFrequencyModalOpen}
-        onClose={() => {
-          setIsFrequencyModalOpen(false);
-          setIsSingleInputModalOpen(true);
-        }}
-        mode="display"
-        title="Select Frequency"
-        details={[
-          {
-            label: 'Current Selection',
-            value: selectedFrequency,
-            highlight: true
-          }
-        ]}
-        actionButtons={
-          <div className="space-y-2">
-            {(['HOURLY', 'DAILY', 'WEEKLY', 'MONTHLY'] as const).map((frequency) => (
-              <button
-                key={frequency}
-                onClick={() => handleFrequencyModalConfirm(frequency)}
-                className={`w-full flex items-center gap-3 p-3 rounded-lg border transition-colors ${
-                  selectedFrequency === frequency
-                    ? 'bg-white/10 border-white/20 text-white'
-                    : 'bg-zinc-800/50 border-zinc-700 text-zinc-300 hover:bg-zinc-800'
-                }`}
-              >
-                {getFrequencyIcon(frequency)}
-                <div className="flex-1 text-left">
-                  <div className="font-medium">{frequency}</div>
-                  <div className="text-xs text-zinc-400">{getFrequencyDescription(frequency)}</div>
-                </div>
-              </button>
-            ))}
-          </div>
-        }
-      />
     </>
   );
 };

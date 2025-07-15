@@ -26,6 +26,7 @@ import { userAPI } from '../services/api';
 import { Balances, Prices, Transaction, DashboardData } from '../types';
 import MobileTradingModal from '../components/MobileTradingModal';
 import TradingModal from '../components/TradingModal';
+import DcaPlanModal from '../components/DcaPlanModal';
 import PriceUpdateTimer from '../components/PriceUpdateTimer';
 import TransactionDetailModal from '../components/TransactionDetailModal';
 import BitcoinChart, { BitcoinChartRef } from '../components/BitcoinChart';
@@ -55,6 +56,8 @@ const Home: React.FC = () => {
   const [isTransactionModalOpen, setIsTransactionModalOpen] = useState(false);
   const [isTradingModalOpen, setIsTradingModalOpen] = useState(false);
   const [tradingType, setTradingType] = useState<'buy' | 'sell'>('buy');
+  const [isDcaPlanModalOpen, setIsDcaPlanModalOpen] = useState(false);
+  const [dcaPlanType, setDcaPlanType] = useState<'buy' | 'sell'>('buy');
 
   useEffect(() => {
     const fetchData = async () => {
@@ -174,6 +177,11 @@ const Home: React.FC = () => {
     }
   };
 
+  const handleOpenDcaPlanModal = (type: 'buy' | 'sell') => {
+    setDcaPlanType(type);
+    setIsDcaPlanModalOpen(true);
+  };
+
   const handleTransactionClick = (transaction: Transaction) => {
     setSelectedTransaction(transaction);
     setIsTransactionModalOpen(true);
@@ -274,6 +282,25 @@ const Home: React.FC = () => {
 
         {/* Bitcoin Price Chart */}
         <BitcoinChart ref={bitcoinChartRef} />
+
+        {/* DCA Plan Action Buttons */}
+        <div className="grid grid-cols-2 gap-2">
+          <button
+            onClick={() => handleOpenDcaPlanModal('buy')}
+            className="bg-white text-black hover:bg-zinc-200 font-medium py-2 px-3 rounded-lg transition-colors flex items-center justify-center gap-1.5 text-sm"
+          >
+            <TrendingUp className="w-4 h-4" />
+            <span>Add DCA Buy Plan</span>
+          </button>
+          
+          <button
+            onClick={() => handleOpenDcaPlanModal('sell')}
+            className="bg-zinc-700 text-white hover:bg-zinc-600 font-medium py-2 px-3 rounded-lg transition-colors flex items-center justify-center gap-1.5 text-sm"
+          >
+            <TrendingDown className="w-4 h-4" />
+            <span>Add DCA Sell Plan</span>
+          </button>
+        </div>
 
         {/* Active DCA Plans */}
         <DcaPlansSection ref={dcaPlansSectionRef} onUpdate={refreshData} balances={balances} prices={prices} />
@@ -431,6 +458,20 @@ const Home: React.FC = () => {
         onClose={() => setIsTransactionModalOpen(false)}
         transaction={selectedTransaction}
         onTransactionUpdate={refreshData}
+      />
+
+      {/* DCA Plan Creation Modal */}
+      <DcaPlanModal
+        isOpen={isDcaPlanModalOpen}
+        onClose={() => setIsDcaPlanModalOpen(false)}
+        type={dcaPlanType}
+        balances={balances}
+        prices={prices}
+        onSuccess={() => {
+          setSuccess(dcaPlanType === 'buy' ? '🔄 DCA buy plan created successfully!' : '🔄 DCA sell plan created successfully!');
+          refreshData();
+        }}
+        onError={(message) => setError(message)}
       />
       
     </>

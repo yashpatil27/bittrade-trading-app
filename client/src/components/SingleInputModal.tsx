@@ -13,9 +13,11 @@ interface SingleInputModalProps {
   validation?: (value: string) => string | null; // Returns error message or null if valid
   // Optional section above keypad
   sectionTitle?: string;
-  sectionDetail?: string;
+  sectionDetail?: string | React.ReactNode;
   sectionAmount?: string;
   onSectionClick?: () => void;
+  // Optional tab switcher
+  tabSwitcher?: React.ReactNode;
 }
 
 const SingleInputModal: React.FC<SingleInputModalProps> = ({
@@ -31,7 +33,8 @@ const SingleInputModal: React.FC<SingleInputModalProps> = ({
   sectionTitle,
   sectionDetail,
   sectionAmount,
-  onSectionClick
+  onSectionClick,
+  tabSwitcher
 }) => {
   const [value, setValue] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -349,10 +352,21 @@ const SingleInputModal: React.FC<SingleInputModalProps> = ({
               <div className="flex justify-between items-center">
                 <div>
                   <span className="text-zinc-400 text-sm">{sectionTitle}</span>
-                  {sectionDetail && <p className="text-xs text-zinc-500 mt-1">{sectionDetail}</p>}
+                  {sectionDetail && (
+                    <div className="text-xs text-zinc-500 mt-1">
+                      {typeof sectionDetail === 'string' ? <p>{sectionDetail}</p> : sectionDetail}
+                    </div>
+                  )}
                 </div>
                 {sectionAmount && <span className="text-sm font-medium text-zinc-300">{sectionAmount}</span>}
               </div>
+            </div>
+          )}
+
+          {/* Optional Tab Switcher */}
+          {tabSwitcher && (
+            <div className="mb-3">
+              {tabSwitcher}
             </div>
           )}
 

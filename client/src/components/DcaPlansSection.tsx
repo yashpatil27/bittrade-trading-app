@@ -227,13 +227,6 @@ const DcaPlansSection = forwardRef<DcaPlansSectionRef, DcaPlansSectionProps>(({ 
               </span>
             )}
           </h2>
-          <button
-            onClick={() => handleOpenDcaPlanModal('buy')}
-            className="flex items-center gap-1 px-2 py-1 bg-blue-600 hover:bg-blue-700 text-white text-xs rounded-lg transition-colors"
-          >
-            <Plus className="w-3 h-3" />
-            Add DCA Plan
-          </button>
         </div>
       </div>
       
