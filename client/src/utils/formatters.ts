@@ -69,8 +69,7 @@ export const formatCurrency = (amount: number, currency: 'INR' | 'BTC'): string 
   if (currency === 'INR') {
     return formatCurrencyInr(amount);
   } else {
-    // Convert satoshis to Bitcoin before formatting
-    return formatBitcoinDisplay(satoshisToBitcoin(amount));
+    return formatBitcoinDisplay(amount);
   }
 };
 
