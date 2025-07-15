@@ -19,7 +19,7 @@ import {
 } from 'lucide-react';
 import { Transaction } from '../types';
 import { userAPI } from '../services/api';
-import { formatInr } from './formatters';
+import { formatInr, satoshisToBitcoin } from './formatters';
 
 // Helper function to get icon component from icon name
 export const getIconComponent = (iconName: string) => {
@@ -50,7 +50,7 @@ export const getMainAmount = (transaction: Transaction) => {
     return {
       amount: transaction.inr_amount.toString(),
       type: 'inr' as const,
-      subAmount: transaction.btc_amount.toString(),
+      subAmount: satoshisToBitcoin(transaction.btc_amount).toString(),
       subType: 'btc' as const
     };
   }
@@ -60,7 +60,7 @@ export const getMainAmount = (transaction: Transaction) => {
       return {
         amount: transaction.inr_amount.toString(),
         type: 'inr' as const,
-        subAmount: transaction.btc_amount.toString(),
+        subAmount: satoshisToBitcoin(transaction.btc_amount).toString(),
         subType: 'btc' as const
       };
     } else if (transaction.inr_amount > 0) {
@@ -70,7 +70,7 @@ export const getMainAmount = (transaction: Transaction) => {
       };
     } else if (transaction.btc_amount > 0) {
       return {
-        amount: transaction.btc_amount.toString(),
+        amount: satoshisToBitcoin(transaction.btc_amount).toString(),
         type: 'btc' as const
       };
     }
@@ -85,7 +85,7 @@ export const getMainAmount = (transaction: Transaction) => {
   // For BTC-only transactions
   else if (transaction.type.includes('BTC')) {
     return {
-      amount: transaction.btc_amount.toString(),
+      amount: satoshisToBitcoin(transaction.btc_amount).toString(),
       type: 'btc' as const
     };
   }
