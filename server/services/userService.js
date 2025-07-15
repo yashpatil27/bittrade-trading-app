@@ -393,15 +393,15 @@ class UserService {
       id: transaction.id,
       type: transaction.type,
       status: transaction.status || 'EXECUTED', // Default to EXECUTED for backward compatibility
-      inr_amount: transaction.inr_amount,
-      btc_amount: transaction.btc_amount / 100000000, // Convert satoshis to BTC
-      btc_price: transaction.btc_price,
-      execution_price: transaction.execution_price,
+      inr_amount: Number(transaction.inr_amount),
+      btc_amount: Number(transaction.btc_amount), // Keep as satoshis - client will convert
+      btc_price: transaction.btc_price ? Number(transaction.btc_price) : null,
+      execution_price: transaction.execution_price ? Number(transaction.execution_price) : null,
       loan_id: transaction.loan_id,
       notes: transaction.notes,
       executed_at: transaction.executed_at,
-      inr_balance: transaction.inr_balance,
-      btc_balance: transaction.btc_balance / 100000000, // Convert satoshis to BTC
+      inr_balance: transaction.inr_balance ? Number(transaction.inr_balance) : null,
+      btc_balance: transaction.btc_balance ? Number(transaction.btc_balance) : null, // Keep as satoshis - client will convert
       created_at: transaction.created_at
     };
   }

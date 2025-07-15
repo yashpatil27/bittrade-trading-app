@@ -61,8 +61,12 @@ export const getTransactionColor = (type: Transaction['type']): string => {
 };
 
 // Helper function to convert satoshis to Bitcoin
-export const satoshisToBitcoin = (satoshis: number): number => {
-  return satoshis / 100000000; // 1 BTC = 100,000,000 satoshis
+export const satoshisToBitcoin = (satoshis: number | string): number => {
+  const numSatoshis = typeof satoshis === 'string' ? parseFloat(satoshis) : satoshis;
+  if (isNaN(numSatoshis) || !isFinite(numSatoshis)) {
+    return 0;
+  }
+  return numSatoshis / 100000000; // 1 BTC = 100,000,000 satoshis
 };
 
 export const formatCurrency = (amount: number, currency: 'INR' | 'BTC'): string => {
