@@ -1013,6 +1013,9 @@ const AdminTransactions: React.FC = () => {
             setIsModalOpen(false);
             setSelectedTransaction(null);
           }}
+          onTransactionUpdate={async () => {
+            await fetchTransactions(1);
+          }}
         />
       )}
 

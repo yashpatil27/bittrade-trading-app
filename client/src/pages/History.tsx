@@ -59,6 +59,7 @@ const History: React.FC = () => {
   const [hasMore, setHasMore] = useState(false);
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isCancelling, setIsCancelling] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [activeFiltersCount, setActiveFiltersCount] = useState(0);
   
@@ -252,6 +253,7 @@ const History: React.FC = () => {
       console.error('Error refreshing data:', error);
     }
   };
+
 
   return (
     <div className="space-y-6">
@@ -749,7 +751,9 @@ const History: React.FC = () => {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         transaction={selectedTransaction}
-        onTransactionUpdate={refreshData}
+        isCancelling={isCancelling}
+        setIsCancelling={setIsCancelling}
+        refreshData={refreshData}
       />
     </div>
   );

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { formatCurrencyInr, formatBitcoin } from '../utils/formatters';
 
 interface DetailItem {
@@ -11,14 +12,19 @@ interface ConfirmDetailsModalProps {
   isOpen: boolean;
   onClose: () => void;
   title: string;
-  amount: string;
-  amountType: 'btc' | 'inr';
+  amount?: string; // Optional for display-only mode
+  amountType?: 'btc' | 'inr';
   subAmount?: string; // Smaller amount below main amount
   subAmountType?: 'btc' | 'inr';
-  details: DetailItem[]; // Array of 2-5 details to show
+  details: DetailItem[]; // Array of details to show
   confirmText?: string;
-  onConfirm: () => void | Promise<void>;
+  onConfirm?: () => void | Promise<void>; // Optional - if not provided, shows Close button
   isLoading?: boolean;
+  // Display-only mode props
+  icon?: React.ReactNode; // Optional icon for display mode
+  statusBadge?: React.ReactNode; // Optional status badge
+  actionButtons?: React.ReactNode; // Optional action buttons (like cancel order)
+  mode?: 'confirm' | 'display'; // Mode selector
 }
 
 const ConfirmDetailsModal: React.FC<ConfirmDetailsModalProps> = ({
@@ -30,9 +36,13 @@ const ConfirmDetailsModal: React.FC<ConfirmDetailsModalProps> = ({
   subAmount,
   subAmountType,
   details,
-  confirmText = "Confirm",
+  confirmText,
   onConfirm,
   isLoading = false,
+  icon,
+  statusBadge,
+  actionButtons,
+  mode = 'confirm',
 }) => {
   const [dragStartY, setDragStartY] = useState(0);
   const [dragOffset, setDragOffset] = useState(0);
@@ -139,11 +149,23 @@ const ConfirmDetailsModal: React.FC<ConfirmDetailsModalProps> = ({
   const handleConfirm = async () => {
     if (isLoading) return;
     
-    try {
-      await onConfirm();
-    } catch (error) {
-      console.error('Confirmation error:', error);
+    if (onConfirm) {
+      try {
+        await onConfirm();
+      } catch (error) {
+        console.error('Confirmation error:', error);
+      }
+    } else {
+      // Display mode - just close the modal
+      animateClose();
     }
+  };
+
+  // Determine button text based on mode
+  const getButtonText = () => {
+    if (isLoading) return 'Processing...';
+    if (confirmText) return confirmText;
+    return mode === 'display' ? 'Close' : 'Confirm';
   };
 
   const formatAmount = (value: string, type: 'btc' | 'inr') => {
@@ -153,7 +175,7 @@ const ConfirmDetailsModal: React.FC<ConfirmDetailsModalProps> = ({
 
   if (!isOpen) return null;
 
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-50">
       {/* Backdrop */}
       <div 
@@ -176,7 +198,7 @@ const ConfirmDetailsModal: React.FC<ConfirmDetailsModalProps> = ({
         {/* Header */}
         <div className="px-6 modal-safe-top pb-4">
           <div className="flex items-center justify-between">
-            <div className="w-10"></div> {/* Spacer for centering */}
+            <div className="w-10">{icon && <div className="p-2 bg-zinc-800 rounded-lg">{icon}</div>}</div>
             <h2 className="text-white text-sm font-semibold text-center flex-1">{title}</h2>
             <button
               onClick={animateClose}
@@ -196,11 +218,13 @@ const ConfirmDetailsModal: React.FC<ConfirmDetailsModalProps> = ({
           >
             <div className="text-center w-full">
               {/* Main Amount Display */}
-              <div className="flex items-center justify-center gap-2 mb-4">
-                <span className="text-white text-5xl font-light">
-                  {formatAmount(amount, amountType)}
-                </span>
-              </div>
+              {amount && amountType && (
+                <div className="flex items-center justify-center gap-2 mb-4">
+                  <span className="text-white text-5xl font-light">
+                    {formatAmount(amount, amountType)}
+                  </span>
+                </div>
+              )}
               
               {/* Sub Amount Display */}
               {subAmount && subAmountType && (
@@ -210,43 +234,64 @@ const ConfirmDetailsModal: React.FC<ConfirmDetailsModalProps> = ({
                   </span>
                 </div>
               )}
+              
+              {/* Status Badge */}
+              {statusBadge && (
+                <div className="mb-4">
+                  {statusBadge}
+                </div>
+              )}
             </div>
           </div>
 
           {/* Details Section - positioned exactly like SingleInputModal section */}
-          <div className="mb-2 bg-black border border-zinc-700 rounded-lg p-4">
-            <div className="space-y-4">
-              {details.map((detail, index) => (
-                <div key={index} className="flex justify-between items-center">
-                  <span className="text-zinc-400 text-sm">{detail.label}</span>
-                  <span className={`text-sm font-medium ${
-                    detail.highlight ? 'text-white' : 'text-zinc-300'
-                  }`}>
-                    {detail.value}
-                  </span>
-                </div>
-              ))}
+          {details.length > 0 && (
+            <div className="mb-2 bg-black border border-zinc-700 rounded-lg p-4">
+              <div className="space-y-4">
+                {details.map((detail, index) => (
+                  <div key={index} className="flex justify-between items-center">
+                    <span className="text-zinc-400 text-sm">{detail.label}</span>
+                    <span className={`text-sm font-medium ${
+                      detail.highlight ? 'text-white' : 'text-zinc-300'
+                    }`}>
+                      {detail.value}
+                    </span>
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
+          
+          {/* Action Buttons (for display mode) */}
+          {actionButtons && (
+            <div className="mb-2">
+              {actionButtons}
+            </div>
+          )}
 
           {/* Keypad Space - matches SingleInputModal keypad */}
           <div className="mb-3">
             <div className="h-32"></div> {/* 128px height to match keypad area */}
           </div>
 
-          {/* Confirm Button */}
+          {/* Confirm/Close Button */}
           <div className="mb-4 pb-20 flex justify-center">
             <button
               onClick={handleConfirm}
               disabled={isLoading}
-              className="px-8 h-12 bg-white text-black text-base font-medium rounded-lg transition-all disabled:opacity-50 disabled:bg-zinc-800 disabled:text-zinc-500"
+              className={`px-8 h-12 text-base font-medium rounded-lg transition-all disabled:opacity-50 ${
+                mode === 'display' 
+                  ? 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700' 
+                  : 'bg-white text-black disabled:bg-zinc-800 disabled:text-zinc-500'
+              }`}
             >
-              {isLoading ? 'Processing...' : confirmText}
+              {getButtonText()}
             </button>
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 
