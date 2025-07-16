@@ -18,7 +18,6 @@ import {
   Trash2
 } from 'lucide-react';
 import { Transaction } from '../types';
-import { useWebSocket } from '../contexts/WebSocketContext';
 import { formatInr, satoshisToBitcoin } from './formatters';
 
 // Helper function to get icon component from icon name
@@ -179,10 +178,9 @@ export const handleCancelOrder = async (
   isCancelling: boolean,
   setIsCancelling: (value: boolean) => void,
   refreshData: () => Promise<void>,
-  setIsModalOpen: (value: boolean) => void
+  setIsModalOpen: (value: boolean) => void,
+  sendMessage: (action: string, payload?: any) => Promise<any>
 ) => {
-  const { sendMessage } = useWebSocket();
-
   if (!transaction || isCancelling) return;
   
   try {

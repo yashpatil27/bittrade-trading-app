@@ -3,6 +3,7 @@ import { Trash2 } from 'lucide-react';
 import { Transaction } from '../types';
 import ConfirmDetailsModal from './ConfirmDetailsModal';
 import { getTransactionDisplayName } from '../utils/formatters';
+import { useWebSocket } from '../contexts/WebSocketContext';
 import {
   getMainAmount,
   getTransactionDetails,
@@ -31,6 +32,8 @@ const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
   refreshData,
   onTransactionUpdate
 }) => {
+  const { sendMessage } = useWebSocket();
+  
   if (!transaction) return null;
 
   // Use the new API if available, otherwise fall back to legacy API
@@ -40,7 +43,7 @@ const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
 
   const handleCancelOrder = async () => {
     if (effectiveRefreshData) {
-      await handleCancelOrderHelper(transaction, effectiveIsCancelling, effectiveSetIsCancelling, effectiveRefreshData, onClose);
+      await handleCancelOrderHelper(transaction, effectiveIsCancelling, effectiveSetIsCancelling, effectiveRefreshData, onClose, sendMessage);
     }
   };
 
