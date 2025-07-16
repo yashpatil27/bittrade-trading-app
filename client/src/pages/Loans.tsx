@@ -20,7 +20,8 @@ import {
   DollarSign
 } from 'lucide-react';
 import { useWebSocket } from '../contexts/WebSocketContext';
-import { LoanStatus, LoanHistory, Transaction } from '../types';
+import { useBalance } from '../contexts/BalanceContext';
+import { LoanStatus, LoanHistory, Transaction, Balances } from '../types';
 import { formatBitcoin, getTransactionDisplayName, getTransactionIcon, formatTimeAgo, formatCurrency, formatInr, formatPercentage } from '../utils/formatters';
 import DepositCollateralModal from '../components/DepositCollateralModal';
 import BorrowModal from '../components/BorrowModal';
@@ -32,6 +33,7 @@ import TransactionDetailModal from '../components/TransactionDetailModal';
 const Loans: React.FC = () => {
   const [loanStatus, setLoanStatus] = useState<LoanStatus | null>(null);
   const [loanHistory, setLoanHistory] = useState<LoanHistory[]>([]);
+  const [balances, setBalances] = useState<Balances | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>('');
   const [showDepositModal, setShowDepositModal] = useState(false);
@@ -41,7 +43,7 @@ const Loans: React.FC = () => {
   const [showPartialLiquidationModal, setShowPartialLiquidationModal] = useState(false);
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
   const [isTransactionModalOpen, setIsTransactionModalOpen] = useState(false);
-  const { getLoanStatus, getLoanHistory } = useWebSocket();
+  const { getLoanStatus, getLoanHistory, getDashboard } = useWebSocket();
 
   useEffect(() => {
     fetchLoanData();
@@ -50,6 +52,10 @@ const Loans: React.FC = () => {
   const fetchLoanData = async () => {
     try {
       setLoading(true);
+      
+      // Get dashboard data (includes balances)
+      const dashboardData = await getDashboard();
+      setBalances(dashboardData.balances);
       
       // Try to get loan status
       try {
@@ -570,6 +576,7 @@ const Loans: React.FC = () => {
         isOpen={showRepayModal}
         onClose={() => setShowRepayModal(false)}
         loanStatus={loanStatus}
+        balances={balances}
         onSuccess={() => {
           setShowRepayModal(false);
           fetchLoanData();
