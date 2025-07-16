@@ -81,9 +81,6 @@ const adminHandlers = {
       last_24h_active_users: last24hUsers[0].count
     };
   },
-      throw new Error('Admin access required');
-    }
-  },
 
   // Helper function to check admin authentication
   requireAdminAuth(socket) {

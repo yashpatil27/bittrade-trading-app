@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { ArrowUp } from 'lucide-react';
 import { useWebSocket } from '../contexts/WebSocketContext';
-import { LoanStatus, Balances, Prices } from '../types';
+import { LoanStatus, Balances } from '../types';
 import { useBalance } from '../contexts/BalanceContext';
 import SingleInputModal from './SingleInputModal';
 import ConfirmDetailsModal from './ConfirmDetailsModal';
@@ -28,7 +27,6 @@ const RepayModal: React.FC<RepayModalProps> = ({
   const [isSingleInputModalOpen, setIsSingleInputModalOpen] = useState(false);
   const [isConfirmDetailsModalOpen, setIsConfirmDetailsModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
   const { updateBalance } = useBalance();
   const { sendMessage, on, off } = useWebSocket();
 
@@ -38,14 +36,12 @@ const RepayModal: React.FC<RepayModalProps> = ({
       setIsSingleInputModalOpen(true);
       setIsConfirmDetailsModalOpen(false);
       setAmount('');
-      setError('');
       // Initialize real-time data with props
       setRealtimeBalances(balances || null);
     } else {
       setIsSingleInputModalOpen(false);
       setIsConfirmDetailsModalOpen(false);
       setAmount('');
-      setError('');
     }
   }, [isOpen]);
 
@@ -62,7 +58,6 @@ const RepayModal: React.FC<RepayModalProps> = ({
 
     // Handle balance updates
     const handleBalanceUpdate = (data: any) => {
-      console.log('Balance update received:', data);
       if (data?.balances) {
         setRealtimeBalances(data.balances);
       }
@@ -90,11 +85,6 @@ const RepayModal: React.FC<RepayModalProps> = ({
     return newBorrowedTotal > 0 ? (newBorrowedTotal / collateralValue) * 100 : 0;
   };
 
-  const getRiskColor = (ltv: number) => {
-    if (ltv >= 90) return 'text-red-400';
-    if (ltv >= 85) return 'text-yellow-400';
-    return 'text-green-400';
-  };
 
   const getRiskText = (ltv: number) => {
     if (ltv >= 90) return 'HIGH RISK';
@@ -104,27 +94,22 @@ const RepayModal: React.FC<RepayModalProps> = ({
 
   const handleRepay = async () => {
     if (!amount || parseFloat(amount) <= 0) {
-      setError('Please enter a valid amount');
       return;
     }
 
     if (!loanStatus) {
-      setError('No active loan found');
       return;
     }
 
     const repayAmount = parseFloat(amount);
     if (repayAmount > getAvailableBalance()) {
-      setError('Insufficient ₹ balance');
       return;
     }
 
     if (repayAmount > getTotalDue()) {
-      setError('Amount exceeds total due amount');
       return;
     }
 
-    setError('');
     setLoading(true);
     
     try {
@@ -136,8 +121,7 @@ const RepayModal: React.FC<RepayModalProps> = ({
       
       onSuccess();
     } catch (error: any) {
-      console.error('Repay error:', error);
-      setError(error.message || 'Error repaying loan');
+      // Error handling is done through validation in the modal
     } finally {
       setLoading(false);
     }

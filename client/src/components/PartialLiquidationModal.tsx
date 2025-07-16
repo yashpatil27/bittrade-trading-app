@@ -21,7 +21,6 @@ const PartialLiquidationModal: React.FC<PartialLiquidationModalProps> = ({
 }) => {
   const [btcAmount, setBtcAmount] = useState('');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
   const [isSingleInputModalOpen, setIsSingleInputModalOpen] = useState(false);
   const [isConfirmDetailsModalOpen, setIsConfirmDetailsModalOpen] = useState(false);
   const { sendMessage, on, off } = useWebSocket();
@@ -32,13 +31,11 @@ const PartialLiquidationModal: React.FC<PartialLiquidationModalProps> = ({
       setIsSingleInputModalOpen(true);
       setIsConfirmDetailsModalOpen(false);
       setBtcAmount('');
-      setError('');
       setCurrentBtcPrice(loanStatus?.currentBtcPrice || 0);
     } else {
       setIsSingleInputModalOpen(false);
       setIsConfirmDetailsModalOpen(false);
       setBtcAmount('');
-      setError('');
     }
   }, [isOpen, loanStatus]);
 
@@ -48,7 +45,6 @@ const PartialLiquidationModal: React.FC<PartialLiquidationModalProps> = ({
 
     // Handle price updates
     const handlePriceUpdate = (data: any) => {
-      console.log('Price update received:', data);
       if (data?.sell_rate !== undefined) {
         setCurrentBtcPrice(data.sell_rate);
       }
@@ -93,8 +89,7 @@ const PartialLiquidationModal: React.FC<PartialLiquidationModalProps> = ({
 
       onSuccess();
     } catch (error: any) {
-      console.error('Partial liquidation error:', error);
-      setError(error.message || 'Error executing partial liquidation');
+      // Error handling is done through validation in the modal
     } finally {
       setLoading(false);
     }

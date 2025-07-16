@@ -36,7 +36,7 @@ const AdminUsers: React.FC = () => {
       const { users: fetchedUsers } = response;
       setUsers(fetchedUsers);
     } catch (error) {
-      console.error('Error fetching users:', error);
+      // Error fetching users
     } finally {
       setIsLoading(false);
     }

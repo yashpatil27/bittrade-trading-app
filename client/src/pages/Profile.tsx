@@ -6,7 +6,6 @@ import {
   Calendar,
   Edit3,
   Key,
-  Download,
   BookOpen,
   Shield,
   ExternalLink,
@@ -23,39 +22,11 @@ const Profile: React.FC = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [activeModal, setActiveModal] = useState<'name' | 'email' | 'password' | 'pin' | null>(null);
-  const [isExporting, setIsExporting] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const { sendMessage } = useWebSocket();
 
-  const handleExportData = async () => {
-    try {
-      setIsExporting(true);
-      setError('');
-      setMessage('');
-      
-      const response = await sendMessage('user.export-data');
-      
-      // Create blob and download
-      const blob = new Blob([response], { type: 'text/csv' });
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = 'bittrade-data.csv';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
-      
-      setMessage('✅ Data exported successfully!');
-    } catch (error: any) {
-      console.error('Export error:', error);
-      setError('Failed to export data');
-    } finally {
-      setIsExporting(false);
-    }
-  };
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {

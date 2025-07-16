@@ -36,7 +36,6 @@ import {
   getTransactionDisplayName, 
   getTransactionIcon, 
   formatTimeAgo,
-  formatBitcoin,
   formatCurrency,
   formatCurrencyInr,
   formatBitcoinDisplay,
@@ -106,7 +105,6 @@ const AdminTransactions: React.FC = () => {
         setHasMore(pagination.has_more);
       }
     } catch (error) {
-      console.error('Error fetching transactions:', error);
       setError('Failed to fetch transactions');
     } finally {
       setIsLoading(false);
@@ -213,7 +211,6 @@ const AdminTransactions: React.FC = () => {
         setDcaHasMore(pagination.has_more);
       }
     } catch (error) {
-      console.error('Error fetching DCA plans:', error);
       setError('Failed to fetch DCA plans');
     } finally {
       setIsLoading(false);
@@ -302,7 +299,6 @@ const AdminTransactions: React.FC = () => {
       // Refresh the transactions
       fetchTransactions(1);
     } catch (error) {
-      console.error('Error cancelling limit order:', error);
       setError('Failed to cancel limit order');
     } finally {
       setProcessingActions(prev => {
@@ -320,7 +316,6 @@ const AdminTransactions: React.FC = () => {
       // Refresh the DCA plans
       fetchDcaPlans(1);
     } catch (error) {
-      console.error('Error pausing DCA plan:', error);
       setError('Failed to pause DCA plan');
     } finally {
       setProcessingActions(prev => {
@@ -338,7 +333,6 @@ const AdminTransactions: React.FC = () => {
       // Refresh the DCA plans
       fetchDcaPlans(1);
     } catch (error) {
-      console.error('Error resuming DCA plan:', error);
       setError('Failed to resume DCA plan');
     } finally {
       setProcessingActions(prev => {
@@ -356,7 +350,6 @@ const AdminTransactions: React.FC = () => {
       // Refresh the DCA plans
       fetchDcaPlans(1);
     } catch (error) {
-      console.error('Error deleting DCA plan:', error);
       setError('Failed to delete DCA plan');
     } finally {
       setProcessingActions(prev => {

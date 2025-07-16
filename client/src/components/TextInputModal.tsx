@@ -204,7 +204,7 @@ const TextInputModal: React.FC<TextInputModalProps> = ({
     try {
       await onConfirm(values);
     } catch (error) {
-      console.error('Confirmation error:', error);
+      // Handle error if onConfirm throws
     }
   };
 

@@ -22,23 +22,20 @@ const BorrowModal: React.FC<BorrowModalProps> = ({
 }) => {
   const [amount, setAmount] = useState('');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
   const [isSingleInputModalOpen, setIsSingleInputModalOpen] = useState(false);
   const [isConfirmDetailsModalOpen, setIsConfirmDetailsModalOpen] = useState(false);
   const { updateBalance } = useBalance();
-  const { sendMessage, on, off } = useWebSocket();
+  const { sendMessage } = useWebSocket();
 
   useEffect(() => {
     if (isOpen) {
       setIsSingleInputModalOpen(true);
       setIsConfirmDetailsModalOpen(false);
       setAmount('');
-      setError('');
     } else {
       setIsSingleInputModalOpen(false);
       setIsConfirmDetailsModalOpen(false);
       setAmount('');
-      setError('');
     }
   }, [isOpen]);
 
@@ -50,11 +47,6 @@ const BorrowModal: React.FC<BorrowModalProps> = ({
     return (newBorrowedTotal / collateralValue) * 100;
   };
 
-  const getRiskColor = (ltv: number) => {
-    if (ltv >= 90) return 'text-red-400';
-    if (ltv >= 85) return 'text-yellow-400';
-    return 'text-green-400';
-  };
 
   const getRiskText = (ltv: number) => {
     if (ltv >= 90) return 'HIGH RISK';
@@ -90,8 +82,7 @@ const BorrowModal: React.FC<BorrowModalProps> = ({
       
       onSuccess();
     } catch (error: any) {
-      console.error('Borrow error:', error);
-      setError(error.message || 'Error borrowing funds');
+      // Error handling is done through validation in the modal
     } finally {
       setLoading(false);
     }

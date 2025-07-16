@@ -264,7 +264,6 @@ const SingleInputModal: React.FC<SingleInputModalProps> = ({
       await onConfirm(value);
     } catch (error) {
       // Handle error if onConfirm throws
-      console.error('Confirmation error:', error);
     }
   };
 

@@ -24,7 +24,6 @@ const AddCollateralModal: React.FC<AddCollateralModalProps> = ({
 }) => {
   const [collateralAmount, setCollateralAmount] = useState('');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
   const [isSingleInputModalOpen, setIsSingleInputModalOpen] = useState(false);
   const [isConfirmDetailsModalOpen, setIsConfirmDetailsModalOpen] = useState(false);
   const [realtimeBalances, setRealtimeBalances] = useState<Balances | null>(balances || null);
@@ -36,14 +35,12 @@ const AddCollateralModal: React.FC<AddCollateralModalProps> = ({
       setIsSingleInputModalOpen(true);
       setIsConfirmDetailsModalOpen(false);
       setCollateralAmount('');
-      setError('');
       // Initialize real-time data with props
       setRealtimeBalances(balances || null);
     } else {
       setIsSingleInputModalOpen(false);
       setIsConfirmDetailsModalOpen(false);
       setCollateralAmount('');
-      setError('');
     }
   }, [isOpen]);
 
@@ -60,7 +57,6 @@ const AddCollateralModal: React.FC<AddCollateralModalProps> = ({
 
     // Handle balance updates
     const handleBalanceUpdate = (data: any) => {
-      console.log('Balance update received:', data);
       if (data?.balances) {
         setRealtimeBalances(data.balances);
       }
@@ -105,8 +101,7 @@ const AddCollateralModal: React.FC<AddCollateralModalProps> = ({
       
       onSuccess();
     } catch (error: any) {
-      console.error('Add collateral error:', error);
-      setError(error.message || 'Failed to add collateral');
+      // Error handling is done through validation in the modal
     } finally {
       setLoading(false);
     }
@@ -115,7 +110,6 @@ const AddCollateralModal: React.FC<AddCollateralModalProps> = ({
   const handleClose = () => {
     if (!loading) {
       setCollateralAmount('');
-      setError('');
       onClose();
     }
   };

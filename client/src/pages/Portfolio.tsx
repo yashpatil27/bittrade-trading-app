@@ -156,7 +156,6 @@ const Portfolio: React.FC = () => {
       setBitcoinData(bitcoinResponse);
       setSentimentData(sentimentResponse);
     } catch (error) {
-      console.error('Error fetching portfolio data:', error);
       setError('Failed to load portfolio data');
     } finally {
       setIsLoading(false);

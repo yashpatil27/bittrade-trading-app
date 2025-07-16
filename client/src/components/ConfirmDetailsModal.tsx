@@ -153,7 +153,7 @@ const ConfirmDetailsModal: React.FC<ConfirmDetailsModalProps> = ({
       try {
         await onConfirm();
       } catch (error) {
-        console.error('Confirmation error:', error);
+        // Handle error silently or add proper error handling
       }
     } else {
       // Display mode - just close the modal

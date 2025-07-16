@@ -20,7 +20,6 @@ import {
   DollarSign
 } from 'lucide-react';
 import { useWebSocket } from '../contexts/WebSocketContext';
-import { useBalance } from '../contexts/BalanceContext';
 import { LoanStatus, LoanHistory, Transaction, Balances, Prices } from '../types';
 import { formatBitcoin, getTransactionDisplayName, getTransactionIcon, formatTimeAgo, formatCurrency, formatInr, formatPercentage } from '../utils/formatters';
 import DepositCollateralModal from '../components/DepositCollateralModal';

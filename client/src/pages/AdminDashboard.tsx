@@ -37,7 +37,6 @@ const AdminDashboard: React.FC = () => {
       setLimitOrdersSummary(null); // Remove limit orders summary for now
       
     } catch (error: any) {
-      console.error('Error fetching admin dashboard:', error);
       setError('Failed to load dashboard data');
     } finally {
       setIsLoading(false);

@@ -9,13 +9,11 @@ import {
   AlertTriangle,
   CheckCircle,
   Pause,
-  Plus
 } from 'lucide-react';
 import { useWebSocket } from '../contexts/WebSocketContext';
 import { DcaPlan, Balances, Prices } from '../types';
 import { formatCurrency, formatTimeAgo, formatCurrencyInr } from '../utils/formatters';
 import DcaPlanModal from './DcaPlanModal';
-import { useBalance } from '../contexts/BalanceContext';
 
 interface DcaPlansSectionProps {
   onUpdate?: () => void;
@@ -28,7 +26,6 @@ export interface DcaPlansSectionRef {
 }
 
 const DcaPlansSection = forwardRef<DcaPlansSectionRef, DcaPlansSectionProps>(({ onUpdate, balances, prices }, ref) => {
-  const { refreshBalance } = useBalance();
   const { getDcaPlans, deleteDcaPlan, pauseDcaPlan, resumeDcaPlan, on, off } = useWebSocket();
   const [dcaPlans, setDcaPlans] = useState<DcaPlan[]>([]);
   const [loading, setLoading] = useState(true);
@@ -39,7 +36,6 @@ const DcaPlansSection = forwardRef<DcaPlansSectionRef, DcaPlansSectionProps>(({ 
   const [resumingPlan, setResumingPlan] = useState<number | null>(null);
   const [error, setError] = useState('');
   const [isDcaPlanModalOpen, setIsDcaPlanModalOpen] = useState(false);
-  const [dcaPlanType, setDcaPlanType] = useState<'buy' | 'sell'>('buy');
   const [success, setSuccess] = useState('');
 
   useEffect(() => {
@@ -192,10 +188,6 @@ const DcaPlansSection = forwardRef<DcaPlansSectionRef, DcaPlansSectionProps>(({ 
     setTimeout(() => setError(''), 5000);
   };
 
-  const handleOpenDcaPlanModal = (type: 'buy' | 'sell') => {
-    setDcaPlanType(type);
-    setIsDcaPlanModalOpen(true);
-  };
 
   const getStatusColor = (status: string) => {
     switch (status) {

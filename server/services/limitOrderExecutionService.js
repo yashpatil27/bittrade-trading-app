@@ -181,6 +181,15 @@ class LimitOrderExecutionService {
             executed_at: new Date().toISOString()
           }
         });
+
+        // Also broadcast transaction notification for recent activity
+        socketServer.broadcastToUser(order.user_id, 'transaction_notification', {
+          type: 'LIMIT_BUY',
+          amount: actualBtcAmount / 100000000,
+          price: executionPrice,
+          status: 'EXECUTED',
+          timestamp: new Date().toISOString()
+        });
       } catch (broadcastError) {
         console.error('Error broadcasting limit order update:', broadcastError);
       }
@@ -248,6 +257,15 @@ class LimitOrderExecutionService {
             execution_price: executionPrice,
             executed_at: new Date().toISOString()
           }
+        });
+
+        // Also broadcast transaction notification for recent activity
+        socketServer.broadcastToUser(order.user_id, 'transaction_notification', {
+          type: 'LIMIT_SELL',
+          amount: actualBtcAmount / 100000000,
+          price: executionPrice,
+          status: 'EXECUTED',
+          timestamp: new Date().toISOString()
         });
       } catch (broadcastError) {
         console.error('Error broadcasting limit order update:', broadcastError);

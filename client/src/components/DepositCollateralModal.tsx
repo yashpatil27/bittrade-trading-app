@@ -29,7 +29,6 @@ const DepositCollateralModal: React.FC<DepositCollateralModalProps> = ({
   const [isSingleInputModalOpen, setIsSingleInputModalOpen] = useState(false);
   const [isConfirmDetailsModalOpen, setIsConfirmDetailsModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
   const { updateBalance } = useBalance();
   const { sendMessage, on, off } = useWebSocket();
 
@@ -39,7 +38,6 @@ const DepositCollateralModal: React.FC<DepositCollateralModalProps> = ({
       setIsSingleInputModalOpen(true);
       setIsConfirmDetailsModalOpen(false);
       setAmount('');
-      setError('');
       // Initialize real-time data with props
       setRealtimeBalances(balances || null);
       setRealtimePrices(prices || null);
@@ -48,7 +46,6 @@ const DepositCollateralModal: React.FC<DepositCollateralModalProps> = ({
       setIsSingleInputModalOpen(false);
       setIsConfirmDetailsModalOpen(false);
       setAmount('');
-      setError('');
     }
   }, [isOpen]);
 
@@ -66,7 +63,6 @@ const DepositCollateralModal: React.FC<DepositCollateralModalProps> = ({
 
     // Handle balance updates
     const handleBalanceUpdate = (data: any) => {
-      console.log('Balance update received:', data);
       if (data?.balances) {
         setRealtimeBalances(data.balances);
       }
@@ -74,22 +70,20 @@ const DepositCollateralModal: React.FC<DepositCollateralModalProps> = ({
 
     // Handle price updates
     const handlePriceUpdate = (data: any) => {
-      console.log('Price update received:', data);
       if (data?.sell_rate !== undefined || data?.buy_rate !== undefined) {
         setRealtimePrices(prev => ({
-          btc_usd: prev?.btc_usd ?? 0, // Default or keep existing value
+          btc_usd: prev?.btc_usd ?? 0,
           sell_rate: data.sell_rate ?? prev?.sell_rate ?? 0,
           buy_rate: data.buy_rate ?? prev?.buy_rate ?? 0,
-          buy_multiplier: prev?.buy_multiplier, // No update assumed
-          sell_multiplier: prev?.sell_multiplier, // No update assumed
-          last_update: prev?.last_update // No update assumed
+          buy_multiplier: prev?.buy_multiplier,
+          sell_multiplier: prev?.sell_multiplier,
+          last_update: prev?.last_update
         }));
       }
     };
 
     // Handle settings updates (for interest rate)
     const handleSettingsUpdate = (data: any) => {
-      console.log('Settings update received:', data);
       if (data?.loan_interest_rate !== undefined) {
         setInterestRate(data.loan_interest_rate);
       }
@@ -113,7 +107,6 @@ const DepositCollateralModal: React.FC<DepositCollateralModalProps> = ({
       const settingsResponse = await sendMessage('admin.get-settings');
       setInterestRate(settingsResponse?.loan_interest_rate || 15);
     } catch (error) {
-      console.error('Error fetching settings:', error);
       // Fallback to default interest rate if settings fetch fails
       setInterestRate(15);
     }
@@ -152,8 +145,7 @@ const DepositCollateralModal: React.FC<DepositCollateralModalProps> = ({
       
       onSuccess();
     } catch (error: any) {
-      console.error('Deposit error:', error);
-      setError(error.message || 'Error depositing collateral');
+      // Error handling is done through validation in the modal
     } finally {
       setLoading(false);
     }

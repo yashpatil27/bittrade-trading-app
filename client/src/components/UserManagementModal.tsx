@@ -408,7 +408,6 @@ const UserManagementModal: React.FC<UserManagementModalProps> = ({
                   <div className="grid grid-cols-2 gap-3">
                     <button
                       onClick={() => {
-                        const amount = balanceMode === 'INR' ? inrAmount : btcAmount;
                         const currency = balanceMode;
                         handleBalanceOperation('deposit', currency);
                       }}
@@ -420,7 +419,6 @@ const UserManagementModal: React.FC<UserManagementModalProps> = ({
                     </button>
                     <button
                       onClick={() => {
-                        const amount = balanceMode === 'INR' ? inrAmount : btcAmount;
                         const currency = balanceMode;
                         handleBalanceOperation('withdraw', currency);
                       }}

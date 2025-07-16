@@ -46,7 +46,6 @@ const AdminSettings: React.FC = () => {
         setLoanInterestRate(settings.loan_interest_rate?.toString() || '15');
       }
     } catch (error) {
-      console.error('Error fetching settings:', error);
       // Fallback to default values
       setBuyMultiplier('91');
       setSellMultiplier('88');
@@ -62,7 +61,6 @@ const AdminSettings: React.FC = () => {
         setSystemHealth(response.data || response);
       }
     } catch (error) {
-      console.error('Error fetching system health:', error);
       setSystemHealth(null);
     } finally {
       setIsHealthLoading(false);

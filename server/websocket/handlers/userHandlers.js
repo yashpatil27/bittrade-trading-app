@@ -621,7 +621,106 @@ const userHandlers = {
     }));
   },
 
-  // Loan operations (simplified - implement similar to other operations)
+  async handlePauseDcaPlan(payload, socket, socketServer) {
+    const userId = socket.userId;
+    const { planId } = payload;
+
+    if (!planId) {
+      throw new Error('Plan ID is required');
+    }
+
+    await query(`
+      UPDATE active_plans 
+      SET status = 'PAUSED' 
+      WHERE id = ? AND user_id = ? AND status = 'ACTIVE'
+    `, [planId, userId]);
+
+    // Broadcast DCA plan notification
+    socketServer.broadcastToUser(userId, 'dca_plan_notification', {
+      type: 'PLAN_PAUSED',
+      planId: planId,
+      status: 'PAUSED'
+    });
+
+    return {
+      message: 'DCA plan paused successfully'
+    };
+  },
+
+  async handleResumeDcaPlan(payload, socket, socketServer) {
+    const userId = socket.userId;
+    const { planId } = payload;
+
+    if (!planId) {
+      throw new Error('Plan ID is required');
+    }
+
+    await query(`
+      UPDATE active_plans 
+      SET status = 'ACTIVE' 
+      WHERE id = ? AND user_id = ? AND status = 'PAUSED'
+    `, [planId, userId]);
+
+    // Broadcast DCA plan notification
+    socketServer.broadcastToUser(userId, 'dca_plan_notification', {
+      type: 'PLAN_RESUMED',
+      planId: planId,
+      status: 'ACTIVE'
+    });
+
+    return {
+      message: 'DCA plan resumed successfully'
+    };
+  },
+
+  async handleDeleteDcaPlan(payload, socket, socketServer) {
+    const userId = socket.userId;
+    const { planId } = payload;
+
+    if (!planId) {
+      throw new Error('Plan ID is required');
+    }
+
+    await query(`
+      UPDATE active_plans 
+      SET status = 'CANCELLED' 
+      WHERE id = ? AND user_id = ? AND status IN ('ACTIVE', 'PAUSED')
+    `, [planId, userId]);
+
+    // Broadcast DCA plan notification
+    socketServer.broadcastToUser(userId, 'dca_plan_notification', {
+      type: 'PLAN_CANCELLED',
+      planId: planId,
+      status: 'CANCELLED'
+    });
+
+    return {
+      message: 'DCA plan cancelled successfully'
+    };
+  },
+
+  // Loan operations
+  async handleDepositCollateral(payload, socket, socketServer) {
+    const userId = socket.userId;
+    const { satoshiAmount } = payload;
+
+    if (!satoshiAmount || satoshiAmount <= 0) {
+      throw new Error('Satoshi amount must be greater than 0');
+    }
+
+    const result = await loanService.depositCollateral(userId, satoshiAmount);
+
+    // Broadcast balance update to user
+    const userService = require('../../services/userService');
+    const balances = await userService.getUserBalances(userId);
+    const formattedBalances = userService.formatBalancesForDisplay(balances);
+    socketServer.broadcastToUser(userId, 'balance_update', {
+      balances: formattedBalances
+    });
+
+    return result;
+  },
+
   async handleLoanStatus(payload, socket, socketServer) {
     const userId = socket.userId;
     const result = await loanService.getLoanStatus(userId);
@@ -639,8 +738,126 @@ const userHandlers = {
     };
   },
 
-  // Add more handlers as needed...
-  // (Due to length constraints, I'm showing the pattern - you can implement the rest similarly)
+  async handleLoanHistory(payload, socket, socketServer) {
+    const userId = socket.userId;
+    const { loanId } = payload || {};
+    
+    try {
+      const history = await loanService.getLoanHistory(userId, loanId);
+      return history || [];
+    } catch (error) {
+      console.error('Error fetching loan history:', error);
+      return [];
+    }
+  },
+
+  async handleBorrowFunds(payload, socket, socketServer) {
+    const userId = socket.userId;
+    const { amount } = payload;
+
+    if (!amount || amount <= 0) {
+      throw new Error('Amount must be greater than 0');
+    }
+
+    const result = await loanService.borrowFunds(userId, amount);
+
+    // Broadcast balance update to user
+    const balances = await userService.getUserBalances(userId);
+    const formattedBalances = userService.formatBalancesForDisplay(balances);
+    socketServer.broadcastToUser(userId, 'balance_update', {
+      balances: formattedBalances
+    });
+
+    return result;
+  },
+
+  async handleRepayLoan(payload, socket, socketServer) {
+    const userId = socket.userId;
+    const { amount } = payload;
+
+    if (!amount || amount <= 0) {
+      throw new Error('Amount must be greater than 0');
+    }
+
+    const result = await loanService.repayLoan(userId, amount);
+
+    // Broadcast balance update to user
+    const balances = await userService.getUserBalances(userId);
+    const formattedBalances = userService.formatBalancesForDisplay(balances);
+    socketServer.broadcastToUser(userId, 'balance_update', {
+      balances: formattedBalances
+    });
+
+    return result;
+  },
+
+  async handleAddCollateral(payload, socket, socketServer) {
+    const userId = socket.userId;
+    const { btcAmount } = payload;
+
+    if (!btcAmount || btcAmount <= 0) {
+      throw new Error('BTC amount must be greater than 0');
+    }
+
+    // Convert BTC to satoshis
+    const satoshiAmount = Math.floor(btcAmount * 100000000);
+    
+    const result = await loanService.addCollateralToLoan(userId, satoshiAmount);
+
+    // Broadcast balance update to user
+    const balances = await userService.getUserBalances(userId);
+    const formattedBalances = userService.formatBalancesForDisplay(balances);
+    socketServer.broadcastToUser(userId, 'balance_update', {
+      balances: formattedBalances
+    });
+
+    return result;
+  },
+
+  async handlePartialLiquidation(payload, socket, socketServer) {
+    const userId = socket.userId;
+    const { amount } = payload;
+
+    if (!amount || amount <= 0) {
+      throw new Error('Amount must be greater than 0');
+    }
+
+    const result = await loanService.executeUserPartialLiquidation(userId, amount);
+
+    // Broadcast balance update to user
+    const balances = await userService.getUserBalances(userId);
+    const formattedBalances = userService.formatBalancesForDisplay(balances);
+    socketServer.broadcastToUser(userId, 'balance_update', {
+      balances: formattedBalances
+    });
+
+    return result;
+  },
+
+  async handleFullLiquidation(payload, socket, socketServer) {
+    const userId = socket.userId;
+    
+    const result = await loanService.executeFullLiquidation(userId);
+
+    // Broadcast balance update to user
+    const balances = await userService.getUserBalances(userId);
+    const formattedBalances = userService.formatBalancesForDisplay(balances);
+    socketServer.broadcastToUser(userId, 'balance_update', {
+      balances: formattedBalances
+    });
+
+    return result;
+  },
+
+  async handleLiquidationRisk(payload, socket, socketServer) {
+    try {
+      const result = await loanService.checkLiquidationRisk();
+      return result;
+    } catch (error) {
+      console.error('Error checking liquidation risk:', error);
+      return [];
+    }
+  }
 };
 
 module.exports = userHandlers;

@@ -4,10 +4,8 @@ import {
   TrendingUp, 
   TrendingDown, 
   Activity, 
-  Eye,
   Bitcoin,
   DollarSign,
-  Sparkles,
   User,
   ArrowUp,
   ArrowDown,
@@ -23,7 +21,7 @@ import {
   Zap
 } from 'lucide-react';
 import { useWebSocket } from '../contexts/WebSocketContext';
-import { Balances, Prices, Transaction, DashboardData } from '../types';
+import { Balances, Prices, Transaction } from '../types';
 import TradingModal from '../components/TradingModal';
 import DcaPlanModal from '../components/DcaPlanModal';
 import TransactionDetailModal from '../components/TransactionDetailModal';
@@ -41,7 +39,7 @@ import {
 
 const Home: React.FC = () => {
   const { refreshBalance } = useBalance();
-  const { getDashboard, createDcaBuyPlan, createDcaSellPlan, buyBitcoin, sellBitcoin, placeLimitBuyOrder, placeLimitSellOrder, on, off, isConnected } = useWebSocket();
+  const { getDashboard, on, off, isConnected } = useWebSocket();
   const dcaPlansSectionRef = useRef<DcaPlansSectionRef>(null);
   const bitcoinChartRef = useRef<BitcoinChartRef>(null);
   const [balances, setBalances] = useState<Balances | null>(null);
@@ -49,7 +47,6 @@ const Home: React.FC = () => {
   const [recentTransactions, setRecentTransactions] = useState<Transaction[]>([]);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
   const [isTransactionModalOpen, setIsTransactionModalOpen] = useState(false);
   const [isTradingModalOpen, setIsTradingModalOpen] = useState(false);
@@ -67,7 +64,7 @@ const Home: React.FC = () => {
         setPrices(prices);
         setRecentTransactions(recent_transactions);
       } catch (error) {
-        console.error('Error fetching dashboard data:', error);
+        // Error fetching dashboard data - handle silently
       }
     };
 
@@ -94,7 +91,7 @@ const Home: React.FC = () => {
         const dashboardData = await getDashboard();
         setRecentTransactions(dashboardData.recent_transactions);
       } catch (error) {
-        console.error('Error refreshing recent transactions:', error);
+        // Error refreshing recent transactions - handle silently
       }
     };
 
@@ -116,69 +113,6 @@ const Home: React.FC = () => {
     setIsTradingModalOpen(true);
   };
 
-  const handleTrade = async (amount: number, targetPrice?: number, dcaConfig?: {
-    frequency: 'HOURLY' | 'DAILY' | 'WEEKLY' | 'MONTHLY';
-    totalExecutions?: number;
-    maxPrice?: number;
-    minPrice?: number;
-  }) => {
-    setIsLoading(true);
-    setError('');
-    setSuccess('');
-
-    try {
-      if (dcaConfig) {
-        // DCA plan
-        if (dcaPlanType === 'buy') {
-          await createDcaBuyPlan({ 
-            amountPerExecution: amount, 
-            frequency: dcaConfig.frequency,
-            totalExecutions: dcaConfig.totalExecutions,
-            maxPrice: dcaConfig.maxPrice,
-            minPrice: dcaConfig.minPrice
-          });
-          setSuccess(`🔄 DCA ${dcaConfig.frequency.toLowerCase()} buy plan created successfully!`);
-        } else {
-          await createDcaSellPlan({ 
-            amountPerExecution: amount, 
-            frequency: dcaConfig.frequency,
-            totalExecutions: dcaConfig.totalExecutions,
-            maxPrice: dcaConfig.maxPrice,
-            minPrice: dcaConfig.minPrice
-          });
-          setSuccess(`🔄 DCA ${dcaConfig.frequency.toLowerCase()} sell plan created successfully!`);
-        }
-        // Refresh DCA plans section
-        await dcaPlansSectionRef.current?.refresh();
-      } else if (targetPrice) {
-        // Limit order
-        if (tradingType === 'buy') {
-          await placeLimitBuyOrder(amount, targetPrice);
-          setSuccess('📊 Limit buy order placed successfully!');
-        } else {
-          await placeLimitSellOrder(amount, targetPrice);
-          setSuccess('📊 Limit sell order placed successfully!');
-        }
-      } else {
-        // Market order
-        if (tradingType === 'buy') {
-          await buyBitcoin(amount);
-          setSuccess('🎉 Bitcoin purchased successfully!');
-        } else {
-          await sellBitcoin(amount);
-          setSuccess('✅ Bitcoin sold successfully!');
-        }
-      }
-      
-      // Real-time WebSocket events will handle balance/price/transaction updates automatically
-      // No manual refresh needed!
-      
-    } catch (error: any) {
-      setError(error.response?.data?.message || `Failed to ${dcaConfig ? 'create DCA plan' : targetPrice ? 'place limit order' : tradingType + ' Bitcoin'}`);
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const refreshData = async () => {
     try {
@@ -197,7 +131,7 @@ const Home: React.FC = () => {
       // Trigger balance refresh for persistent top bar
       refreshBalance();
     } catch (error) {
-      console.error('Error refreshing data:', error);
+      // Error refreshing data - handle silently
     }
   };
 

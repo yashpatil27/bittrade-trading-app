@@ -75,7 +75,6 @@ const TradingModal: React.FC<TradingModalProps> = ({
 
     // Handle balance updates
     const handleBalanceUpdate = (data: any) => {
-      console.log('Balance update received:', data);
       if (data?.balances) {
         setRealtimeBalances(data.balances);
       }
@@ -83,7 +82,6 @@ const TradingModal: React.FC<TradingModalProps> = ({
 
     // Handle price updates
     const handlePriceUpdate = (data: any) => {
-      console.log('Price update received:', data);
       if (data?.buy_rate !== undefined || data?.sell_rate !== undefined) {
         setRealtimePrices(prev => ({
           ...prev,

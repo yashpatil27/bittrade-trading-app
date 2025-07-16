@@ -92,7 +92,7 @@ const History: React.FC = () => {
       
       setHasMore(pagination.has_more);
     } catch (error) {
-      console.error('Error fetching transactions:', error);
+      // Error fetching transactions
     } finally {
       setIsLoading(false);
     }
@@ -253,7 +253,7 @@ const History: React.FC = () => {
       await fetchTransactions();
       refreshBalance();
     } catch (error) {
-      console.error('Error refreshing data:', error);
+      // Error refreshing data
     }
   };
 
