@@ -17,7 +17,6 @@ import { AdminUser } from '../types';
 import { useWebSocket } from '../contexts/WebSocketContext';
 import { formatBitcoin, formatCurrencyInr } from '../utils/formatters';
 import { useBalance } from '../contexts/BalanceContext';
-import PinConfirmationModal from './PinConfirmationModal';
 import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 
 interface UserManagementModalProps {
@@ -51,11 +50,6 @@ const UserManagementModal: React.FC<UserManagementModalProps> = ({
   const [externalInrAmount, setExternalInrAmount] = useState('');
   const [externalBtcAmount, setExternalBtcAmount] = useState('');
   
-  // PIN confirmation state
-  const [isPinModalOpen, setIsPinModalOpen] = useState(false);
-  const [pendingAction, setPendingAction] = useState<(() => Promise<void>) | null>(null);
-  const [pinModalTitle, setPinModalTitle] = useState('');
-  const [pinModalMessage, setPinModalMessage] = useState('');
 
   useBodyScrollLock(isOpen);
 
@@ -89,38 +83,6 @@ const UserManagementModal: React.FC<UserManagementModalProps> = ({
     }
   }, [isOpen, user, on, off, onUserUpdated]);
 
-  // PIN confirmation methods
-  const requirePinConfirmation = (action: () => Promise<void>, title: string, message: string) => {
-    setPendingAction(() => action);
-    setPinModalTitle(title);
-    setPinModalMessage(message);
-    setIsPinModalOpen(true);
-  };
-
-  const handlePinConfirm = async (pin: string): Promise<boolean> => {
-    try {
-      // Verify PIN
-      const response = await sendMessage('user.verify-pin', { pin });
-      if (response?.valid && pendingAction) {
-        // PIN is correct, execute the pending action
-        await pendingAction();
-        setIsPinModalOpen(false);
-        setPendingAction(null);
-        return true;
-      } else {
-        // PIN is incorrect
-        return false;
-      }
-    } catch (error) {
-      console.error('PIN verification error:', error);
-      return false;
-    }
-  };
-
-  const handlePinModalClose = () => {
-    setIsPinModalOpen(false);
-    setPendingAction(null);
-  };
 
   if (!isOpen || !user) return null;
 
@@ -363,13 +325,7 @@ const UserManagementModal: React.FC<UserManagementModalProps> = ({
               </div>
 
               <button
-                onClick={() => {
-                  requirePinConfirmation(
-                    handleDeleteUser,
-                    'Confirm Delete User',
-                    `Are you sure you want to delete user "${user.name}"? This action cannot be undone.`
-                  );
-                }}
+                onClick={handleDeleteUser}
                 disabled={isLoading || !!(user.is_admin === true || user.is_admin === 1)}
                 className="w-full bg-red-900/20 border border-red-800 text-red-300 hover:bg-red-900/30 disabled:opacity-50 disabled:cursor-not-allowed py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
               >
@@ -454,11 +410,7 @@ const UserManagementModal: React.FC<UserManagementModalProps> = ({
                       onClick={() => {
                         const amount = balanceMode === 'INR' ? inrAmount : btcAmount;
                         const currency = balanceMode;
-                        requirePinConfirmation(
-                          () => handleBalanceOperation('deposit', currency),
-                          'Confirm Deposit',
-                          `Deposit ${currency === 'INR' ? formatCurrencyInr(parseFloat(amount)) : '₿' + amount} to ${user.name}?`
-                        );
+                        handleBalanceOperation('deposit', currency);
                       }}
                       disabled={isLoading || (balanceMode === 'INR' ? !inrAmount : !btcAmount)}
                       className="bg-green-900/20 border border-green-800 text-green-300 hover:bg-green-900/30 disabled:opacity-50 disabled:cursor-not-allowed py-2 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
@@ -470,11 +422,7 @@ const UserManagementModal: React.FC<UserManagementModalProps> = ({
                       onClick={() => {
                         const amount = balanceMode === 'INR' ? inrAmount : btcAmount;
                         const currency = balanceMode;
-                        requirePinConfirmation(
-                          () => handleBalanceOperation('withdraw', currency),
-                          'Confirm Withdrawal',
-                          `Withdraw ${currency === 'INR' ? formatCurrencyInr(parseFloat(amount)) : '₿' + amount} from ${user.name}?`
-                        );
+                        handleBalanceOperation('withdraw', currency);
                       }}
                       disabled={isLoading || (balanceMode === 'INR' ? !inrAmount : !btcAmount)}
                       className="bg-red-900/20 border border-red-800 text-red-300 hover:bg-red-900/30 disabled:opacity-50 disabled:cursor-not-allowed py-2 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
@@ -560,13 +508,7 @@ const UserManagementModal: React.FC<UserManagementModalProps> = ({
                   )}
                   
                   <button
-                    onClick={() => {
-                      requirePinConfirmation(
-                        handleExternalBuy,
-                        'Confirm External Buy',
-                        `Record external Bitcoin purchase: ${formatCurrencyInr(parseFloat(externalInrAmount))} → ₿${externalBtcAmount} for ${user.name}?`
-                      );
-                    }}
+                    onClick={handleExternalBuy}
                     disabled={isLoading || !externalInrAmount || !externalBtcAmount || parseFloat(externalInrAmount) <= 0 || parseFloat(externalBtcAmount) <= 0}
                     className="w-full bg-blue-900/20 border border-blue-800 text-blue-300 hover:bg-blue-900/30 disabled:opacity-50 disabled:cursor-not-allowed py-3 px-4 rounded-lg transition-colors font-medium flex items-center justify-center gap-2"
                   >
@@ -614,13 +556,7 @@ const UserManagementModal: React.FC<UserManagementModalProps> = ({
                     <p className="text-zinc-500 text-xs mt-1">Minimum 6 characters</p>
                   </div>
                   <button
-                    onClick={() => {
-                      requirePinConfirmation(
-                        handlePasswordReset,
-                        'Confirm Password Reset',
-                        `Reset password for ${user.name}?`
-                      );
-                    }}
+                    onClick={handlePasswordReset}
                     disabled={isLoading || !newPassword}
                     className="w-full bg-white text-black hover:bg-zinc-200 disabled:opacity-50 disabled:cursor-not-allowed py-2 px-4 rounded-lg transition-colors font-medium"
                   >
@@ -633,15 +569,6 @@ const UserManagementModal: React.FC<UserManagementModalProps> = ({
         </div>
       </div>
       
-      {/* PIN Confirmation Modal */}
-      <PinConfirmationModal
-        isOpen={isPinModalOpen}
-        onClose={handlePinModalClose}
-        onConfirm={handlePinConfirm}
-        title={pinModalTitle}
-        message={pinModalMessage}
-        isLoading={isLoading}
-      />
     </div>
   );
 };

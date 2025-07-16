@@ -3,7 +3,6 @@ import { X, ArrowDown, Calculator, AlertTriangle, Info } from 'lucide-react';
 import { useWebSocket } from '../contexts/WebSocketContext';
 import { LoanStatus } from '../types';
 import { useBalance } from '../contexts/BalanceContext';
-import PinConfirmationModal from './PinConfirmationModal';
 import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 import { formatCurrencyInr } from '../utils/formatters';
 
@@ -23,11 +22,10 @@ const BorrowModal: React.FC<BorrowModalProps> = ({
   const [amount, setAmount] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [isPinModalOpen, setIsPinModalOpen] = useState(false);
   const { updateBalance } = useBalance();
   const { sendMessage, on, off } = useWebSocket();
 
-  useBodyScrollLock(isOpen && !isPinModalOpen);
+  useBodyScrollLock(isOpen);
 
   useEffect(() => {
     if (isOpen && error) {
@@ -55,7 +53,7 @@ const BorrowModal: React.FC<BorrowModalProps> = ({
     return 'LOW RISK';
   };
 
-  const handleBorrow = () => {
+  const handleBorrow = async () => {
     if (!amount || parseFloat(amount) <= 0) {
       setError('Please enter a valid amount');
       return;
@@ -73,18 +71,11 @@ const BorrowModal: React.FC<BorrowModalProps> = ({
     }
 
     setError('');
-    setIsPinModalOpen(true);
+    await handleBorrowFunds();
   };
 
-  const handlePinConfirm = async (pin: string): Promise<boolean> => {
+  const handleBorrowFunds = async () => {
     try {
-      // Verify PIN first
-      const pinResponse = await sendMessage('user.verify-pin', { pin });
-      if (!pinResponse?.valid) {
-        return false;
-      }
-
-      // PIN is correct, now proceed with the operation
       setLoading(true);
       
       // Borrow funds
@@ -93,21 +84,13 @@ const BorrowModal: React.FC<BorrowModalProps> = ({
       // Update balance
       await updateBalance();
       
-      setIsPinModalOpen(false);
       onSuccess();
-      
-      return true;
     } catch (error: any) {
       console.error('Borrow error:', error);
       setError(error.message || 'Error borrowing funds');
-      return false;
     } finally {
       setLoading(false);
     }
-  };
-
-  const handlePinModalClose = () => {
-    setIsPinModalOpen(false);
   };
 
   const getMaxAmount = () => {
@@ -305,15 +288,6 @@ const BorrowModal: React.FC<BorrowModalProps> = ({
         </div>
       </div>
 
-      {/* PIN Confirmation Modal */}
-      <PinConfirmationModal
-        isOpen={isPinModalOpen}
-        onClose={handlePinModalClose}
-        onConfirm={handlePinConfirm}
-        title="Confirm Borrowing"
-        message={`Enter your PIN to confirm borrowing ${formatCurrencyInr(parseFloat(amount || '0'))}`}
-        isLoading={loading}
-      />
     </div>
   );
 };

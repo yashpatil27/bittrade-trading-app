@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { X, Zap, Calculator, Info, Bitcoin } from 'lucide-react';
 import { useWebSocket } from '../contexts/WebSocketContext';
 import { LoanStatus } from '../types';
-import PinConfirmationModal from './PinConfirmationModal';
 import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 import { formatBitcoin, formatCurrencyInr } from '../utils/formatters';
 
@@ -22,11 +21,10 @@ const PartialLiquidationModal: React.FC<PartialLiquidationModalProps> = ({
   const [btcAmount, setBtcAmount] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [isPinModalOpen, setIsPinModalOpen] = useState(false);
   const { sendMessage, on, off } = useWebSocket();
   const [currentBtcPrice, setCurrentBtcPrice] = useState(loanStatus?.currentBtcPrice || 0);
 
-  useBodyScrollLock(isOpen && !isPinModalOpen);
+  useBodyScrollLock(isOpen);
 
   useEffect(() => {
     if (isOpen && error) {
@@ -64,7 +62,7 @@ const PartialLiquidationModal: React.FC<PartialLiquidationModalProps> = ({
     return loanStatus.borrowedAmount + (loanStatus.minimumInterestDue || 0);
   };
 
-  const handlePartialLiquidation = () => {
+  const handlePartialLiquidation = async () => {
     if (!btcAmount || parseFloat(btcAmount) <= 0) {
       setError('Please enter a valid ₿ amount');
       return;
@@ -84,44 +82,23 @@ const PartialLiquidationModal: React.FC<PartialLiquidationModalProps> = ({
     }
 
     setError('');
-    setIsPinModalOpen(true);
+    await handleLiquidation();
   };
 
-  const handlePinConfirm = async (pin: string): Promise<boolean> => {
+  const handleLiquidation = async () => {
     try {
-      // Verify PIN first
-      const pinResponse = await sendMessage('user.verify-pin', { pin });
-      
-      if (!pinResponse?.valid) {
-        return false;
-      }
-
-      // PIN is correct, now proceed with the operation
       setLoading(true);
 
       // Execute partial liquidation
-      await sendMessage('user.execute-partial-liquidation', { btcAmount: parseFloat(btcAmount) });
+      await sendMessage('user.partial-liquidation', { amount: parseFloat(btcAmount) });
 
-      setIsPinModalOpen(false);
       onSuccess();
-      return true;
     } catch (error: any) {
       console.error('Partial liquidation error:', error);
-      // Check if error is from PIN verification or liquidation
-      if (error.message?.includes('PIN')) {
-        return false;
-      }
-      // If it's a liquidation error, set the error message but don't close the PIN modal
       setError(error.message || 'Error executing partial liquidation');
-      setIsPinModalOpen(false);
-      return false;
     } finally {
       setLoading(false);
     }
-  };
-
-  const handlePinModalClose = () => {
-    setIsPinModalOpen(false);
   };
 
   if (!isOpen || !loanStatus) return null;
@@ -285,15 +262,6 @@ const PartialLiquidationModal: React.FC<PartialLiquidationModalProps> = ({
         </div>
       </div>
 
-      {/* PIN Confirmation Modal */}
-      <PinConfirmationModal
-        isOpen={isPinModalOpen}
-        onClose={handlePinModalClose}
-        onConfirm={handlePinConfirm}
-        title="Confirm Liquidation"
-        message={`Enter your PIN to confirm liquidating ${btcAmount} ₿`}
-        isLoading={loading}
-      />
     </div>
   );
 };

@@ -16,7 +16,6 @@ import {
   Clock
 } from 'lucide-react';
 import { useWebSocket } from '../contexts/WebSocketContext';
-import PinConfirmationModal from '../components/PinConfirmationModal';
 
 const AdminSettings: React.FC = () => {
   const [buyMultiplier, setBuyMultiplier] = useState('');
@@ -28,9 +27,6 @@ const AdminSettings: React.FC = () => {
   const [systemHealth, setSystemHealth] = useState<any>(null);
   const [isHealthLoading, setIsHealthLoading] = useState(false);
   
-  // PIN confirmation state
-  const [isPinModalOpen, setIsPinModalOpen] = useState(false);
-  const [pendingSettings, setPendingSettings] = useState<{ buy_multiplier: number; sell_multiplier: number; loan_interest_rate: number } | null>(null);
 
   const { sendMessage } = useWebSocket();
 
@@ -105,50 +101,18 @@ const AdminSettings: React.FC = () => {
     const settings = validateAndPrepareSettings();
     if (!settings) return;
 
-    setPendingSettings(settings);
-    setIsPinModalOpen(true);
-  };
-
-  const executeSettingsUpdate = async () => {
-    if (!pendingSettings) return;
-
     setIsLoading(true);
     setError('');
     setMessage('');
 
     try {
-      await sendMessage('admin.update-settings', pendingSettings);
+      await sendMessage('admin.update-settings', settings);
       setMessage('✅ Settings updated successfully!');
-      setPendingSettings(null);
     } catch (error: any) {
       setError(error.message || 'Failed to update settings');
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const handlePinConfirm = async (pin: string): Promise<boolean> => {
-    try {
-      // Verify PIN
-      const response = await sendMessage('user.verify-pin', { pin });
-      if (response?.valid) {
-        // PIN is correct, execute the settings update
-        await executeSettingsUpdate();
-        setIsPinModalOpen(false);
-        return true;
-      } else {
-        // PIN is incorrect
-        return false;
-      }
-    } catch (error) {
-      console.error('PIN verification error:', error);
-      return false;
-    }
-  };
-
-  const handlePinModalClose = () => {
-    setIsPinModalOpen(false);
-    setPendingSettings(null);
   };
 
   const handleReset = () => {
@@ -430,15 +394,6 @@ const AdminSettings: React.FC = () => {
         </div>
       </div>
       
-      {/* PIN Confirmation Modal */}
-      <PinConfirmationModal
-        isOpen={isPinModalOpen}
-        onClose={handlePinModalClose}
-        onConfirm={handlePinConfirm}
-        title="Confirm Rate Changes"
-        message={pendingSettings ? `Update settings:\nBuy Rate: ${pendingSettings.buy_multiplier}\nSell Rate: ${pendingSettings.sell_multiplier}\nLoan Interest Rate: ${pendingSettings.loan_interest_rate}%` : ''}
-        isLoading={isLoading}
-      />
     </div>
   );
 };

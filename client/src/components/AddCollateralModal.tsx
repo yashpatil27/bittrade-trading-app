@@ -3,7 +3,6 @@ import { X, Plus, AlertCircle, TrendingUp, Shield, Bitcoin } from 'lucide-react'
 import { useWebSocket } from '../contexts/WebSocketContext';
 import { LoanStatus } from '../types';
 import { formatBitcoin, formatCurrencyInr } from '../utils/formatters';
-import PinConfirmationModal from './PinConfirmationModal';
 import { useBalance } from '../contexts/BalanceContext';
 
 interface AddCollateralModalProps {
@@ -22,7 +21,6 @@ const AddCollateralModal: React.FC<AddCollateralModalProps> = ({
   const [collateralAmount, setCollateralAmount] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [showPinModal, setShowPinModal] = useState(false);
   const [availableBtc, setAvailableBtc] = useState(0);
   const { updateBalance } = useBalance();
   const { sendMessage, on, off } = useWebSocket();
@@ -78,32 +76,23 @@ const AddCollateralModal: React.FC<AddCollateralModalProps> = ({
     }
 
     setError('');
-    setShowPinModal(true);
+    await handleAddCollateral();
   };
 
-  const handlePinConfirm = async (pin: string): Promise<boolean> => {
+  const handleAddCollateral = async () => {
     try {
       setLoading(true);
       
-      // Verify PIN first
-      const pinResponse = await sendMessage('user.verify-pin', { pin });
-      if (!pinResponse?.valid) {
-        return false;
-      }
-
       // Add collateral
-      await sendMessage('user.add-collateral-to-loan', { amount: parseFloat(collateralAmount) });
+      await sendMessage('user.add-collateral', { btcAmount: parseFloat(collateralAmount) });
       
       // Update balance
       await updateBalance();
       
-      setShowPinModal(false);
       onSuccess();
-      return true;
     } catch (error: any) {
       console.error('Add collateral error:', error);
       setError(error.message || 'Failed to add collateral');
-      return false;
     } finally {
       setLoading(false);
     }
@@ -113,7 +102,6 @@ const AddCollateralModal: React.FC<AddCollateralModalProps> = ({
     if (!loading) {
       setCollateralAmount('');
       setError('');
-      setShowPinModal(false);
       onClose();
     }
   };
@@ -364,15 +352,6 @@ const AddCollateralModal: React.FC<AddCollateralModalProps> = ({
         </div>
       </div>
 
-      {/* PIN Confirmation Modal */}
-      <PinConfirmationModal
-        isOpen={showPinModal}
-        onClose={() => setShowPinModal(false)}
-        onConfirm={handlePinConfirm}
-        title="Confirm Collateral Addition"
-        message={`Add ₿${formatBitcoin(parseFloat(collateralAmount || '0'))} as additional collateral?`}
-        isLoading={loading}
-      />
     </>
   );
 };

@@ -3,7 +3,6 @@ import { X, Wallet, Bitcoin, Calculator, Info } from 'lucide-react';
 import { useWebSocket } from '../contexts/WebSocketContext';
 import { useBalance } from '../contexts/BalanceContext';
 import { formatBitcoin, formatInr } from '../utils/formatters';
-import PinConfirmationModal from './PinConfirmationModal';
 import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 
 interface DepositCollateralModalProps {
@@ -23,11 +22,10 @@ const DepositCollateralModal: React.FC<DepositCollateralModalProps> = ({
   const [interestRate, setInterestRate] = useState(15);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [isPinModalOpen, setIsPinModalOpen] = useState(false);
   const { updateBalance } = useBalance();
   const { sendMessage, on, off } = useWebSocket();
 
-  useBodyScrollLock(isOpen && !isPinModalOpen);
+  useBodyScrollLock(isOpen);
 
   useEffect(() => {
     if (isOpen) {
@@ -106,7 +104,7 @@ const DepositCollateralModal: React.FC<DepositCollateralModalProps> = ({
     return Math.floor(btcSellRate * (60 / 90)); // 90% LTV triggers liquidation
   };
 
-  const handleDeposit = () => {
+  const handleDeposit = async () => {
     if (!amount || parseFloat(amount) <= 0) {
       setError('Please enter a valid amount');
       return;
@@ -119,18 +117,11 @@ const DepositCollateralModal: React.FC<DepositCollateralModalProps> = ({
     }
 
     setError('');
-    setIsPinModalOpen(true);
+    await handleDepositCollateral();
   };
 
-  const handlePinConfirm = async (pin: string): Promise<boolean> => {
+  const handleDepositCollateral = async () => {
     try {
-      // Verify PIN first
-      const pinResponse = await sendMessage('user.verify-pin', { pin });
-      if (!pinResponse?.valid) {
-        return false;
-      }
-
-      // PIN is correct, now proceed with the operation
       setLoading(true);
       
       // Convert BTC to satoshis
@@ -142,21 +133,13 @@ const DepositCollateralModal: React.FC<DepositCollateralModalProps> = ({
       // Update balance
       await updateBalance();
       
-      setIsPinModalOpen(false);
       onSuccess();
-      
-      return true;
     } catch (error: any) {
       console.error('Deposit error:', error);
       setError(error.message || 'Error depositing collateral');
-      return false;
     } finally {
       setLoading(false);
     }
-  };
-
-  const handlePinModalClose = () => {
-    setIsPinModalOpen(false);
   };
 
   const getMaxAmount = () => {
@@ -341,15 +324,6 @@ const DepositCollateralModal: React.FC<DepositCollateralModalProps> = ({
         </div>
       </div>
 
-      {/* PIN Confirmation Modal */}
-      <PinConfirmationModal
-        isOpen={isPinModalOpen}
-        onClose={handlePinModalClose}
-        onConfirm={handlePinConfirm}
-        title="Confirm Collateral Deposit"
-        message={`Enter your PIN to confirm depositing ${amount} BTC as collateral`}
-        isLoading={loading}
-      />
     </div>
   );
 };
