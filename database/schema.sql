@@ -221,3 +221,13 @@ CREATE INDEX idx_bitcoin_chart_data_timeframe ON bitcoin_chart_data(timeframe);
 CREATE INDEX idx_bitcoin_chart_data_timeframe_updated ON bitcoin_chart_data(timeframe, last_updated DESC);
 CREATE INDEX idx_bitcoin_chart_data_last_updated ON bitcoin_chart_data(last_updated DESC);
 
+-- Migration log table
+CREATE TABLE migration_log (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  migration_file VARCHAR(255) NOT NULL,
+  applied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  notes TEXT,
+  INDEX idx_migration_log_file (migration_file),
+  INDEX idx_migration_log_applied_at (applied_at)
+);
+
