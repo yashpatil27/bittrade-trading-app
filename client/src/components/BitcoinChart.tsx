@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useImperativeHandle, forwardRef } from 'react';
 import { AreaChart, Area, XAxis, YAxis, ResponsiveContainer, Tooltip } from 'recharts';
 import { LineChart as LineChartIcon, Activity, Loader2 } from 'lucide-react';
-import axios from 'axios';
+import { publicAPI } from '../services/api';
 
 interface ChartDataPoint {
   timestamp: number;
@@ -56,7 +56,7 @@ const BitcoinChart = forwardRef<BitcoinChartRef, BitcoinChartProps>(({ onPriceRe
     setError('');
 
     try {
-      const response = await axios.get(`/api/public/bitcoin/charts?timeframe=${timeframe}`);
+      const response = await publicAPI.getBitcoinCharts(timeframe);
       if (response.data.success) {
         const data = response.data.data;
         
@@ -156,7 +156,7 @@ const BitcoinChart = forwardRef<BitcoinChartRef, BitcoinChartProps>(({ onPriceRe
 
   const fetchCurrentPrice = async () => {
     try {
-      const response = await axios.get('/api/public/bitcoin/price');
+      const response = await publicAPI.getBitcoinPrice();
       if (response.data.success) {
         setCurrentBtcPrice(response.data.data.btc_usd);
       }

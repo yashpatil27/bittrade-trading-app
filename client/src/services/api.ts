@@ -198,6 +198,30 @@ export const userAPI = {
     api.get('/user/loan/liquidation-risk'),
 };
 
+// Public API (no authentication required)
+export const publicAPI = {
+  getBitcoinPrice: (): Promise<AxiosResponse<ApiResponse<any>>> =>
+    api.get('/public/bitcoin/price'),
+  
+  getBitcoinData: (): Promise<AxiosResponse<ApiResponse<any>>> =>
+    api.get('/public/bitcoin/data'),
+  
+  getBitcoinSentiment: (): Promise<AxiosResponse<ApiResponse<any>>> =>
+    api.get('/public/bitcoin/sentiment'),
+  
+  getBitcoinCharts: (timeframe?: string): Promise<AxiosResponse<ApiResponse<any>>> =>
+    api.get(`/public/bitcoin/charts${timeframe ? `?timeframe=${timeframe}` : ''}`),
+  
+  getMarketData: (): Promise<AxiosResponse<ApiResponse<any>>> =>
+    api.get('/public/market-data'),
+  
+  getTradingRates: (): Promise<AxiosResponse<ApiResponse<any>>> =>
+    api.get('/public/trading-rates'),
+  
+  getPlatformStats: (): Promise<AxiosResponse<ApiResponse<any>>> =>
+    api.get('/public/platform-stats'),
+};
+
 // Admin API
 export const adminAPI = {
   getDashboard: (): Promise<AxiosResponse<ApiResponse<AdminDashboardData>>> =>

@@ -59,6 +59,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const login = async (email: string, password: string): Promise<void> => {
     try {
+      // Try WebSocket authentication first
       const response = await webSocketManager.authenticate(email, password);
       const { token: newToken, user: newUser } = response.data;
       
@@ -72,8 +73,40 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       webSocketManager.disconnect();
       webSocketManager.connect();
     } catch (error: any) {
-      const message = error.message || 'Login failed';
-      throw new Error(message);
+      console.error('WebSocket authentication failed, trying HTTP fallback:', error);
+      
+      // Fallback to HTTP authentication for mobile
+      try {
+        const apiUrl = process.env.REACT_APP_API_URL || 'http://192.168.1.164:3001/api';
+        const response = await fetch(`${apiUrl}/auth/login`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ email, password }),
+        });
+        
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || 'Login failed');
+        }
+        
+        const data = await response.json();
+        const { token: newToken, user: newUser } = data.data;
+        
+        localStorage.setItem('token', newToken);
+        localStorage.setItem('user', JSON.stringify(newUser));
+        
+        setToken(newToken);
+        setUser(newUser);
+        
+        // Try to connect WebSocket with new token
+        webSocketManager.disconnect();
+        webSocketManager.connect();
+      } catch (httpError: any) {
+        const message = httpError.message || 'Login failed';
+        throw new Error(message);
+      }
     }
   };
 

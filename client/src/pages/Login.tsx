@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, Navigate } from 'react-router-dom';
 import { Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { debugConnection, testNetworkConnectivity } from '../utils/debug';
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState('');

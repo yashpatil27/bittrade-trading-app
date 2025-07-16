@@ -37,6 +37,7 @@ const DcaPlansSection = forwardRef<DcaPlansSectionRef, DcaPlansSectionProps>(({ 
   const [error, setError] = useState('');
   const [isDcaPlanModalOpen, setIsDcaPlanModalOpen] = useState(false);
   const [success, setSuccess] = useState('');
+  const [dcaPlanType, setDcaPlanType] = useState<'buy' | 'sell'>('buy');
 
   useEffect(() => {
     fetchDcaPlans();

@@ -1,4 +1,4 @@
-import React, { Suspense } from 'react';
+import React, { Suspense, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import { BalanceProvider } from './contexts/BalanceContext';
@@ -7,6 +7,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import Layout from './components/Layout';
 import LoadingSpinner from './components/LoadingSpinner';
 import ErrorBoundary from './components/ErrorBoundary';
+import { debugConnection, testNetworkConnectivity } from './utils/debug';
 
 // Lazy load components
 const Login = React.lazy(() => import('./pages/Login'));
@@ -22,6 +23,12 @@ const AdminTransactions = React.lazy(() => import('./pages/AdminTransactions'));
 const AdminSettings = React.lazy(() => import('./pages/AdminSettings'));
 
 function App() {
+  useEffect(() => {
+    // Debug connection info on app load
+    debugConnection();
+    testNetworkConnectivity();
+  }, []);
+
   return (
     <ErrorBoundary>
       <AuthProvider>

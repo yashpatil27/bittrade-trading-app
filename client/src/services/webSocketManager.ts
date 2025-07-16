@@ -35,9 +35,15 @@ class WebSocketManager {
 
   private getWebSocketUrl(): string {
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    
+    // Use environment variable for WebSocket URL in development
+    if (process.env.NODE_ENV === 'development' && process.env.REACT_APP_WS_URL) {
+      return process.env.REACT_APP_WS_URL;
+    }
+    
     const host = process.env.NODE_ENV === 'production' 
       ? window.location.host 
-      : 'localhost:3001';
+      : '192.168.1.164:3001';
     
     return `${protocol}//${host}`;
   }
@@ -131,6 +137,22 @@ class WebSocketManager {
     this.socket.on('settings_updated', (data) => {
       this.emit('settings_updated', data);
     });
+
+    // Add missing event handlers for portfolio page
+    this.socket.on('portfolio_update', (data) => {
+      console.log('Portfolio update received:', data);
+      this.emit('portfolio_update', data);
+    });
+
+    this.socket.on('market_data_update', (data) => {
+      console.log('Market data update received:', data);
+      this.emit('market_data_update', data);
+    });
+
+    this.socket.on('sentiment_update', (data) => {
+      console.log('Sentiment update received:', data);
+      this.emit('sentiment_update', data);
+    });
   }
 
   private handleDisconnection(): void {
@@ -171,6 +193,9 @@ class WebSocketManager {
     
     if (pendingRequest) {
       this.pendingRequests.delete(response.id);
+      
+      // Debug log responses
+      console.log('WebSocket response for', pendingRequest.action, ':', response);
       
       if (response.success) {
         pendingRequest.resolve(response.data);
