@@ -156,11 +156,39 @@ const userHandlers = {
   },
 
   async handleBitcoinData(payload, socket, socketServer) {
-    return await bitcoinDataService.getCurrentData();
+    const data = await bitcoinDataService.getCurrentData();
+    
+    return {
+      price: data.btc_usd_price,
+      market_cap: data.market_cap_usd,
+      volume_24h: data.volume_24h_usd,
+      price_change_24h: data.price_change_24h,
+      price_change_percentage_24h: data.price_change_24h_pct,
+      circulating_supply: null, // Not present in DB
+      total_supply: null, // Not present in DB
+      max_supply: null, // Not present in DB
+      last_updated: data.last_updated
+    };
   },
 
   async handleBitcoinSentiment(payload, socket, socketServer) {
-    return await bitcoinDataService.getSentimentData();
+    const sentiment = await bitcoinDataService.getSentimentData();
+    
+    if (!sentiment) {
+      return {
+        fear_greed_index: null,
+        fear_greed_classification: null,
+        last_updated: null,
+        next_update: null
+      };
+    }
+    
+    return {
+      fear_greed_index: sentiment.fear_greed_value,
+      fear_greed_classification: sentiment.fear_greed_classification,
+      last_updated: sentiment.last_updated,
+      next_update: "unknown" // Optionally add dynamic calculation
+    };
   },
 
   async handleBitcoinCharts(payload, socket, socketServer) {

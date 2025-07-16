@@ -101,11 +101,21 @@ router.get('/prices', async (req, res) => {
 // Get comprehensive Bitcoin market data
 router.get('/bitcoin/data', async (req, res) => {
   try {
-    const bitcoinData = await bitcoinDataService.getCurrentData();
+    const data = await bitcoinDataService.getCurrentData();
 
     res.json({
       success: true,
-      data: bitcoinData
+      data: {
+        price: data.btc_usd_price,
+        market_cap: data.market_cap_usd,
+        volume_24h: data.volume_24h_usd,
+        price_change_24h: data.price_change_24h,
+        price_change_percentage_24h: data.price_change_24h_pct,
+        circulating_supply: null, // Not present in DB
+        total_supply: null, // Not present in DB
+        max_supply: null, // Not present in DB
+        last_updated: data.last_updated
+      }
     });
 
   } catch (error) {
@@ -120,11 +130,28 @@ router.get('/bitcoin/data', async (req, res) => {
 // Get Bitcoin sentiment data
 router.get('/bitcoin/sentiment', async (req, res) => {
   try {
-    const sentimentData = await bitcoinDataService.getSentimentData();
+    const sentiment = await bitcoinDataService.getSentimentData();
 
+    if (!sentiment) {
+      return res.json({
+        success: true,
+        data: {
+          fear_greed_index: null,
+          fear_greed_classification: null,
+          last_updated: null,
+          next_update: null
+        }
+      });
+    }
+    
     res.json({
       success: true,
-      data: sentimentData
+      data: {
+        fear_greed_index: sentiment.fear_greed_value,
+        fear_greed_classification: sentiment.fear_greed_classification,
+        last_updated: sentiment.last_updated,
+        next_update: "unknown" // Optionally add dynamic calculation
+      }
     });
 
   } catch (error) {

@@ -66,11 +66,28 @@ router.get('/bitcoin/price', async (req, res) => {
 // Get Bitcoin sentiment data (public endpoint)
 router.get('/bitcoin/sentiment', async (req, res) => {
   try {
-    const sentimentData = await bitcoinDataService.getSentimentData();
+    const sentiment = await bitcoinDataService.getSentimentData();
 
+    if (!sentiment) {
+      return res.json({
+        success: true,
+        data: {
+          fear_greed_index: null,
+          fear_greed_classification: null,
+          last_updated: null,
+          next_update: null
+        }
+      });
+    }
+    
     res.json({
       success: true,
-      data: sentimentData
+      data: {
+        fear_greed_index: sentiment.fear_greed_value,
+        fear_greed_classification: sentiment.fear_greed_classification,
+        last_updated: sentiment.last_updated,
+        next_update: "unknown" // Optionally add dynamic calculation
+      }
     });
 
   } catch (error) {

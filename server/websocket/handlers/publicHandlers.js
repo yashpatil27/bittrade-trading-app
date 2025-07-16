@@ -68,14 +68,14 @@ const publicHandlers = {
     const data = await bitcoinDataService.getCurrentData();
     
     return {
-      price: data.price,
-      market_cap: data.market_cap,
-      volume_24h: data.volume_24h,
+      price: data.btc_usd_price,
+      market_cap: data.market_cap_usd,
+      volume_24h: data.volume_24h_usd,
       price_change_24h: data.price_change_24h,
-      price_change_percentage_24h: data.price_change_percentage_24h,
-      circulating_supply: data.circulating_supply,
-      total_supply: data.total_supply,
-      max_supply: data.max_supply,
+      price_change_percentage_24h: data.price_change_24h_pct,
+      circulating_supply: null, // Not present in DB
+      total_supply: null, // Not present in DB
+      max_supply: null, // Not present in DB
       last_updated: data.last_updated
     };
   },
@@ -83,11 +83,20 @@ const publicHandlers = {
   async handleBitcoinSentiment(payload, socket, socketServer) {
     const sentiment = await bitcoinDataService.getSentimentData();
     
+    if (!sentiment) {
+      return {
+        fear_greed_index: null,
+        fear_greed_classification: null,
+        last_updated: null,
+        next_update: null
+      };
+    }
+    
     return {
-      fear_greed_index: sentiment.fear_greed_index,
+      fear_greed_index: sentiment.fear_greed_value,
       fear_greed_classification: sentiment.fear_greed_classification,
       last_updated: sentiment.last_updated,
-      next_update: sentiment.next_update
+      next_update: "unknown" // Optionally add dynamic calculation
     };
   },
 
@@ -117,17 +126,17 @@ const publicHandlers = {
     
     return {
       bitcoin: {
-        price: data.price,
-        market_cap: data.market_cap,
-        volume_24h: data.volume_24h,
+        price: data.btc_usd_price,
+        market_cap: data.market_cap_usd,
+        volume_24h: data.volume_24h_usd,
         price_change_24h: data.price_change_24h,
-        price_change_percentage_24h: data.price_change_percentage_24h,
-        circulating_supply: data.circulating_supply,
-        dominance: data.market_cap_dominance
+        price_change_percentage_24h: data.price_change_24h_pct,
+        circulating_supply: null, // Not present in DB
+        dominance: data.btc_dominance_pct
       },
       sentiment: {
-        fear_greed_index: sentiment.fear_greed_index,
-        fear_greed_classification: sentiment.fear_greed_classification
+        fear_greed_index: sentiment?.fear_greed_value || null,
+        fear_greed_classification: sentiment?.fear_greed_classification || null
       },
       last_updated: new Date().toISOString()
     };
@@ -136,11 +145,20 @@ const publicHandlers = {
   async handleFearGreedIndex(payload, socket, socketServer) {
     const sentiment = await bitcoinDataService.getSentimentData();
     
+    if (!sentiment) {
+      return {
+        value: null,
+        classification: null,
+        last_updated: null,
+        next_update: null
+      };
+    }
+    
     return {
-      value: sentiment.fear_greed_index,
+      value: sentiment.fear_greed_value,
       classification: sentiment.fear_greed_classification,
       last_updated: sentiment.last_updated,
-      next_update: sentiment.next_update
+      next_update: "unknown" // Optionally add dynamic calculation
     };
   },
 

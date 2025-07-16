@@ -139,7 +139,7 @@ app.use(helmet({
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
     ? ['https://bittrade.co.in', 'https://www.bittrade.co.in']
-    : true,
+    : ['http://localhost:3000', 'http://192.168.1.164:3000', 'http://127.0.0.1:3000'],
   credentials: true,
   optionsSuccessStatus: 200
 }));

@@ -32,13 +32,17 @@ class SocketServer {
       try {
         const token = socket.handshake.auth.token || socket.handshake.query.token;
         
+        console.log('WebSocket auth middleware - token:', token ? 'present' : 'missing');
+        
         if (!token) {
           // Allow connections without token for authentication purposes
           socket.isAuthenticated = false;
           return next();
         }
 
+        console.log('Attempting to verify token...');
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        console.log('Token decoded successfully:', decoded);
         
         // Get user from database
         const users = await query(
@@ -46,7 +50,10 @@ class SocketServer {
           [decoded.userId]
         );
 
+        console.log('User lookup result:', users.length > 0 ? 'found' : 'not found');
+        
         if (users.length === 0) {
+          console.log('User not found in database');
           socket.isAuthenticated = false;
           return next();
         }
@@ -54,8 +61,10 @@ class SocketServer {
         socket.userId = users[0].id;
         socket.user = users[0];
         socket.isAuthenticated = true;
+        console.log('Authentication successful for user:', users[0].email);
         next();
       } catch (error) {
+        console.error('WebSocket authentication error:', error.message);
         socket.isAuthenticated = false;
         next();
       }
