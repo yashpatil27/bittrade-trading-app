@@ -1,6 +1,7 @@
 const { query, transaction } = require('../config/database');
 const { setCache, getCache, clearUserCache } = require('../config/redis');
 const bitcoinDataService = require('./bitcoinDataService');
+const socketServer = require('../websocket/socketServer');
 
 class UserService {
   async getUserBalances(userId) {
@@ -150,6 +151,26 @@ class UserService {
         // Clear user cache
         await clearUserCache(userId);
 
+        // Broadcast portfolio update to user
+        try {
+          const updatedBalances = await this.getUserBalances(userId);
+          const formattedBalances = this.formatBalancesForDisplay(updatedBalances);
+          socketServer.broadcastToUser(userId, 'portfolio_update', {
+            type: 'BALANCE_UPDATE',
+            balances: formattedBalances,
+            transaction: {
+              id: result.insertId,
+              type: 'MARKET_BUY',
+              inr_amount: inrAmount,
+              btc_amount: btcAmount,
+              execution_price: rates.buyRate,
+              timestamp: new Date().toISOString()
+            }
+          });
+        } catch (broadcastError) {
+          console.error('Error broadcasting portfolio update:', broadcastError);
+        }
+
         return {
           transactionId: result.insertId,
           inrAmount,
@@ -213,6 +234,26 @@ class UserService {
 
         // Clear user cache
         await clearUserCache(userId);
+
+        // Broadcast portfolio update to user
+        try {
+          const updatedBalances = await this.getUserBalances(userId);
+          const formattedBalances = this.formatBalancesForDisplay(updatedBalances);
+          socketServer.broadcastToUser(userId, 'portfolio_update', {
+            type: 'BALANCE_UPDATE',
+            balances: formattedBalances,
+            transaction: {
+              id: result.insertId,
+              type: 'MARKET_SELL',
+              inr_amount: inrAmount,
+              btc_amount: btcAmount,
+              execution_price: rates.sellRate,
+              timestamp: new Date().toISOString()
+            }
+          });
+        } catch (broadcastError) {
+          console.error('Error broadcasting portfolio update:', broadcastError);
+        }
 
         return {
           transactionId: result.insertId,
@@ -290,6 +331,24 @@ class UserService {
         // Clear user cache
         await clearUserCache(userId);
 
+        // Broadcast limit order update to user
+        try {
+          socketServer.broadcastToUser(userId, 'limit_order_update', {
+            type: 'ORDER_PLACED',
+            order: {
+              id: result.insertId,
+              type: 'LIMIT_BUY',
+              status: 'PENDING',
+              inr_amount: inrAmount,
+              target_price: targetPrice,
+              estimated_btc: estimatedBtc / 100000000,
+              created_at: new Date().toISOString()
+            }
+          });
+        } catch (broadcastError) {
+          console.error('Error broadcasting limit order update:', broadcastError);
+        }
+
         return {
           orderId: result.insertId,
           inrAmount,
@@ -365,6 +424,24 @@ class UserService {
 
         // Clear user cache
         await clearUserCache(userId);
+
+        // Broadcast limit order update to user
+        try {
+          socketServer.broadcastToUser(userId, 'limit_order_update', {
+            type: 'ORDER_PLACED',
+            order: {
+              id: result.insertId,
+              type: 'LIMIT_SELL',
+              status: 'PENDING',
+              btc_amount: btcAmount / 100000000,
+              target_price: targetPrice,
+              estimated_inr: estimatedInr,
+              created_at: new Date().toISOString()
+            }
+          });
+        } catch (broadcastError) {
+          console.error('Error broadcasting limit order update:', broadcastError);
+        }
 
         return {
           orderId: result.insertId,

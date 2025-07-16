@@ -2,6 +2,7 @@ const { query, transaction } = require('../config/database');
 const { clearUserCache } = require('../config/redis');
 const bitcoinDataService = require('./bitcoinDataService');
 const settingsService = require('./settingsService');
+const socketServer = require('../websocket/socketServer');
 
 /**
  * LoanService - Manages Bitcoin-backed loans with collateral management
@@ -72,6 +73,24 @@ const LoanService = {
 
         // Calculate max borrowable amount using sell rate (what user would actually get)
         const maxBorrowable = Math.floor((collateralAmount * rates.sellRate * ltvRatio) / (100 * 100000000));
+
+        // Broadcast loan update to user
+        try {
+          socketServer.broadcastToUser(userId, 'loan_update', {
+            type: 'LOAN_CREATED',
+            loan: {
+              id: loanResult.insertId,
+              collateral_amount: collateralAmount / 100000000,
+              max_borrowable: maxBorrowable,
+              ltv_ratio: ltvRatio,
+              interest_rate: interestRate,
+              status: 'ACTIVE',
+              timestamp: new Date().toISOString()
+            }
+          });
+        } catch (broadcastError) {
+          console.error('Error broadcasting loan update:', broadcastError);
+        }
 
         return {
           loanId: loanResult.insertId,
@@ -163,6 +182,23 @@ const LoanService = {
 
         // Clear user cache
         await clearUserCache(userId);
+
+        // Broadcast loan update to user
+        try {
+          socketServer.broadcastToUser(userId, 'loan_update', {
+            type: 'LOAN_BORROWED',
+            loan: {
+              id: loan.id,
+              borrow_amount: borrowAmount,
+              new_borrowed_total: loan.inr_borrowed_amount + borrowAmount,
+              available_capacity: availableCapacity - borrowAmount,
+              current_btc_price: rates.sellRate,
+              timestamp: new Date().toISOString()
+            }
+          });
+        } catch (broadcastError) {
+          console.error('Error broadcasting loan update:', broadcastError);
+        }
 
         return {
           loanId: loan.id,
@@ -364,6 +400,24 @@ const LoanService = {
 
         // Clear user cache
         await clearUserCache(userId);
+
+        // Broadcast loan update to user
+        try {
+          socketServer.broadcastToUser(userId, 'loan_update', {
+            type: newBorrowedAmount === 0 ? 'LOAN_REPAID' : 'LOAN_PARTIALLY_REPAID',
+            loan: {
+              id: loan.id,
+              repay_amount: actualRepayAmount,
+              remaining_debt: newBorrowedAmount,
+              status: newBorrowedAmount === 0 ? 'REPAID' : 'ACTIVE',
+              collateral_returned: newBorrowedAmount === 0 ? loan.btc_collateral_amount / 100000000 : 0,
+              minimum_interest_applied: isFullRepayment ? Math.max(0, minimumInterestDue - currentInterestAccrued) : 0,
+              timestamp: new Date().toISOString()
+            }
+          });
+        } catch (broadcastError) {
+          console.error('Error broadcasting loan update:', broadcastError);
+        }
 
         return {
           loanId: loan.id,

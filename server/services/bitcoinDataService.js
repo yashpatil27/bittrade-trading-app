@@ -3,6 +3,7 @@ const cron = require('node-cron');
 const { query } = require('../config/database');
 const { setCache, getCache } = require('../config/redis');
 const { bitcoinDataLogger } = require('../utils/logger');
+const socketServer = require('../websocket/socketServer');
 
 class BitcoinDataService {
   constructor() {
@@ -198,6 +199,23 @@ class BitcoinDataService {
       
       bitcoinDataLogger.info(`Bitcoin data updated: $${bitcoinData.btc_usd_price.toLocaleString()}`);
       
+      // Broadcast price update to all connected clients
+      try {
+        const rates = await this.getCalculatedRates();
+        const priceUpdate = {
+          btc_usd: rates.btcUsdPrice,
+          buy_rate: rates.buyRate,
+          sell_rate: rates.sellRate,
+          last_update: this.lastUpdate
+        };
+        
+        // Broadcast to all connected users
+        socketServer.broadcastToAll('price_update', priceUpdate);
+        bitcoinDataLogger.debug('Price update broadcasted to all clients');
+      } catch (broadcastError) {
+        bitcoinDataLogger.error('Error broadcasting price update', broadcastError);
+      }
+      
       return bitcoinData;
     } catch (error) {
       bitcoinDataLogger.error('Error updating Bitcoin data', error);
@@ -236,6 +254,19 @@ class BitcoinDataService {
       );
 
       bitcoinDataLogger.info(`Fear & Greed Index updated: ${sentimentData.fear_greed_value} (${sentimentData.fear_greed_classification})`);
+      
+      // Broadcast sentiment update to all connected clients
+      try {
+        socketServer.broadcastToAll('sentiment_update', {
+          fear_greed_value: sentimentData.fear_greed_value,
+          fear_greed_classification: sentimentData.fear_greed_classification,
+          data_date: sentimentData.data_date,
+          last_updated: new Date().toISOString()
+        });
+        bitcoinDataLogger.debug('Sentiment update broadcasted to all clients');
+      } catch (broadcastError) {
+        bitcoinDataLogger.error('Error broadcasting sentiment update', broadcastError);
+      }
       
       return sentimentData;
     } catch (error) {

@@ -3,6 +3,7 @@ const { clearUserCache } = require('../config/redis');
 const bitcoinDataService = require('./bitcoinDataService');
 const settingsService = require('./settingsService');
 const { liquidationLogger } = require('../utils/beautifulLogger');
+const socketServer = require('../websocket/socketServer');
 
 /**
  * Liquidation Monitoring Service
@@ -102,7 +103,23 @@ class LiquidationMonitoringService {
             await this.executePartialLiquidation(loan, rates.sellRate);
           } else if (loan.risk_status === 'WARNING') {
             console.log(`Loan ID: ${loan.id} is at warning level - LTV: ${loan.current_ltv.toFixed(2)}%`);
-            // TODO: Send warning notification to user
+            // Send warning notification to user
+            try {
+              socketServer.broadcastToUser(loan.user_id, 'liquidation_alert', {
+                type: 'LIQUIDATION_WARNING',
+                loan: {
+                  id: loan.id,
+                  current_ltv: loan.current_ltv,
+                  liquidation_threshold: 90,
+                  collateral_amount: loan.btc_collateral_amount / 100000000,
+                  borrowed_amount: loan.inr_borrowed_amount,
+                  current_btc_price: rates.sellRate,
+                  timestamp: new Date().toISOString()
+                }
+              });
+            } catch (broadcastError) {
+              console.error('Error broadcasting liquidation alert:', broadcastError);
+            }
           }
         } catch (error) {
           console.error(`Error processing loan ${loan.id}:`, error);
@@ -239,6 +256,27 @@ class LiquidationMonitoringService {
 
         // Clear user cache
         await clearUserCache(loan.user_id);
+
+        // Broadcast liquidation alert to user
+        try {
+          socketServer.broadcastToUser(loan.user_id, 'liquidation_alert', {
+            type: 'LIQUIDATION_EXECUTED',
+            loan: {
+              id: loan.id,
+              liquidation_type: remainingDebt <= 0 ? 'FULL' : 'PARTIAL',
+              btc_sold: maxBtcToSell / 100000000,
+              inr_received: actualInrFromSale,
+              debt_reduction: debtReduction,
+              remaining_collateral: remainingCollateral / 100000000,
+              remaining_debt: remainingDebt,
+              new_ltv: remainingDebt > 0 ? ((remainingDebt / (remainingCollateral * currentBtcPrice / 100000000)) * 100) : 0,
+              execution_price: currentBtcPrice,
+              timestamp: new Date().toISOString()
+            }
+          });
+        } catch (broadcastError) {
+          console.error('Error broadcasting liquidation alert:', broadcastError);
+        }
 
         console.log(`✓ Liquidation completed for Loan ID: ${loan.id}`);
         

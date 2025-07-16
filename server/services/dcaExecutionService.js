@@ -2,6 +2,7 @@ const { query, transaction } = require('../config/database');
 const { clearUserCache } = require('../config/redis');
 const bitcoinDataService = require('./bitcoinDataService');
 const { dcaLogger } = require('../utils/logger');
+const socketServer = require('../websocket/socketServer');
 
 class DcaExecutionService {
   constructor() {
@@ -108,23 +109,35 @@ class DcaExecutionService {
     if (plan.plan_type === 'DCA_BUY') {
       if (plan.max_price && currentBuyPrice > plan.max_price) {
         dcaLogger.debug(`DCA Buy Plan ${plan.id} skipped: price too high (${currentBuyPrice} > ${plan.max_price})`);
-        await this.skipPlanExecution(plan);
+        await this.skipPlanExecution(plan, 'price_too_high', {
+          current_price: currentBuyPrice,
+          max_price: plan.max_price
+        });
         return { executed: false, completed: false, paused: false };
       }
       if (plan.min_price && currentBuyPrice < plan.min_price) {
         dcaLogger.debug(`DCA Buy Plan ${plan.id} skipped: price too low (${currentBuyPrice} < ${plan.min_price})`);
-        await this.skipPlanExecution(plan);
+        await this.skipPlanExecution(plan, 'price_too_low', {
+          current_price: currentBuyPrice,
+          min_price: plan.min_price
+        });
         return { executed: false, completed: false, paused: false };
       }
     } else if (plan.plan_type === 'DCA_SELL') {
       if (plan.max_price && currentSellPrice > plan.max_price) {
         dcaLogger.debug(`DCA Sell Plan ${plan.id} skipped: price too high (${currentSellPrice} > ${plan.max_price})`);
-        await this.skipPlanExecution(plan);
+        await this.skipPlanExecution(plan, 'price_too_high', {
+          current_price: currentSellPrice,
+          max_price: plan.max_price
+        });
         return { executed: false, completed: false, paused: false };
       }
       if (plan.min_price && currentSellPrice < plan.min_price) {
         dcaLogger.debug(`DCA Sell Plan ${plan.id} skipped: price too low (${currentSellPrice} < ${plan.min_price})`);
-        await this.skipPlanExecution(plan);
+        await this.skipPlanExecution(plan, 'price_too_low', {
+          current_price: currentSellPrice,
+          min_price: plan.min_price
+        });
         return { executed: false, completed: false, paused: false };
       }
     }
@@ -160,6 +173,17 @@ class DcaExecutionService {
           'UPDATE active_plans SET status = ? WHERE id = ?',
           ['PAUSED', plan.id]
         );
+        
+        // Broadcast DCA plan paused event
+        this.broadcastDcaPlanUpdate(plan.user_id, plan.id, {
+          type: 'DCA_PAUSED',
+          plan_id: plan.id,
+          plan_type: plan.plan_type,
+          reason: 'insufficient_balance',
+          status: 'PAUSED',
+          timestamp: new Date().toISOString()
+        });
+        
         return { executed: false, completed: false, paused: true };
       }
 
@@ -198,6 +222,20 @@ class DcaExecutionService {
         
         dcaLogger.success(`DCA Buy Plan ${plan.id} completed after ${newTotalExecutions} executions`);
         await clearUserCache(plan.user_id);
+        
+        // Broadcast DCA plan completed event
+        this.broadcastDcaPlanUpdate(plan.user_id, plan.id, {
+          type: 'DCA_COMPLETED',
+          plan_id: plan.id,
+          plan_type: plan.plan_type,
+          execution_price: executionPrice,
+          inr_amount: plan.amount_per_execution,
+          btc_amount: btcAmount,
+          total_executions: newTotalExecutions,
+          status: 'COMPLETED',
+          timestamp: new Date().toISOString()
+        });
+        
         return { executed: true, completed: true, paused: false, executionPrice };
       } else {
         // Schedule next execution
@@ -205,6 +243,21 @@ class DcaExecutionService {
         
         dcaLogger.success(`DCA Buy Plan ${plan.id} executed: ${(btcAmount/100000000).toFixed(8)} BTC at ₹${executionPrice.toLocaleString()}`);
         await clearUserCache(plan.user_id);
+        
+        // Broadcast DCA plan executed event
+        this.broadcastDcaPlanUpdate(plan.user_id, plan.id, {
+          type: 'DCA_EXECUTED',
+          plan_id: plan.id,
+          plan_type: plan.plan_type,
+          execution_price: executionPrice,
+          inr_amount: plan.amount_per_execution,
+          btc_amount: btcAmount,
+          total_executions: newTotalExecutions,
+          remaining_executions: newRemainingExecutions,
+          status: 'ACTIVE',
+          timestamp: new Date().toISOString()
+        });
+        
         return { executed: true, completed: false, paused: false, executionPrice };
       }
     });
@@ -232,6 +285,17 @@ class DcaExecutionService {
           'UPDATE active_plans SET status = ? WHERE id = ?',
           ['PAUSED', plan.id]
         );
+        
+        // Broadcast DCA plan paused event
+        this.broadcastDcaPlanUpdate(plan.user_id, plan.id, {
+          type: 'DCA_PAUSED',
+          plan_id: plan.id,
+          plan_type: plan.plan_type,
+          reason: 'insufficient_balance',
+          status: 'PAUSED',
+          timestamp: new Date().toISOString()
+        });
+        
         return { executed: false, completed: false, paused: true };
       }
 
@@ -270,6 +334,20 @@ class DcaExecutionService {
         
         dcaLogger.success(`DCA Sell Plan ${plan.id} completed after ${newTotalExecutions} executions`);
         await clearUserCache(plan.user_id);
+        
+        // Broadcast DCA plan completed event
+        this.broadcastDcaPlanUpdate(plan.user_id, plan.id, {
+          type: 'DCA_COMPLETED',
+          plan_id: plan.id,
+          plan_type: plan.plan_type,
+          execution_price: executionPrice,
+          inr_amount: inrAmount,
+          btc_amount: plan.amount_per_execution,
+          total_executions: newTotalExecutions,
+          status: 'COMPLETED',
+          timestamp: new Date().toISOString()
+        });
+        
         return { executed: true, completed: true, paused: false, executionPrice };
       } else {
         // Schedule next execution
@@ -277,13 +355,28 @@ class DcaExecutionService {
         
         dcaLogger.success(`DCA Sell Plan ${plan.id} executed: ${(plan.amount_per_execution/100000000).toFixed(8)} BTC at ₹${executionPrice.toLocaleString()}`);
         await clearUserCache(plan.user_id);
+        
+        // Broadcast DCA plan executed event
+        this.broadcastDcaPlanUpdate(plan.user_id, plan.id, {
+          type: 'DCA_EXECUTED',
+          plan_id: plan.id,
+          plan_type: plan.plan_type,
+          execution_price: executionPrice,
+          inr_amount: inrAmount,
+          btc_amount: plan.amount_per_execution,
+          total_executions: newTotalExecutions,
+          remaining_executions: newRemainingExecutions,
+          status: 'ACTIVE',
+          timestamp: new Date().toISOString()
+        });
+        
         return { executed: true, completed: false, paused: false, executionPrice };
       }
     });
   }
 
   // Skip plan execution when price conditions aren't met
-  async skipPlanExecution(plan) {
+  async skipPlanExecution(plan, reason = 'price_conditions', additionalData = {}) {
     const nextExecutionAt = new Date(plan.next_execution_at);
     
     if (plan.frequency === 'HOURLY') {
@@ -300,6 +393,18 @@ class DcaExecutionService {
       'UPDATE active_plans SET next_execution_at = ? WHERE id = ?',
       [nextExecutionAt, plan.id]
     );
+    
+    // Broadcast DCA plan skipped event
+    this.broadcastDcaPlanUpdate(plan.user_id, plan.id, {
+      type: 'DCA_SKIPPED',
+      plan_id: plan.id,
+      plan_type: plan.plan_type,
+      reason: reason,
+      next_execution_at: nextExecutionAt.toISOString(),
+      status: 'ACTIVE',
+      timestamp: new Date().toISOString(),
+      ...additionalData
+    });
   }
 
   // Calculate time until next execution for the earliest plan
@@ -379,6 +484,18 @@ class DcaExecutionService {
       'UPDATE active_plans SET next_execution_at = ?, total_executions = ?, remaining_executions = ? WHERE id = ?',
       [nextExecutionAt, newTotalExecutions, newRemainingExecutions, plan.id]
     );
+    
+    // Broadcast next execution time update
+    this.broadcastDcaPlanUpdate(plan.user_id, plan.id, {
+      type: 'DCA_NEXT_EXECUTION_UPDATED',
+      plan_id: plan.id,
+      plan_type: plan.plan_type,
+      next_execution_at: nextExecutionAt.toISOString(),
+      total_executions: newTotalExecutions,
+      remaining_executions: newRemainingExecutions,
+      status: 'ACTIVE',
+      timestamp: new Date().toISOString()
+    });
   }
 
   // Get DCA plans summary
@@ -469,6 +586,24 @@ class DcaExecutionService {
     
     // Reschedule based on current plans
     await this.scheduleService();
+  }
+
+  // Broadcast DCA plan update to user and admins
+  broadcastDcaPlanUpdate(userId, planId, eventData) {
+    try {
+      // Broadcast to the specific user
+      socketServer.broadcastToUser(userId, 'dca_plan_update', eventData);
+      
+      // Broadcast to all admins
+      socketServer.broadcastToAdmins('dca_plan_update', {
+        ...eventData,
+        user_id: userId
+      });
+      
+      dcaLogger.debug(`DCA plan update broadcasted: ${eventData.type} for plan ${planId}`);
+    } catch (error) {
+      dcaLogger.error('Error broadcasting DCA plan update', error);
+    }
   }
 }
 

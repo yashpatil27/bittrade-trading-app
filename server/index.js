@@ -23,6 +23,7 @@ const limitOrderExecutionService = require('./services/limitOrderExecutionServic
 const dcaExecutionService = require('./services/dcaExecutionService');
 const loanMonitoringService = require('./services/loanMonitoringService');
 const liquidationMonitoringService = require('./services/liquidationMonitoringService');
+const systemMonitoringService = require('./services/systemMonitoringService');
 const JobScheduler = require('./schedulers/jobScheduler');
 
 // Load environment variables
@@ -76,6 +77,10 @@ const initializeServices = async () => {
     JobScheduler.start();
     systemLogger.serviceStarted('Job scheduler', { interestAccrual: 'Daily at 12:01 AM IST' });
     
+    // Start system monitoring service
+    systemMonitoringService.start();
+    systemLogger.serviceStarted('System monitoring service', { checkInterval: '1 minute', healthChecks: 'Database, Redis, Services, Resources' });
+    
     // Show service status
     const services = {
       database: 'running',
@@ -84,7 +89,8 @@ const initializeServices = async () => {
       dca_execution: 'running',
       loan_monitoring: 'running',
       liquidation_monitoring: 'running',
-      job_scheduler: 'running'
+      job_scheduler: 'running',
+      system_monitoring: 'running'
     };
     
     systemLogger.serviceStatus(services);

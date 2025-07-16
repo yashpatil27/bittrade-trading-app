@@ -3,6 +3,7 @@ const { query, transaction } = require('../config/database');
 const { clearUserCache } = require('../config/redis');
 const bitcoinDataService = require('./bitcoinDataService');
 const { limitOrderLogger } = require('../utils/logger');
+const socketServer = require('../websocket/socketServer');
 
 class LimitOrderExecutionService {
   constructor() {
@@ -166,6 +167,24 @@ class LimitOrderExecutionService {
       // Clear user cache
       await clearUserCache(order.user_id);
 
+      // Broadcast limit order update to user
+      try {
+        socketServer.broadcastToUser(order.user_id, 'limit_order_update', {
+          type: 'ORDER_EXECUTED',
+          order: {
+            id: order.id,
+            type: 'LIMIT_BUY',
+            status: 'EXECUTED',
+            inr_amount: actualInrAmount,
+            btc_amount: actualBtcAmount,
+            execution_price: executionPrice,
+            executed_at: new Date().toISOString()
+          }
+        });
+      } catch (broadcastError) {
+        console.error('Error broadcasting limit order update:', broadcastError);
+      }
+
       limitOrderLogger.success(`Limit buy order ${order.id} executed: ${(actualBtcAmount/100000000).toFixed(8)} BTC at ₹${executionPrice.toLocaleString()}`);
     });
   }
@@ -216,6 +235,24 @@ class LimitOrderExecutionService {
       // Clear user cache
       await clearUserCache(order.user_id);
 
+      // Broadcast limit order update to user
+      try {
+        socketServer.broadcastToUser(order.user_id, 'limit_order_update', {
+          type: 'ORDER_EXECUTED',
+          order: {
+            id: order.id,
+            type: 'LIMIT_SELL',
+            status: 'EXECUTED',
+            inr_amount: actualInrAmount,
+            btc_amount: actualBtcAmount,
+            execution_price: executionPrice,
+            executed_at: new Date().toISOString()
+          }
+        });
+      } catch (broadcastError) {
+        console.error('Error broadcasting limit order update:', broadcastError);
+      }
+
       limitOrderLogger.success(`Limit sell order ${order.id} executed: ${(actualBtcAmount/100000000).toFixed(8)} BTC at ₹${executionPrice.toLocaleString()}`);
     });
   }
@@ -245,6 +282,22 @@ class LimitOrderExecutionService {
 
       // Clear user cache
       await clearUserCache(order.user_id);
+
+      // Broadcast limit order update to user
+      try {
+        socketServer.broadcastToUser(order.user_id, 'limit_order_update', {
+          type: 'ORDER_EXPIRED',
+          order: {
+            id: order.id,
+            type: order.type,
+            status: 'EXPIRED',
+            cancelled_at: new Date().toISOString(),
+            cancellation_reason: 'Order expired after 24 hours'
+          }
+        });
+      } catch (broadcastError) {
+        console.error('Error broadcasting limit order update:', broadcastError);
+      }
 
       limitOrderLogger.warn(`Expired order ${order.id} cancelled and funds released`);
     });

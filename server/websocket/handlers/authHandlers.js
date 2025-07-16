@@ -2,6 +2,7 @@ const bcrypt = require('bcryptjs');
 const { query, transaction } = require('../../config/database');
 const { generateToken } = require('../../middleware/auth');
 const { clearUserCache } = require('../../config/redis');
+const socketServer = require('../socketServer');
 
 const authHandlers = {
   register(socket, socketServer) {
@@ -75,6 +76,22 @@ const authHandlers = {
     // Generate JWT token
     const token = generateToken(result.userId);
 
+    // Broadcast user activity update to admins
+    try {
+      socketServer.broadcastToAdmins('user_activity_update', {
+        type: 'USER_REGISTERED',
+        user: {
+          id: result.userId,
+          email: email.toLowerCase(),
+          name,
+          is_admin: false
+        },
+        timestamp: new Date().toISOString()
+      });
+    } catch (broadcastError) {
+      console.error('Error broadcasting user activity update:', broadcastError);
+    }
+
     return {
       message: 'User registered successfully',
       data: {
@@ -118,6 +135,22 @@ const authHandlers = {
     // Generate JWT token
     const token = generateToken(user.id);
 
+    // Broadcast user activity update to admins
+    try {
+      socketServer.broadcastToAdmins('user_activity_update', {
+        type: 'USER_LOGIN',
+        user: {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          is_admin: user.is_admin
+        },
+        timestamp: new Date().toISOString()
+      });
+    } catch (broadcastError) {
+      console.error('Error broadcasting user activity update:', broadcastError);
+    }
+
     return {
       message: 'Login successful',
       data: {
@@ -146,6 +179,22 @@ const authHandlers = {
   async handleLogout(payload, socket, socketServer) {
     // Clear user cache
     await clearUserCache(socket.userId);
+    
+    // Broadcast user activity update to admins
+    try {
+      socketServer.broadcastToAdmins('user_activity_update', {
+        type: 'USER_LOGOUT',
+        user: {
+          id: socket.user.id,
+          email: socket.user.email,
+          name: socket.user.name,
+          is_admin: socket.user.is_admin
+        },
+        timestamp: new Date().toISOString()
+      });
+    } catch (broadcastError) {
+      console.error('Error broadcasting user activity update:', broadcastError);
+    }
     
     // Disconnect the socket
     socket.disconnect();

@@ -8,7 +8,79 @@ const bcrypt = require('bcryptjs');
 const adminHandlers = {
   register(socket, socketServer) {
     // Setup any specific admin event listeners here
-    if (socket.isAuthenticated && !socket.user.is_admin) {
+    // Start periodic admin stats broadcasting
+    this.startAdminStatsBroadcasting(socketServer);
+  },
+
+  // Broadcast admin stats periodically
+  startAdminStatsBroadcasting(socketServer) {
+    // Only start if not already running
+    if (this.adminStatsBroadcastInterval) {
+      return;
+    }
+
+    // Broadcast admin stats every 30 seconds
+    this.adminStatsBroadcastInterval = setInterval(async () => {
+      try {
+        const stats = await this.getAdminStats();
+        socketServer.broadcastToAdmins('admin_stats_update', {
+          type: 'STATS_UPDATE',
+          stats,
+          timestamp: new Date().toISOString()
+        });
+      } catch (error) {
+        console.error('Error broadcasting admin stats:', error);
+      }
+    }, 30000); // 30 seconds
+  },
+
+  // Stop admin stats broadcasting
+  stopAdminStatsBroadcasting() {
+    if (this.adminStatsBroadcastInterval) {
+      clearInterval(this.adminStatsBroadcastInterval);
+      this.adminStatsBroadcastInterval = null;
+    }
+  },
+
+  // Get comprehensive admin stats
+  async getAdminStats() {
+    const [
+      totalUsers,
+      totalTransactions,
+      totalVolume,
+      totalBtcVolume,
+      pendingOrders,
+      activeLoans,
+      activeDcaPlans,
+      last24hTransactions,
+      last24hVolume,
+      last24hUsers
+    ] = await Promise.all([
+      query('SELECT COUNT(*) as count FROM users'),
+      query('SELECT COUNT(*) as count FROM operations WHERE status = "EXECUTED"'),
+      query('SELECT COALESCE(SUM(inr_amount), 0) as total FROM operations WHERE status = "EXECUTED"'),
+      query('SELECT COALESCE(SUM(btc_amount), 0) as total FROM operations WHERE status = "EXECUTED"'),
+      query('SELECT COUNT(*) as count FROM operations WHERE status = "PENDING" AND type IN ("LIMIT_BUY", "LIMIT_SELL")'),
+      query('SELECT COUNT(*) as count FROM loans WHERE status = "ACTIVE"'),
+      query('SELECT COUNT(*) as count FROM active_plans WHERE status = "ACTIVE"'),
+      query('SELECT COUNT(*) as count FROM operations WHERE status = "EXECUTED" AND created_at >= DATE_SUB(NOW(), INTERVAL 24 HOUR)'),
+      query('SELECT COALESCE(SUM(inr_amount), 0) as total FROM operations WHERE status = "EXECUTED" AND created_at >= DATE_SUB(NOW(), INTERVAL 24 HOUR)'),
+      query('SELECT COUNT(DISTINCT user_id) as count FROM operations WHERE status = "EXECUTED" AND created_at >= DATE_SUB(NOW(), INTERVAL 24 HOUR)')
+    ]);
+
+    return {
+      total_users: totalUsers[0].count,
+      total_transactions: totalTransactions[0].count,
+      total_volume_inr: totalVolume[0].total,
+      total_volume_btc: totalBtcVolume[0].total / 100000000,
+      pending_orders: pendingOrders[0].count,
+      active_loans: activeLoans[0].count,
+      active_dca_plans: activeDcaPlans[0].count,
+      last_24h_transactions: last24hTransactions[0].count,
+      last_24h_volume: last24hVolume[0].total,
+      last_24h_active_users: last24hUsers[0].count
+    };
+  },
       throw new Error('Admin access required');
     }
   },
