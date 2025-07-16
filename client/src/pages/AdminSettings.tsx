@@ -15,7 +15,7 @@ import {
   Repeat,
   Clock
 } from 'lucide-react';
-import { adminAPI, userAPI } from '../services/api';
+import { useWebSocket } from '../contexts/WebSocketContext';
 import PinConfirmationModal from '../components/PinConfirmationModal';
 
 const AdminSettings: React.FC = () => {
@@ -32,6 +32,8 @@ const AdminSettings: React.FC = () => {
   const [isPinModalOpen, setIsPinModalOpen] = useState(false);
   const [pendingSettings, setPendingSettings] = useState<{ buy_multiplier: number; sell_multiplier: number; loan_interest_rate: number } | null>(null);
 
+  const { sendMessage } = useWebSocket();
+
   useEffect(() => {
     fetchCurrentSettings();
     checkSystemHealth();
@@ -40,12 +42,13 @@ const AdminSettings: React.FC = () => {
   const fetchCurrentSettings = async () => {
     try {
       // Get settings from admin settings endpoint
-      const settingsResponse = await adminAPI.getSettings();
-      const settings = settingsResponse.data.data;
-      
-      setBuyMultiplier(settings.buy_multiplier?.toString() || '91');
-      setSellMultiplier(settings.sell_multiplier?.toString() || '88');
-      setLoanInterestRate(settings.loan_interest_rate?.toString() || '15');
+      const response = await sendMessage('admin.get-settings');
+      if (response) {
+        const settings = response.data || response;
+        setBuyMultiplier(settings.buy_multiplier?.toString() || '91');
+        setSellMultiplier(settings.sell_multiplier?.toString() || '88');
+        setLoanInterestRate(settings.loan_interest_rate?.toString() || '15');
+      }
     } catch (error) {
       console.error('Error fetching settings:', error);
       // Fallback to default values
@@ -58,8 +61,10 @@ const AdminSettings: React.FC = () => {
   const checkSystemHealth = async () => {
     try {
       setIsHealthLoading(true);
-      const response = await adminAPI.getSystemHealth();
-      setSystemHealth(response.data);
+      const response = await sendMessage('admin.get-system-health');
+      if (response) {
+        setSystemHealth(response.data || response);
+      }
     } catch (error) {
       console.error('Error fetching system health:', error);
       setSystemHealth(null);
@@ -112,11 +117,11 @@ const AdminSettings: React.FC = () => {
     setMessage('');
 
     try {
-      await adminAPI.updateSettings(pendingSettings);
+      await sendMessage('admin.update-settings', pendingSettings);
       setMessage('✅ Settings updated successfully!');
       setPendingSettings(null);
     } catch (error: any) {
-      setError(error.response?.data?.message || 'Failed to update settings');
+      setError(error.message || 'Failed to update settings');
     } finally {
       setIsLoading(false);
     }
@@ -125,8 +130,8 @@ const AdminSettings: React.FC = () => {
   const handlePinConfirm = async (pin: string): Promise<boolean> => {
     try {
       // Verify PIN
-      const response = await userAPI.verifyPin(pin);
-      if (response.data.data?.valid) {
+      const response = await sendMessage('user.verify-pin', { pin });
+      if (response?.valid) {
         // PIN is correct, execute the settings update
         await executeSettingsUpdate();
         setIsPinModalOpen(false);

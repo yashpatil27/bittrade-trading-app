@@ -11,7 +11,7 @@ import {
   UserX,
   ChevronRight
 } from 'lucide-react';
-import { adminAPI } from '../services/api';
+import { useWebSocket } from '../contexts/WebSocketContext';
 import { AdminUser } from '../types';
 import UserManagementModal from '../components/UserManagementModal';
 import { formatBitcoin, formatCurrencyInr } from '../utils/formatters';
@@ -22,6 +22,7 @@ const AdminUsers: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedUser, setSelectedUser] = useState<AdminUser | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const { getUsers } = useWebSocket();
   // Pagination variables removed as they're not currently used
 
   useEffect(() => {
@@ -31,8 +32,8 @@ const AdminUsers: React.FC = () => {
   const fetchUsers = async () => {
     try {
       setIsLoading(true);
-      const response = await adminAPI.getUsers(1, 50); // Get more users initially
-      const { users: fetchedUsers } = response.data.data!;
+      const response = await getUsers(1, 50); // Get more users initially
+      const { users: fetchedUsers } = response;
       setUsers(fetchedUsers);
     } catch (error) {
       console.error('Error fetching users:', error);

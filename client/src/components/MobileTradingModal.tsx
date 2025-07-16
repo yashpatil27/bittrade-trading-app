@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Prices } from '../types';
-import { userAPI } from '../services/api';
+import { useWebSocket } from '../contexts/WebSocketContext';
 import { formatCurrencyInr, formatBitcoin } from '../utils/formatters';
 
 interface MobileTradingModalProps {
@@ -239,12 +239,14 @@ const MobileTradingModal: React.FC<MobileTradingModalProps> = ({
     setShowPinPad(true);
   };
 
+  const { sendMessage } = useWebSocket();
+
   const handlePinConfirm = async () => {
     if (pin.length !== 4) return;
     
     try {
-      const response = await userAPI.verifyPin(pin);
-      if (response.data.data?.valid) {
+      const response = await sendMessage('user.verify-pin', { pin });
+      if (response?.valid) {
         await onTrade(
           parseFloat(amount),
           orderType === 'limit' ? parseFloat(targetPrice) : undefined

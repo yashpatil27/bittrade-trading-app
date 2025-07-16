@@ -8,16 +8,24 @@ const bcrypt = require('bcryptjs');
 const adminHandlers = {
   register(socket, socketServer) {
     // Setup any specific admin event listeners here
+    if (socket.isAuthenticated && !socket.user.is_admin) {
+      throw new Error('Admin access required');
+    }
+  },
+
+  // Helper function to check admin authentication
+  requireAdminAuth(socket) {
+    if (!socket.isAuthenticated) {
+      throw new Error('Authentication required');
+    }
     if (!socket.user.is_admin) {
       throw new Error('Admin access required');
     }
   },
 
   async handle(method, payload, socket, socketServer) {
-    // Verify admin access
-    if (!socket.user.is_admin) {
-      throw new Error('Admin access required');
-    }
+    // Verify admin access for all admin methods
+    this.requireAdminAuth(socket);
 
     switch (method) {
       // Dashboard and overview
@@ -26,6 +34,8 @@ const adminHandlers = {
       case 'system-status':
         return await this.handleSystemStatus(payload, socket, socketServer);
       case 'system-health':
+        return await this.handleSystemHealth(payload, socket, socketServer);
+      case 'get-system-health':
         return await this.handleSystemHealth(payload, socket, socketServer);
       
       // User management
@@ -103,29 +113,33 @@ const adminHandlers = {
   async handleDashboard(payload, socket, socketServer) {
     const [
       totalUsers,
-      activeUsers,
       totalTransactions,
-      totalVolume,
-      pendingOrders,
-      systemHealth
+      totalInrBalances,
+      totalBtcBalances,
+      currentPrices
     ] = await Promise.all([
       query('SELECT COUNT(*) as count FROM users'),
-      query('SELECT COUNT(*) as count FROM users WHERE last_login > DATE_SUB(NOW(), INTERVAL 7 DAY)'),
       query('SELECT COUNT(*) as count FROM operations WHERE status = "EXECUTED"'),
-      query('SELECT SUM(inr_amount) as total FROM operations WHERE status = "EXECUTED"'),
-      query('SELECT COUNT(*) as count FROM operations WHERE status = "PENDING"'),
-      this.getSystemHealthData()
+      query('SELECT SUM(available_inr + reserved_inr) as total FROM users'),
+      query('SELECT SUM(available_btc + reserved_btc) as total FROM users'),
+      bitcoinDataService.getCalculatedRates()
     ]);
 
     return {
-      statistics: {
+      stats: {
         total_users: totalUsers[0].count,
-        active_users: activeUsers[0].count,
-        total_transactions: totalTransactions[0].count,
-        total_volume: totalVolume[0].total || 0,
-        pending_orders: pendingOrders[0].count
+        total_trades: totalTransactions[0].count,
+        total_inr_on_platform: totalInrBalances[0].total || 0,
+        total_btc_on_platform: (totalBtcBalances[0].total || 0) / 100000000
       },
-      system_health: systemHealth
+      current_prices: {
+        btc_usd: currentPrices.btcUsdPrice,
+        buy_rate: currentPrices.buyRate,
+        sell_rate: currentPrices.sellRate,
+        buy_multiplier: currentPrices.buyMultiplier,
+        sell_multiplier: currentPrices.sellMultiplier,
+        last_update: currentPrices.lastUpdate
+      }
     };
   },
 
@@ -173,25 +187,28 @@ const adminHandlers = {
 
   // User management handlers
   async handleGetUsers(payload, socket, socketServer) {
-    const { page = 1, limit = 20 } = payload;
-    const offset = (page - 1) * limit;
+    const { page = 1, limit = 20 } = payload || {};
+    const pageInt = Math.max(1, parseInt(page) || 1);
+    const limitInt = Math.max(1, Math.min(100, parseInt(limit) || 20));
+    const offset = (pageInt - 1) * limitInt;
+
 
     const [users, totalCount] = await Promise.all([
       query(`
         SELECT id, email, name, is_admin, available_inr, available_btc, 
-               reserved_inr, reserved_btc, created_at, last_login
+               reserved_inr, reserved_btc, created_at
         FROM users 
         ORDER BY created_at DESC 
-        LIMIT ? OFFSET ?
-      `, [limit, offset]),
+        LIMIT ${limitInt} OFFSET ${offset}
+      `),
       query('SELECT COUNT(*) as count FROM users')
     ]);
 
     return {
       users: users.map(user => ({
         ...user,
-        available_btc: user.available_btc / 100000000,
-        reserved_btc: user.reserved_btc / 100000000
+        inr_balance: user.available_inr + user.reserved_inr,
+        btc_balance: (user.available_btc + user.reserved_btc) / 100000000
       })),
       pagination: {
         page,
@@ -313,7 +330,7 @@ const adminHandlers = {
       await connection.execute(`
         INSERT INTO operations (user_id, type, inr_amount, btc_amount, status, created_at)
         VALUES (?, ?, ?, ?, ?, NOW())
-      `, [userId, 'ADMIN_DEPOSIT', amount, 0, 'EXECUTED']);
+      `, [userId, 'DEPOSIT_INR', amount, 0, 'EXECUTED']);
 
       await clearUserCache(userId);
     });
@@ -361,7 +378,7 @@ const adminHandlers = {
       await connection.execute(`
         INSERT INTO operations (user_id, type, inr_amount, btc_amount, status, created_at)
         VALUES (?, ?, ?, ?, ?, NOW())
-      `, [userId, 'ADMIN_WITHDRAW', amount, 0, 'EXECUTED']);
+      `, [userId, 'WITHDRAW_INR', amount, 0, 'EXECUTED']);
 
       await clearUserCache(userId);
     });
@@ -397,7 +414,7 @@ const adminHandlers = {
       await connection.execute(`
         INSERT INTO operations (user_id, type, inr_amount, btc_amount, status, created_at)
         VALUES (?, ?, ?, ?, ?, NOW())
-      `, [userId, 'ADMIN_DEPOSIT', 0, satoshiAmount, 'EXECUTED']);
+      `, [userId, 'DEPOSIT_BTC', 0, satoshiAmount, 'EXECUTED']);
 
       await clearUserCache(userId);
     });
@@ -447,7 +464,7 @@ const adminHandlers = {
       await connection.execute(`
         INSERT INTO operations (user_id, type, inr_amount, btc_amount, status, created_at)
         VALUES (?, ?, ?, ?, ?, NOW())
-      `, [userId, 'ADMIN_WITHDRAW', 0, satoshiAmount, 'EXECUTED']);
+      `, [userId, 'WITHDRAW_BTC', 0, satoshiAmount, 'EXECUTED']);
 
       await clearUserCache(userId);
     });
@@ -497,7 +514,7 @@ const adminHandlers = {
       await connection.execute(`
         INSERT INTO operations (user_id, type, inr_amount, btc_amount, status, created_at)
         VALUES (?, ?, ?, ?, ?, NOW())
-      `, [userId, 'EXTERNAL_BUY', inrAmount, satoshiAmount, 'EXECUTED']);
+      `, [userId, 'MARKET_BUY', inrAmount, satoshiAmount, 'EXECUTED']);
 
       await clearUserCache(userId);
     });
@@ -548,7 +565,9 @@ const adminHandlers = {
   // Transaction management
   async handleGetTransactions(payload, socket, socketServer) {
     const { page = 1, limit = 50 } = payload;
-    const offset = (page - 1) * limit;
+    const pageInt = parseInt(page) || 1;
+    const limitInt = parseInt(limit) || 50;
+    const offset = (pageInt - 1) * limitInt;
 
     const [transactions, totalCount] = await Promise.all([
       query(`
@@ -556,8 +575,8 @@ const adminHandlers = {
         FROM operations o 
         JOIN users u ON o.user_id = u.id 
         ORDER BY o.created_at DESC 
-        LIMIT ? OFFSET ?
-      `, [limit, offset]),
+        LIMIT ${limitInt} OFFSET ${offset}
+      `),
       query('SELECT COUNT(*) as count FROM operations')
     ]);
 
@@ -669,7 +688,9 @@ const adminHandlers = {
   // DCA management
   async handleGetDcaPlans(payload, socket, socketServer) {
     const { page = 1, limit = 50 } = payload;
-    const offset = (page - 1) * limit;
+    const pageInt = parseInt(page) || 1;
+    const limitInt = parseInt(limit) || 50;
+    const offset = (pageInt - 1) * limitInt;
 
     const [plans, totalCount] = await Promise.all([
       query(`
@@ -677,8 +698,8 @@ const adminHandlers = {
         FROM active_plans ap 
         JOIN users u ON ap.user_id = u.id 
         ORDER BY ap.created_at DESC 
-        LIMIT ? OFFSET ?
-      `, [limit, offset]),
+        LIMIT ${limitInt} OFFSET ${offset}
+      `),
       query('SELECT COUNT(*) as count FROM active_plans')
     ]);
 

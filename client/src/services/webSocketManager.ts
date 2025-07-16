@@ -25,9 +25,12 @@ class WebSocketManager {
   private messageQueue: QueuedMessage[] = [];
   private pendingRequests = new Map<string, QueuedMessage>();
   private eventListeners = new Map<string, Function[]>();
+  private shouldReconnect = true;
+  private connectionInProgress = false;
 
   constructor() {
-    this.connect();
+    // Don't auto-connect on initialization
+    // Connection will be established when needed
   }
 
   private getWebSocketUrl(): string {
@@ -49,14 +52,10 @@ class WebSocketManager {
     }
 
     const token = this.getAuthToken();
-    if (!token) {
-      console.log('No auth token found, WebSocket connection skipped');
-      return;
-    }
-
+    
     this.socket = io(this.getWebSocketUrl(), {
       auth: {
-        token: token
+        token: token // token can be null for auth operations
       },
       transports: ['websocket', 'polling'],
       timeout: 10000,
@@ -76,6 +75,7 @@ class WebSocketManager {
       this.isConnected = true;
       this.reconnectAttempts = 0;
       this.reconnectDelay = 1000;
+      this.connectionInProgress = false;
       this.processMessageQueue();
     });
 
@@ -200,8 +200,9 @@ class WebSocketManager {
         // Queue message for when connection is restored
         this.messageQueue.push(message);
         
-        // Try to reconnect if not connected
-        if (!this.isConnected) {
+        // Only try to connect if not already attempting
+        if (!this.isConnected && !this.connectionInProgress) {
+          this.connectionInProgress = true;
           this.connect();
         }
         
@@ -327,6 +328,35 @@ class WebSocketManager {
 
   async deleteDcaPlan(planId: number): Promise<any> {
     return this.sendMessage('user.delete-dca-plan', { planId });
+  }
+
+  // Loan API methods
+  async getLoanStatus(): Promise<any> {
+    return this.sendMessage('user.loan-status');
+  }
+
+  async getLoanHistory(): Promise<any> {
+    return this.sendMessage('user.loan-history');
+  }
+
+  async createLoan(btcAmount: number): Promise<any> {
+    return this.sendMessage('user.create-loan', { btcAmount });
+  }
+
+  async borrowMore(amount: number): Promise<any> {
+    return this.sendMessage('user.borrow-more', { amount });
+  }
+
+  async repayLoan(amount: number): Promise<any> {
+    return this.sendMessage('user.repay-loan', { amount });
+  }
+
+  async addCollateral(btcAmount: number): Promise<any> {
+    return this.sendMessage('user.add-collateral', { btcAmount });
+  }
+
+  async partialLiquidation(amount: number): Promise<any> {
+    return this.sendMessage('user.partial-liquidation', { amount });
   }
 
   // Public API methods (no authentication required)

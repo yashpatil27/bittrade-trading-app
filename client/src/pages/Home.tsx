@@ -22,7 +22,7 @@ import {
   AlertTriangle,
   Zap
 } from 'lucide-react';
-import { userAPI } from '../services/api';
+import { useWebSocket } from '../contexts/WebSocketContext';
 import { Balances, Prices, Transaction, DashboardData } from '../types';
 import MobileTradingModal from '../components/MobileTradingModal';
 import TradingModal from '../components/TradingModal';
@@ -42,6 +42,7 @@ import {
 
 const Home: React.FC = () => {
   const { refreshBalance } = useBalance();
+  const { getDashboard, createDcaBuyPlan, createDcaSellPlan, buyBitcoin, sellBitcoin, placeLimitBuyOrder, placeLimitSellOrder } = useWebSocket();
   const dcaPlansSectionRef = useRef<DcaPlansSectionRef>(null);
   const bitcoinChartRef = useRef<BitcoinChartRef>(null);
   const [balances, setBalances] = useState<Balances | null>(null);
@@ -62,8 +63,7 @@ const Home: React.FC = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const dashboardResponse = await userAPI.getDashboard();
-        const dashboardData = dashboardResponse.data.data as DashboardData;
+        const dashboardData = await getDashboard();
         const { balances, prices, recent_transactions } = dashboardData;
         setBalances(balances);
         setPrices(prices);
@@ -74,7 +74,7 @@ const Home: React.FC = () => {
     };
 
     fetchData();
-  }, []);
+  }, [getDashboard]);
 
   const handleOpenTradingModal = (type: 'buy' | 'sell') => {
     setTradingType(type);
@@ -95,7 +95,7 @@ const Home: React.FC = () => {
       if (dcaConfig) {
         // DCA plan
         if (modalType === 'buy') {
-          await userAPI.createDcaBuyPlan({ 
+          await createDcaBuyPlan({ 
             amountPerExecution: amount, 
             frequency: dcaConfig.frequency,
             totalExecutions: dcaConfig.totalExecutions,
@@ -104,7 +104,7 @@ const Home: React.FC = () => {
           });
           setSuccess(`🔄 DCA ${dcaConfig.frequency.toLowerCase()} buy plan created successfully!`);
         } else {
-          await userAPI.createDcaSellPlan({ 
+          await createDcaSellPlan({ 
             amountPerExecution: amount, 
             frequency: dcaConfig.frequency,
             totalExecutions: dcaConfig.totalExecutions,
@@ -116,26 +116,25 @@ const Home: React.FC = () => {
       } else if (targetPrice) {
         // Limit order
         if (modalType === 'buy') {
-          await userAPI.placeLimitBuyOrder({ inrAmount: amount, targetPrice });
+          await placeLimitBuyOrder(amount, targetPrice);
           setSuccess('📊 Limit buy order placed successfully!');
         } else {
-          await userAPI.placeLimitSellOrder({ btcAmount: amount, targetPrice });
+          await placeLimitSellOrder(amount, targetPrice);
           setSuccess('📊 Limit sell order placed successfully!');
         }
       } else {
         // Market order
         if (modalType === 'buy') {
-          await userAPI.buyBitcoin({ amount });
+          await buyBitcoin(amount);
           setSuccess('🎉 Bitcoin purchased successfully!');
         } else {
-          await userAPI.sellBitcoin({ amount });
+          await sellBitcoin(amount);
           setSuccess('✅ Bitcoin sold successfully!');
         }
       }
       
       // Refresh data
-      const dashboardResponse = await userAPI.getDashboard();
-      const dashboardData = dashboardResponse.data.data as DashboardData;
+      const dashboardData = await getDashboard();
       const { balances, prices, recent_transactions } = dashboardData;
       setBalances(balances);
       setPrices(prices);
@@ -157,8 +156,7 @@ const Home: React.FC = () => {
 
   const refreshData = async () => {
     try {
-      const dashboardResponse = await userAPI.getDashboard();
-      const dashboardData = dashboardResponse.data.data as DashboardData;
+      const dashboardData = await getDashboard();
       const { balances, prices, recent_transactions } = dashboardData;
       setBalances(balances);
       setPrices(prices);

@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { User } from '../types';
-import { authAPI } from '../services/api';
+import webSocketManager from '../services/webSocketManager';
 
 interface AuthContextType {
   user: User | null;
@@ -59,24 +59,28 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const login = async (email: string, password: string): Promise<void> => {
     try {
-      const response = await authAPI.login(email, password);
-      const { token: newToken, user: newUser } = response.data.data!;
+      const response = await webSocketManager.authenticate(email, password);
+      const { token: newToken, user: newUser } = response.data;
       
       localStorage.setItem('token', newToken);
       localStorage.setItem('user', JSON.stringify(newUser));
       
       setToken(newToken);
       setUser(newUser);
+      
+      // Reconnect WebSocket with new token
+      webSocketManager.disconnect();
+      webSocketManager.connect();
     } catch (error: any) {
-      const message = error.response?.data?.message || 'Login failed';
+      const message = error.message || 'Login failed';
       throw new Error(message);
     }
   };
 
   const register = async (email: string, name: string, password: string, pin: string): Promise<void> => {
     try {
-      const response = await authAPI.register(email, name, password, pin);
-      const { token: newToken, user: newUser } = response.data.data!;
+      const response = await webSocketManager.register(email, name, password, pin);
+      const { token: newToken, user: newUser } = response.data;
       
       localStorage.setItem('token', newToken);
       localStorage.setItem('user', JSON.stringify(newUser));
@@ -84,14 +88,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setToken(newToken);
       setUser(newUser);
     } catch (error: any) {
-      const message = error.response?.data?.message || 'Registration failed';
+      const message = error.message || 'Registration failed';
       throw new Error(message);
     }
   };
 
   const logout = async (): Promise<void> => {
     try {
-      await authAPI.logout();
+      await webSocketManager.sendMessage('auth.logout');
     } catch (error) {
       console.error('Logout API call failed:', error);
     } finally {
@@ -99,6 +103,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       localStorage.removeItem('user');
       setToken(null);
       setUser(null);
+      webSocketManager.disconnect();
     }
   };
 

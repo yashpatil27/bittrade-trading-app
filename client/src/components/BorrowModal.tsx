@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, ArrowDown, Calculator, AlertTriangle, Info } from 'lucide-react';
-import { userAPI } from '../services/api';
+import { useWebSocket } from '../contexts/WebSocketContext';
 import { LoanStatus } from '../types';
 import { useBalance } from '../contexts/BalanceContext';
 import PinConfirmationModal from './PinConfirmationModal';
@@ -25,6 +25,7 @@ const BorrowModal: React.FC<BorrowModalProps> = ({
   const [error, setError] = useState('');
   const [isPinModalOpen, setIsPinModalOpen] = useState(false);
   const { updateBalance } = useBalance();
+  const { sendMessage } = useWebSocket();
 
   useBodyScrollLock(isOpen && !isPinModalOpen);
 
@@ -78,8 +79,8 @@ const BorrowModal: React.FC<BorrowModalProps> = ({
   const handlePinConfirm = async (pin: string): Promise<boolean> => {
     try {
       // Verify PIN first
-      const pinResponse = await userAPI.verifyPin(pin);
-      if (!pinResponse.data.data?.valid) {
+      const pinResponse = await sendMessage('user.verify-pin', { pin });
+      if (!pinResponse?.valid) {
         return false;
       }
 
@@ -87,7 +88,7 @@ const BorrowModal: React.FC<BorrowModalProps> = ({
       setLoading(true);
       
       // Borrow funds
-      await userAPI.borrowFunds(parseFloat(amount));
+      await sendMessage('user.borrow-funds', { amount: parseFloat(amount) });
       
       // Update balance
       await updateBalance();
@@ -98,7 +99,7 @@ const BorrowModal: React.FC<BorrowModalProps> = ({
       return true;
     } catch (error: any) {
       console.error('Borrow error:', error);
-      setError(error.response?.data?.message || 'Error borrowing funds');
+      setError(error.message || 'Error borrowing funds');
       return false;
     } finally {
       setLoading(false);

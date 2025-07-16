@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, Plus, AlertCircle, TrendingUp, Shield, Bitcoin } from 'lucide-react';
-import { userAPI } from '../services/api';
+import { useWebSocket } from '../contexts/WebSocketContext';
 import { LoanStatus } from '../types';
 import { formatBitcoin, formatCurrencyInr } from '../utils/formatters';
 import PinConfirmationModal from './PinConfirmationModal';
@@ -25,6 +25,7 @@ const AddCollateralModal: React.FC<AddCollateralModalProps> = ({
   const [showPinModal, setShowPinModal] = useState(false);
   const [availableBtc, setAvailableBtc] = useState(0);
   const { updateBalance } = useBalance();
+  const { sendMessage } = useWebSocket();
 
   useEffect(() => {
     if (isOpen) {
@@ -34,8 +35,8 @@ const AddCollateralModal: React.FC<AddCollateralModalProps> = ({
 
   const fetchAvailableBalance = async () => {
     try {
-      const dashboardResponse = await userAPI.getDashboard();
-      setAvailableBtc(dashboardResponse.data.data?.balances.btc || 0);
+      const dashboardResponse = await sendMessage('user.get-dashboard');
+      setAvailableBtc(dashboardResponse?.balances?.btc || 0);
     } catch (error) {
       console.error('Error fetching available balance:', error);
     }
@@ -64,13 +65,13 @@ const AddCollateralModal: React.FC<AddCollateralModalProps> = ({
       setLoading(true);
       
       // Verify PIN first
-      const pinResponse = await userAPI.verifyPin(pin);
-      if (!pinResponse.data.data?.valid) {
+      const pinResponse = await sendMessage('user.verify-pin', { pin });
+      if (!pinResponse?.valid) {
         return false;
       }
 
       // Add collateral
-      await userAPI.addCollateralToLoan(parseFloat(collateralAmount));
+      await sendMessage('user.add-collateral-to-loan', { amount: parseFloat(collateralAmount) });
       
       // Update balance
       await updateBalance();
@@ -80,7 +81,7 @@ const AddCollateralModal: React.FC<AddCollateralModalProps> = ({
       return true;
     } catch (error: any) {
       console.error('Add collateral error:', error);
-      setError(error.response?.data?.message || 'Failed to add collateral');
+      setError(error.message || 'Failed to add collateral');
       return false;
     } finally {
       setLoading(false);

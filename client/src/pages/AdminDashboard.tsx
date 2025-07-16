@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { adminAPI } from '../services/api';
+import { useWebSocket } from '../contexts/WebSocketContext';
 import { AdminDashboardData } from '../types';
 import { 
   Users, 
@@ -20,21 +20,21 @@ const AdminDashboard: React.FC = () => {
   const [limitOrdersSummary, setLimitOrdersSummary] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
+  const { getAdminDashboard, getSystemStatus } = useWebSocket();
 
   const fetchAllData = async () => {
     try {
       setIsLoading(true);
       setError('');
       
-      const [dashboardResponse, limitOrdersResponse, healthResponse] = await Promise.all([
-        adminAPI.getDashboard(),
-        adminAPI.getLimitOrdersSummary().catch(() => ({ data: { data: null } })), // Don't fail if limit orders aren't available
-        adminAPI.getSystemHealth().catch(() => ({ data: null })) // Don't fail if health endpoint isn't available
+      const [dashboardResponse, healthResponse] = await Promise.all([
+        getAdminDashboard(),
+        getSystemStatus().catch(() => null) // Don't fail if health endpoint isn't available
       ]);
       
-      setData(dashboardResponse.data.data!);
-      setSystemHealth(healthResponse.data);
-      setLimitOrdersSummary(limitOrdersResponse.data.data);
+      setData(dashboardResponse);
+      setSystemHealth(healthResponse);
+      setLimitOrdersSummary(null); // Remove limit orders summary for now
       
     } catch (error: any) {
       console.error('Error fetching admin dashboard:', error);

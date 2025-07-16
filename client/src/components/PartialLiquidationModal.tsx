@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, Zap, Calculator, Info, Bitcoin } from 'lucide-react';
-import { userAPI } from '../services/api';
+import { useWebSocket } from '../contexts/WebSocketContext';
 import { LoanStatus } from '../types';
 import PinConfirmationModal from './PinConfirmationModal';
 import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
@@ -23,6 +23,7 @@ const PartialLiquidationModal: React.FC<PartialLiquidationModalProps> = ({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [isPinModalOpen, setIsPinModalOpen] = useState(false);
+  const { sendMessage } = useWebSocket();
 
   useBodyScrollLock(isOpen && !isPinModalOpen);
 
@@ -63,9 +64,9 @@ const PartialLiquidationModal: React.FC<PartialLiquidationModalProps> = ({
   const handlePinConfirm = async (pin: string): Promise<boolean> => {
     try {
       // Verify PIN first
-      const pinResponse = await userAPI.verifyPin(pin);
+      const pinResponse = await sendMessage('user.verify-pin', { pin });
       
-      if (!pinResponse.data.data?.valid) {
+      if (!pinResponse?.valid) {
         return false;
       }
 
@@ -73,7 +74,7 @@ const PartialLiquidationModal: React.FC<PartialLiquidationModalProps> = ({
       setLoading(true);
 
       // Execute partial liquidation
-      await userAPI.executePartialLiquidation(parseFloat(btcAmount));
+      await sendMessage('user.execute-partial-liquidation', { btcAmount: parseFloat(btcAmount) });
 
       setIsPinModalOpen(false);
       onSuccess();
@@ -81,11 +82,11 @@ const PartialLiquidationModal: React.FC<PartialLiquidationModalProps> = ({
     } catch (error: any) {
       console.error('Partial liquidation error:', error);
       // Check if error is from PIN verification or liquidation
-      if (error.response?.status === 400 && error.response?.data?.message?.includes('PIN')) {
+      if (error.message?.includes('PIN')) {
         return false;
       }
       // If it's a liquidation error, set the error message but don't close the PIN modal
-      setError(error.response?.data?.message || 'Error executing partial liquidation');
+      setError(error.message || 'Error executing partial liquidation');
       setIsPinModalOpen(false);
       return false;
     } finally {

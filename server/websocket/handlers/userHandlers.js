@@ -10,7 +10,16 @@ const userHandlers = {
     // Setup any specific user event listeners here
   },
 
+  // Helper function to check authentication
+  requireAuth(socket) {
+    if (!socket.isAuthenticated) {
+      throw new Error('Authentication required');
+    }
+  },
+
   async handle(method, payload, socket, socketServer) {
+    // Check authentication for all user methods
+    this.requireAuth(socket);
     switch (method) {
       // Dashboard and data retrieval
       case 'dashboard':
@@ -453,7 +462,7 @@ const userHandlers = {
   // Portfolio method
   async handlePortfolio(payload, socket, socketServer) {
     const userId = socket.userId;
-    return await portfolioService.getPortfolioData(userId);
+    return await portfolioService.calculatePortfolioMetrics(userId);
   },
 
   async handleLimitOrders(payload, socket, socketServer) {
@@ -618,10 +627,16 @@ const userHandlers = {
     const result = await loanService.getLoanStatus(userId);
 
     if (!result) {
-      throw new Error('No active loan found');
+      return {
+        hasActiveLoan: false,
+        message: 'No active loan found'
+      };
     }
 
-    return result;
+    return {
+      hasActiveLoan: true,
+      ...result
+    };
   },
 
   // Add more handlers as needed...

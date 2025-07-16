@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, Wallet, Bitcoin, Calculator, Info } from 'lucide-react';
-import { userAPI, adminAPI } from '../services/api';
+import { useWebSocket } from '../contexts/WebSocketContext';
 import { useBalance } from '../contexts/BalanceContext';
 import { formatBitcoin, formatInr } from '../utils/formatters';
 import PinConfirmationModal from './PinConfirmationModal';
@@ -25,6 +25,7 @@ const DepositCollateralModal: React.FC<DepositCollateralModalProps> = ({
   const [error, setError] = useState('');
   const [isPinModalOpen, setIsPinModalOpen] = useState(false);
   const { updateBalance } = useBalance();
+  const { sendMessage } = useWebSocket();
 
   useBodyScrollLock(isOpen && !isPinModalOpen);
 
@@ -37,14 +38,14 @@ const DepositCollateralModal: React.FC<DepositCollateralModalProps> = ({
   const fetchData = async () => {
     try {
       const [dashboardResponse, pricesResponse, settingsResponse] = await Promise.all([
-        userAPI.getDashboard(),
-        userAPI.getPrices(),
-        adminAPI.getSettings()
+        sendMessage('user.get-dashboard'),
+        sendMessage('user.get-prices'),
+        sendMessage('admin.get-settings')
       ]);
       
-      setAvailableBtc(dashboardResponse.data.data?.balances.btc || 0);
-      setBtcSellRate(pricesResponse.data.data?.sell_rate || 0);
-      setInterestRate(settingsResponse.data.data?.loan_interest_rate || 15);
+      setAvailableBtc(dashboardResponse?.balances?.btc || 0);
+      setBtcSellRate(pricesResponse?.sell_rate || 0);
+      setInterestRate(settingsResponse?.loan_interest_rate || 15);
     } catch (error) {
       console.error('Error fetching data:', error);
       // Fallback to default interest rate if settings fetch fails
@@ -83,8 +84,8 @@ const DepositCollateralModal: React.FC<DepositCollateralModalProps> = ({
   const handlePinConfirm = async (pin: string): Promise<boolean> => {
     try {
       // Verify PIN first
-      const pinResponse = await userAPI.verifyPin(pin);
-      if (!pinResponse.data.data?.valid) {
+      const pinResponse = await sendMessage('user.verify-pin', { pin });
+      if (!pinResponse?.valid) {
         return false;
       }
 
@@ -95,7 +96,7 @@ const DepositCollateralModal: React.FC<DepositCollateralModalProps> = ({
       const satoshiAmount = Math.floor(parseFloat(amount) * 100000000);
       
       // Deposit collateral
-      await userAPI.depositCollateral(satoshiAmount);
+      await sendMessage('user.deposit-collateral', { satoshiAmount });
       
       // Update balance
       await updateBalance();
@@ -106,7 +107,7 @@ const DepositCollateralModal: React.FC<DepositCollateralModalProps> = ({
       return true;
     } catch (error: any) {
       console.error('Deposit error:', error);
-      setError(error.response?.data?.message || 'Error depositing collateral');
+      setError(error.message || 'Error depositing collateral');
       return false;
     } finally {
       setLoading(false);

@@ -27,6 +27,15 @@ interface WebSocketContextType {
   resumeDcaPlan: (planId: number) => Promise<any>;
   deleteDcaPlan: (planId: number) => Promise<any>;
   
+  // Loan methods
+  getLoanStatus: () => Promise<any>;
+  getLoanHistory: () => Promise<any>;
+  createLoan: (btcAmount: number) => Promise<any>;
+  borrowMore: (amount: number) => Promise<any>;
+  repayLoan: (amount: number) => Promise<any>;
+  addCollateral: (btcAmount: number) => Promise<any>;
+  partialLiquidation: (amount: number) => Promise<any>;
+  
   // Public methods
   getBitcoinPrice: () => Promise<any>;
   getBitcoinData: () => Promise<any>;
@@ -74,8 +83,8 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({ children }
     webSocketManager.on('disconnect', updateConnectionStatus);
     webSocketManager.on('reconnect', updateConnectionStatus);
 
-    // Setup periodic status check
-    const statusInterval = setInterval(updateConnectionStatus, 1000);
+    // Less aggressive status check - only when necessary
+    const statusInterval = setInterval(updateConnectionStatus, 5000); // Reduced from 1000ms to 5000ms
 
     return () => {
       clearInterval(statusInterval);
@@ -110,6 +119,15 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({ children }
     pauseDcaPlan: webSocketManager.pauseDcaPlan.bind(webSocketManager),
     resumeDcaPlan: webSocketManager.resumeDcaPlan.bind(webSocketManager),
     deleteDcaPlan: webSocketManager.deleteDcaPlan.bind(webSocketManager),
+    
+    // Loan methods
+    getLoanStatus: webSocketManager.getLoanStatus.bind(webSocketManager),
+    getLoanHistory: webSocketManager.getLoanHistory.bind(webSocketManager),
+    createLoan: webSocketManager.createLoan.bind(webSocketManager),
+    borrowMore: webSocketManager.borrowMore.bind(webSocketManager),
+    repayLoan: webSocketManager.repayLoan.bind(webSocketManager),
+    addCollateral: webSocketManager.addCollateral.bind(webSocketManager),
+    partialLiquidation: webSocketManager.partialLiquidation.bind(webSocketManager),
     
     // Public methods
     getBitcoinPrice: webSocketManager.getBitcoinPrice.bind(webSocketManager),

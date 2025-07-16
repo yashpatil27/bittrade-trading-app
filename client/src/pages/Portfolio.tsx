@@ -19,7 +19,7 @@ import {
   Crown,
   Brain
 } from 'lucide-react';
-import { userAPI } from '../services/api';
+import { useWebSocket } from '../contexts/WebSocketContext';
 import { formatCurrency, formatPercentage, formatCurrencyInr } from '../utils/formatters';
 
 interface PortfolioData {
@@ -84,6 +84,8 @@ const Portfolio: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
 
+  const { getPortfolio, getBitcoinData, getBitcoinSentiment } = useWebSocket();
+
   useEffect(() => {
     fetchPortfolioData();
   }, []);
@@ -94,14 +96,14 @@ const Portfolio: React.FC = () => {
       
       // Fetch all data in parallel
       const [portfolioResponse, bitcoinResponse, sentimentResponse] = await Promise.all([
-        userAPI.portfolio(),
-        userAPI.getBitcoinData(),
-        userAPI.getBitcoinSentiment()
+        getPortfolio(),
+        getBitcoinData(),
+        getBitcoinSentiment()
       ]);
       
-      setPortfolioData(portfolioResponse.data.data);
-      setBitcoinData(bitcoinResponse.data.data);
-      setSentimentData(sentimentResponse.data.data);
+      setPortfolioData(portfolioResponse);
+      setBitcoinData(bitcoinResponse);
+      setSentimentData(sentimentResponse);
     } catch (error) {
       console.error('Error fetching portfolio data:', error);
       setError('Failed to load portfolio data');

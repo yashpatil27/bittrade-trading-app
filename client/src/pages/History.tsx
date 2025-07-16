@@ -23,7 +23,7 @@ import {
   AlertTriangle,
   Zap
 } from 'lucide-react';
-import { userAPI } from '../services/api';
+import { useWebSocket } from '../contexts/WebSocketContext';
 import { Transaction } from '../types';
 import TransactionDetailModal from '../components/TransactionDetailModal';
 import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
@@ -75,11 +75,13 @@ const History: React.FC = () => {
 
   useBodyScrollLock(isFilterOpen);
 
+  const { getTransactions } = useWebSocket();
+
   const fetchTransactions = async () => {
     try {
       setIsLoading(true);
-      const response = await userAPI.getAllTransactions(page, 20);
-      const { transactions: newTransactions, pagination } = response.data.data!;
+      const response = await getTransactions(page, 20);
+      const { transactions: newTransactions, pagination } = response;
       
       if (page === 1) {
         setAllTransactions(newTransactions);

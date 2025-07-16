@@ -29,7 +29,7 @@ import {
   Lock,
   Zap
 } from 'lucide-react';
-import { adminAPI } from '../services/api';
+import { useWebSocket } from '../contexts/WebSocketContext';
 import { Transaction, DcaPlan } from '../types';
 import TransactionDetailModal from '../components/TransactionDetailModal';
 import { 
@@ -86,12 +86,14 @@ const AdminTransactions: React.FC = () => {
     sortBy: 'NEWEST'
   });
 
+  const { getTransactions, sendMessage } = useWebSocket();
+
   const fetchTransactions = useCallback(async (currentPage: number = 1) => {
     try {
       setIsLoading(true);
-      const response = await adminAPI.getTransactions(currentPage);
-      if (response.data && response.data.data) {
-        const { transactions, pagination } = response.data.data;
+      const response = await getTransactions(currentPage);
+      if (response) {
+        const { transactions, pagination } = response;
         
         if (currentPage === 1) {
           setAllTransactions(transactions);
@@ -107,7 +109,7 @@ const AdminTransactions: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [getTransactions]);
 
   // Apply filters whenever transactions or filters change
   useEffect(() => {
@@ -196,9 +198,9 @@ const AdminTransactions: React.FC = () => {
   const fetchDcaPlans = useCallback(async (currentPage: number = 1) => {
     try {
       setIsLoading(true);
-      const response = await adminAPI.getDcaPlans(currentPage);
-      if (response.data && response.data.data) {
-        const { dcaPlans, pagination } = response.data.data;
+      const response = await sendMessage('admin.get-dca-plans', { page: currentPage });
+      if (response) {
+        const { dcaPlans, pagination } = response;
         
         if (currentPage === 1) {
           setDcaPlans(dcaPlans);
@@ -214,7 +216,7 @@ const AdminTransactions: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [sendMessage]);
 
   useEffect(() => {
     if (activeTab === 'operations') {
@@ -293,7 +295,7 @@ const AdminTransactions: React.FC = () => {
   const handleCancelLimitOrder = async (orderId: string) => {
     try {
       setProcessingActions(prev => new Set(prev).add(orderId));
-      await adminAPI.cancelLimitOrder(parseInt(orderId));
+      await sendMessage('admin.cancel-limit-order', { orderId: parseInt(orderId) });
       // Refresh the transactions
       fetchTransactions(1);
     } catch (error) {
@@ -311,7 +313,7 @@ const AdminTransactions: React.FC = () => {
   const handlePauseDcaPlan = async (planId: string) => {
     try {
       setProcessingActions(prev => new Set(prev).add(planId));
-      await adminAPI.pauseDcaPlan(parseInt(planId));
+      await sendMessage('admin.pause-dca-plan', { planId: parseInt(planId) });
       // Refresh the DCA plans
       fetchDcaPlans(1);
     } catch (error) {
@@ -329,7 +331,7 @@ const AdminTransactions: React.FC = () => {
   const handleResumeDcaPlan = async (planId: string) => {
     try {
       setProcessingActions(prev => new Set(prev).add(planId));
-      await adminAPI.resumeDcaPlan(parseInt(planId));
+      await sendMessage('admin.resume-dca-plan', { planId: parseInt(planId) });
       // Refresh the DCA plans
       fetchDcaPlans(1);
     } catch (error) {
@@ -347,7 +349,7 @@ const AdminTransactions: React.FC = () => {
   const handleDeleteDcaPlan = async (planId: string) => {
     try {
       setProcessingActions(prev => new Set(prev).add(planId));
-      await adminAPI.deleteDcaPlan(parseInt(planId));
+      await sendMessage('admin.delete-dca-plan', { planId: parseInt(planId) });
       // Refresh the DCA plans
       fetchDcaPlans(1);
     } catch (error) {

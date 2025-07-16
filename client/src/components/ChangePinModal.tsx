@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { X, Shield, AlertCircle, Eye, EyeOff } from 'lucide-react';
-import { userAPI } from '../services/api';
+import { useWebSocket } from '../contexts/WebSocketContext';
 import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 
 interface ChangePinModalProps {
@@ -24,6 +24,8 @@ const ChangePinModal: React.FC<ChangePinModalProps> = ({
   
   const newPinRefs = useRef<(HTMLInputElement | null)[]>([]);
   const confirmPinRefs = useRef<(HTMLInputElement | null)[]>([]);
+
+  const { sendMessage } = useWebSocket();
 
   useBodyScrollLock(isOpen);
 
@@ -129,7 +131,7 @@ const ChangePinModal: React.FC<ChangePinModalProps> = ({
     setIsLoading(true);
 
     try {
-      await userAPI.changePin({
+      await sendMessage('user.change-pin', {
         newPin: newPinString,
         currentPassword
       });
@@ -138,7 +140,7 @@ const ChangePinModal: React.FC<ChangePinModalProps> = ({
       onClose();
       resetForm();
     } catch (error: any) {
-      setError(error.response?.data?.message || 'Error changing PIN');
+      setError(error.message || 'Error changing PIN');
     } finally {
       setIsLoading(false);
     }

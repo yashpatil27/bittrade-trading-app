@@ -11,7 +11,7 @@ import {
   Pause,
   Plus
 } from 'lucide-react';
-import { userAPI } from '../services/api';
+import { useWebSocket } from '../contexts/WebSocketContext';
 import { DcaPlan, Balances, Prices } from '../types';
 import { formatCurrency, formatTimeAgo, formatCurrencyInr } from '../utils/formatters';
 import DcaPlanModal from './DcaPlanModal';
@@ -29,6 +29,7 @@ export interface DcaPlansSectionRef {
 
 const DcaPlansSection = forwardRef<DcaPlansSectionRef, DcaPlansSectionProps>(({ onUpdate, balances, prices }, ref) => {
   const { refreshBalance } = useBalance();
+  const { getDcaPlans, deleteDcaPlan, pauseDcaPlan, resumeDcaPlan } = useWebSocket();
   const [dcaPlans, setDcaPlans] = useState<DcaPlan[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedPlan, setSelectedPlan] = useState<DcaPlan | null>(null);
@@ -55,10 +56,10 @@ const DcaPlansSection = forwardRef<DcaPlansSectionRef, DcaPlansSectionProps>(({ 
       setError(''); // Clear previous errors
       console.log('Fetching DCA plans...');
       
-      const response = await userAPI.getDcaPlans();
-      console.log('DCA plans response:', response.data);
+      const data = await getDcaPlans();
+      console.log('DCA plans response:', data);
       
-      setDcaPlans(response.data.data || []);
+      setDcaPlans(data || []);
     } catch (error: any) {
       console.error('Error fetching DCA plans:', error);
       
@@ -84,13 +85,13 @@ const DcaPlansSection = forwardRef<DcaPlansSectionRef, DcaPlansSectionProps>(({ 
   const handleCancelPlan = async (planId: number) => {
     try {
       setCancellingPlan(planId);
-      await userAPI.cancelDcaPlan(planId);
+      await deleteDcaPlan(planId);
       await fetchDcaPlans();
       onUpdate?.();
       setShowDetailsModal(false);
       setSelectedPlan(null);
     } catch (error: any) {
-      setError(error.response?.data?.message || 'Failed to cancel DCA plan');
+      setError(error.message || 'Failed to cancel DCA plan');
     } finally {
       setCancellingPlan(null);
     }
@@ -99,13 +100,13 @@ const DcaPlansSection = forwardRef<DcaPlansSectionRef, DcaPlansSectionProps>(({ 
   const handlePausePlan = async (planId: number) => {
     try {
       setPausingPlan(planId);
-      await userAPI.pauseDcaPlan(planId);
+      await pauseDcaPlan(planId);
       await fetchDcaPlans();
       onUpdate?.();
       setShowDetailsModal(false);
       setSelectedPlan(null);
     } catch (error: any) {
-      setError(error.response?.data?.message || 'Failed to pause DCA plan');
+      setError(error.message || 'Failed to pause DCA plan');
     } finally {
       setPausingPlan(null);
     }
@@ -114,13 +115,13 @@ const DcaPlansSection = forwardRef<DcaPlansSectionRef, DcaPlansSectionProps>(({ 
   const handleResumePlan = async (planId: number) => {
     try {
       setResumingPlan(planId);
-      await userAPI.resumeDcaPlan(planId);
+      await resumeDcaPlan(planId);
       await fetchDcaPlans();
       onUpdate?.();
       setShowDetailsModal(false);
       setSelectedPlan(null);
     } catch (error: any) {
-      setError(error.response?.data?.message || 'Failed to resume DCA plan');
+      setError(error.message || 'Failed to resume DCA plan');
     } finally {
       setResumingPlan(null);
     }

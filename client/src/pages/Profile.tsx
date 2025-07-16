@@ -15,7 +15,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { userAPI } from '../services/api';
+import { useWebSocket } from '../contexts/WebSocketContext';
 import TextInputModal from '../components/TextInputModal';
 import ChangePinModal from '../components/ChangePinModal';
 
@@ -27,6 +27,7 @@ const Profile: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
+  const { sendMessage } = useWebSocket();
 
   const handleExportData = async () => {
     try {
@@ -34,10 +35,10 @@ const Profile: React.FC = () => {
       setError('');
       setMessage('');
       
-      const response = await userAPI.exportData();
+      const response = await sendMessage('user.export-data');
       
       // Create blob and download
-      const blob = new Blob([response.data], { type: 'text/csv' });
+      const blob = new Blob([response], { type: 'text/csv' });
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
@@ -73,18 +74,18 @@ const Profile: React.FC = () => {
     setIsLoading(true);
     try {
       if (activeModal === 'name') {
-        await userAPI.updateProfile({ name: values.name, currentPassword: values.currentPassword });
+        await sendMessage('user.update-profile', { name: values.name, currentPassword: values.currentPassword });
         setMessage('✅ Name updated successfully!');
       } else if (activeModal === 'email') {
-        await userAPI.updateProfile({ email: values.email, currentPassword: values.currentPassword });
+        await sendMessage('user.update-profile', { email: values.email, currentPassword: values.currentPassword });
         setMessage('✅ Email updated successfully!');
       } else if (activeModal === 'password') {
-        await userAPI.changePassword({ currentPassword: values.currentPassword, newPassword: values.newPassword });
+        await sendMessage('user.change-password', { currentPassword: values.currentPassword, newPassword: values.newPassword });
         setMessage('✅ Password changed successfully!');
       }
       setActiveModal(null);
     } catch (error: any) {
-      setError(error.response?.data?.message || 'An error occurred');
+      setError(error.message || 'An error occurred');
       setActiveModal(null);
     } finally {
       setIsLoading(false);

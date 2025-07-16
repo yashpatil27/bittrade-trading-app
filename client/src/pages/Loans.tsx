@@ -19,7 +19,7 @@ import {
   Clock,
   DollarSign
 } from 'lucide-react';
-import { userAPI } from '../services/api';
+import { useWebSocket } from '../contexts/WebSocketContext';
 import { LoanStatus, LoanHistory, Transaction } from '../types';
 import { formatBitcoin, getTransactionDisplayName, getTransactionIcon, formatTimeAgo, formatCurrency, formatInr, formatPercentage } from '../utils/formatters';
 import DepositCollateralModal from '../components/DepositCollateralModal';
@@ -41,6 +41,7 @@ const Loans: React.FC = () => {
   const [showPartialLiquidationModal, setShowPartialLiquidationModal] = useState(false);
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
   const [isTransactionModalOpen, setIsTransactionModalOpen] = useState(false);
+  const { getLoanStatus, getLoanHistory } = useWebSocket();
 
   useEffect(() => {
     fetchLoanData();
@@ -52,13 +53,19 @@ const Loans: React.FC = () => {
       
       // Try to get loan status
       try {
-        const statusResponse = await userAPI.getLoanStatus();
-        setLoanStatus(statusResponse.data.data || null);
+        const statusResponse = await getLoanStatus();
         
-        // If we have an active loan, get history
-        if (statusResponse.data.data) {
-          const historyResponse = await userAPI.getLoanHistory();
-          setLoanHistory(historyResponse.data.data || []);
+        // Check if user has an active loan
+        if (statusResponse && statusResponse.hasActiveLoan) {
+          setLoanStatus(statusResponse);
+          
+          // Get loan history for active loans
+          const historyResponse = await getLoanHistory();
+          setLoanHistory(historyResponse || []);
+        } else {
+          // No active loan
+          setLoanStatus(null);
+          setLoanHistory([]);
         }
       } catch (statusError: any) {
         if (statusError.response?.status === 404) {
@@ -71,12 +78,11 @@ const Loans: React.FC = () => {
       }
       
     } catch (error: any) {
-      setError(error.response?.data?.message || 'Error fetching loan data');
+      setError('Error fetching loan data');
     } finally {
       setLoading(false);
     }
   };
-
 
   const getRiskColor = (riskStatus: string) => {
     return 'text-white';

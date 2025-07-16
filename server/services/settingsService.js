@@ -73,6 +73,57 @@ const SettingsService = {
       console.error('Error getting loan interest rate, using default 15%');
       return 15; // Default fallback
     }
+  },
+
+  /**
+   * Get all settings for admin interface
+   * @returns {Promise<Object>} - Object with all settings
+   */
+  async getSettings() {
+    try {
+      const settings = await this.getAllSettings();
+      return {
+        buy_multiplier: settings.buy_multiplier || 91,
+        sell_multiplier: settings.sell_multiplier || 88,
+        loan_interest_rate: settings.loan_interest_rate || 15
+      };
+    } catch (error) {
+      console.error('Error getting settings:', error);
+      // Return defaults if database error
+      return {
+        buy_multiplier: 91,
+        sell_multiplier: 88,
+        loan_interest_rate: 15
+      };
+    }
+  },
+
+  /**
+   * Update multiple settings
+   * @param {Object} updates - Object with setting updates
+   * @returns {Promise<void>}
+   */
+  async updateSettings(updates) {
+    try {
+      const promises = [];
+      
+      if (updates.buy_multiplier !== undefined) {
+        promises.push(this.setSetting('buy_multiplier', updates.buy_multiplier));
+      }
+      
+      if (updates.sell_multiplier !== undefined) {
+        promises.push(this.setSetting('sell_multiplier', updates.sell_multiplier));
+      }
+      
+      if (updates.loan_interest_rate !== undefined) {
+        promises.push(this.setSetting('loan_interest_rate', updates.loan_interest_rate));
+      }
+      
+      await Promise.all(promises);
+    } catch (error) {
+      console.error('Error updating settings:', error);
+      throw error;
+    }
   }
 };
 

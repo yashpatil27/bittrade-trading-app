@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { userAPI } from '../services/api';
+import { useWebSocket } from '../contexts/WebSocketContext';
 import { Balances, Prices } from '../types';
 import SingleInputModal from './SingleInputModal';
 import ConfirmDetailsModal from './ConfirmDetailsModal';
@@ -27,6 +27,7 @@ const DcaPlanModal: React.FC<DcaPlanModalProps> = ({
   onError
 }) => {
   const { refreshBalance } = useBalance();
+  const { sendMessage } = useWebSocket();
   const [isSingleInputModalOpen, setIsSingleInputModalOpen] = useState(false);
   const [isConfirmDetailsModalOpen, setIsConfirmDetailsModalOpen] = useState(false);
   const [inputAmount, setInputAmount] = useState('');
@@ -64,11 +65,11 @@ const DcaPlanModal: React.FC<DcaPlanModalProps> = ({
       };
 
       if (type === 'buy') {
-        await userAPI.createDcaBuyPlan(dcaData);
+        await sendMessage('user.create-dca-buy-plan', dcaData);
         onSuccess();
         onClose();
       } else {
-        await userAPI.createDcaSellPlan(dcaData);
+        await sendMessage('user.create-dca-sell-plan', dcaData);
         onSuccess();
         onClose();
       }
@@ -76,7 +77,7 @@ const DcaPlanModal: React.FC<DcaPlanModalProps> = ({
       // Refresh balance in the context
       refreshBalance();
     } catch (error: any) {
-      onError(error.response?.data?.message || `Failed to create DCA ${type} plan`);
+      onError(error.message || `Failed to create DCA ${type} plan`);
     } finally {
       setIsLoading(false);
     }

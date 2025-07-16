@@ -240,7 +240,7 @@ class LimitOrderExecutionService {
       // Update operation status
       await connection.execute(
         'UPDATE operations SET status = ?, cancelled_at = NOW(), cancellation_reason = ? WHERE id = ?',
-        ['EXPIRED', order.id, 'Order expired after 24 hours']
+        ['EXPIRED', 'Order expired after 24 hours', order.id]
       );
 
       // Clear user cache

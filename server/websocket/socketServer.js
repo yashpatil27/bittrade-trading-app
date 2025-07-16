@@ -33,7 +33,9 @@ class SocketServer {
         const token = socket.handshake.auth.token || socket.handshake.query.token;
         
         if (!token) {
-          return next(new Error('Authentication token required'));
+          // Allow connections without token for authentication purposes
+          socket.isAuthenticated = false;
+          return next();
         }
 
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
@@ -45,36 +47,43 @@ class SocketServer {
         );
 
         if (users.length === 0) {
-          return next(new Error('User not found'));
+          socket.isAuthenticated = false;
+          return next();
         }
 
         socket.userId = users[0].id;
         socket.user = users[0];
+        socket.isAuthenticated = true;
         next();
       } catch (error) {
-        next(new Error('Invalid token'));
+        socket.isAuthenticated = false;
+        next();
       }
     });
   }
 
   setupConnectionHandlers() {
     this.io.on('connection', (socket) => {
-      console.log(`User ${socket.user.email} connected (ID: ${socket.userId})`);
-      
-      // Store connection
-      this.connections.set(socket.userId, socket);
-      
-      // Add to admin connections if admin
-      if (socket.user.is_admin) {
-        this.adminConnections.add(socket);
-      }
+      if (socket.isAuthenticated) {
+        console.log(`User ${socket.user.email} connected (ID: ${socket.userId})`);
+        
+        // Store connection
+        this.connections.set(socket.userId, socket);
+        
+        // Add to admin connections if admin
+        if (socket.user.is_admin) {
+          this.adminConnections.add(socket);
+        }
 
-      // Join user-specific room
-      socket.join(`user:${socket.userId}`);
-      
-      // Join admin room if admin
-      if (socket.user.is_admin) {
-        socket.join('admin');
+        // Join user-specific room
+        socket.join(`user:${socket.userId}`);
+        
+        // Join admin room if admin
+        if (socket.user.is_admin) {
+          socket.join('admin');
+        }
+      } else {
+        console.log('Unauthenticated connection established for auth purposes');
       }
 
       // Setup event handlers
@@ -82,11 +91,15 @@ class SocketServer {
 
       // Handle disconnection
       socket.on('disconnect', () => {
-        console.log(`User ${socket.user.email} disconnected`);
-        this.connections.delete(socket.userId);
-        
-        if (socket.user.is_admin) {
-          this.adminConnections.delete(socket);
+        if (socket.isAuthenticated) {
+          console.log(`User ${socket.user.email} disconnected`);
+          this.connections.delete(socket.userId);
+          
+          if (socket.user.is_admin) {
+            this.adminConnections.delete(socket);
+          }
+        } else {
+          console.log('Unauthenticated connection disconnected');
         }
       });
     });

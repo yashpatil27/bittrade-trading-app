@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, ArrowUp, Calculator, Info } from 'lucide-react';
-import { userAPI } from '../services/api';
+import { useWebSocket } from '../contexts/WebSocketContext';
 import { LoanStatus } from '../types';
 import { useBalance } from '../contexts/BalanceContext';
 import PinConfirmationModal from './PinConfirmationModal';
@@ -26,6 +26,7 @@ const RepayModal: React.FC<RepayModalProps> = ({
   const [isPinModalOpen, setIsPinModalOpen] = useState(false);
   const [availableBalance, setAvailableBalance] = useState(0);
   const { updateBalance } = useBalance();
+  const { sendMessage } = useWebSocket();
 
   useBodyScrollLock(isOpen && !isPinModalOpen);
 
@@ -40,8 +41,10 @@ const RepayModal: React.FC<RepayModalProps> = ({
 
   const fetchAvailableBalance = async () => {
     try {
-      const response = await userAPI.getDashboard();
-      setAvailableBalance(response.data.data?.balances.inr || 0);
+      const response = await sendMessage('user.get-dashboard');
+      if (response) {
+        setAvailableBalance(response.balances?.inr || 0);
+      }
     } catch (error) {
       console.error('Error fetching balance:', error);
     }
@@ -101,8 +104,8 @@ const RepayModal: React.FC<RepayModalProps> = ({
   const handlePinConfirm = async (pin: string): Promise<boolean> => {
     try {
       // Verify PIN first
-      const pinResponse = await userAPI.verifyPin(pin);
-      if (!pinResponse.data.data?.valid) {
+      const pinResponse = await sendMessage('user.verify-pin', { pin });
+      if (!pinResponse?.valid) {
         return false;
       }
 
@@ -110,7 +113,7 @@ const RepayModal: React.FC<RepayModalProps> = ({
       setLoading(true);
       
       // Repay funds
-      await userAPI.repayFunds(parseFloat(amount));
+      await sendMessage('user.repay-funds', { amount: parseFloat(amount) });
       
       // Update balance
       await updateBalance();
@@ -121,7 +124,7 @@ const RepayModal: React.FC<RepayModalProps> = ({
       return true;
     } catch (error: any) {
       console.error('Repay error:', error);
-      setError(error.response?.data?.message || 'Error repaying funds');
+      setError(error.message || 'Error repaying funds');
       return false;
     } finally {
       setLoading(false);

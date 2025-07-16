@@ -14,7 +14,7 @@ import {
   TrendingUp
 } from 'lucide-react';
 import { AdminUser } from '../types';
-import { adminAPI, userAPI } from '../services/api';
+import { useWebSocket } from '../contexts/WebSocketContext';
 import { formatBitcoin, formatCurrencyInr } from '../utils/formatters';
 import { useBalance } from '../contexts/BalanceContext';
 import PinConfirmationModal from './PinConfirmationModal';
@@ -34,6 +34,7 @@ const UserManagementModal: React.FC<UserManagementModalProps> = ({
   onUserUpdated
 }) => {
   const { refreshBalance } = useBalance();
+  const { sendMessage } = useWebSocket();
   const [activeTab, setActiveTab] = useState<'info' | 'balances' | 'trade' | 'password'>('info');
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState('');
@@ -82,8 +83,8 @@ const UserManagementModal: React.FC<UserManagementModalProps> = ({
   const handlePinConfirm = async (pin: string): Promise<boolean> => {
     try {
       // Verify PIN
-      const response = await userAPI.verifyPin(pin);
-      if (response.data.data?.valid && pendingAction) {
+      const response = await sendMessage('user.verify-pin', { pin });
+      if (response?.valid && pendingAction) {
         // PIN is correct, execute the pending action
         await pendingAction();
         setIsPinModalOpen(false);
@@ -123,19 +124,19 @@ const UserManagementModal: React.FC<UserManagementModalProps> = ({
       
       if (currency === 'INR') {
         if (operation === 'deposit') {
-          await adminAPI.depositINR(user.id, parsedAmount);
+          await sendMessage('admin.deposit-inr', { userId: user.id, amount: parsedAmount });
           setMessage(`✅ ${formatCurrencyInr(parsedAmount)} deposited successfully`);
         } else {
-          await adminAPI.withdrawINR(user.id, parsedAmount);
+          await sendMessage('admin.withdraw-inr', { userId: user.id, amount: parsedAmount });
           setMessage(`✅ ${formatCurrencyInr(parsedAmount)} withdrawn successfully`);
         }
         setInrAmount('');
       } else {
         if (operation === 'deposit') {
-          await adminAPI.depositBTC(user.id, parsedAmount);
+          await sendMessage('admin.deposit-btc', { userId: user.id, amount: parsedAmount });
           setMessage(`✅ ₿${parsedAmount} deposited successfully`);
         } else {
-          await adminAPI.withdrawBTC(user.id, parsedAmount);
+          await sendMessage('admin.withdraw-btc', { userId: user.id, amount: parsedAmount });
           setMessage(`✅ ₿${parsedAmount} withdrawn successfully`);
         }
         setBtcAmount('');
@@ -146,7 +147,7 @@ const UserManagementModal: React.FC<UserManagementModalProps> = ({
       // Refresh balance for persistent top bar if this is the current user
       refreshBalance();
     } catch (error: any) {
-      setError(error.response?.data?.message || `Failed to ${operation} ${currency}`);
+      setError(error.message || `Failed to ${operation} ${currency}`);
     } finally {
       setIsLoading(false);
     }
@@ -163,11 +164,11 @@ const UserManagementModal: React.FC<UserManagementModalProps> = ({
     setMessage('');
 
     try {
-      await adminAPI.changeUserPassword(user.id, newPassword);
+      await sendMessage('admin.change-user-password', { userId: user.id, newPassword });
       setMessage('✅ Password updated successfully');
       setNewPassword('');
     } catch (error: any) {
-      setError(error.response?.data?.message || 'Failed to update password');
+      setError(error.message || 'Failed to update password');
     } finally {
       setIsLoading(false);
     }
@@ -182,14 +183,14 @@ const UserManagementModal: React.FC<UserManagementModalProps> = ({
     setError('');
 
     try {
-      await adminAPI.deleteUser(user.id);
+      await sendMessage('admin.delete-user', { userId: user.id });
       setMessage('User deleted successfully');
       setTimeout(() => {
         onUserUpdated();
         onClose();
       }, 1000);
     } catch (error: any) {
-      setError(error.response?.data?.message || 'Failed to delete user');
+      setError(error.message || 'Failed to delete user');
       setIsLoading(false);
     }
   };
@@ -213,7 +214,7 @@ const UserManagementModal: React.FC<UserManagementModalProps> = ({
         return;
       }
 
-      await adminAPI.externalBuy(user.id, inrAmount, btcAmount);
+      await sendMessage('admin.external-buy', { userId: user.id, inrAmount, btcAmount });
       setMessage(`✅ External buy recorded: ${formatCurrencyInr(inrAmount)} → ₿${btcAmount}`);
       setExternalInrAmount('');
       setExternalBtcAmount('');
@@ -222,7 +223,7 @@ const UserManagementModal: React.FC<UserManagementModalProps> = ({
       // Refresh balance for persistent top bar if this is the current user
       refreshBalance();
     } catch (error: any) {
-      setError(error.response?.data?.message || 'Failed to record external buy');
+      setError(error.message || 'Failed to record external buy');
     } finally {
       setIsLoading(false);
     }

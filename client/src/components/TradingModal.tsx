@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { userAPI } from '../services/api';
+import { useWebSocket } from '../contexts/WebSocketContext';
 import { Balances, Prices } from '../types';
 import SingleInputModal from './SingleInputModal';
 import ConfirmDetailsModal from './ConfirmDetailsModal';
@@ -26,6 +26,7 @@ const TradingModal: React.FC<TradingModalProps> = ({
   onError
 }) => {
   const { refreshBalance } = useBalance();
+  const { sendMessage } = useWebSocket();
   const [isSingleInputModalOpen, setIsSingleInputModalOpen] = useState(false);
   const [isConfirmDetailsModalOpen, setIsConfirmDetailsModalOpen] = useState(false);
   const [isTargetPriceModalOpen, setIsTargetPriceModalOpen] = useState(false);
@@ -63,22 +64,22 @@ const TradingModal: React.FC<TradingModalProps> = ({
         // Limit order
         const targetPriceNum = parseFloat(targetPrice);
         if (type === 'buy') {
-          await userAPI.placeLimitBuyOrder({ inrAmount: amount, targetPrice: targetPriceNum });
+          await sendMessage('user.limit-buy', { amount: amount, targetPrice: targetPriceNum });
           onSuccess();
           onClose();
         } else {
-          await userAPI.placeLimitSellOrder({ btcAmount: amount, targetPrice: targetPriceNum });
+          await sendMessage('user.limit-sell', { amount: amount, targetPrice: targetPriceNum });
           onSuccess();
           onClose();
         }
       } else {
         // Market order
         if (type === 'buy') {
-          await userAPI.buyBitcoin({ amount });
+          await sendMessage('user.buy', { amount });
           onSuccess();
           onClose();
         } else {
-          await userAPI.sellBitcoin({ amount });
+          await sendMessage('user.sell', { amount });
           onSuccess();
           onClose();
         }
@@ -87,7 +88,7 @@ const TradingModal: React.FC<TradingModalProps> = ({
       // Refresh balance in the context
       refreshBalance();
     } catch (error: any) {
-      onError(error.response?.data?.message || `Failed to ${isLimitOrder ? 'place limit order' : type + ' Bitcoin'}`);
+      onError(error.message || `Failed to ${isLimitOrder ? 'place limit order' : type + ' Bitcoin'}`);
     } finally {
       setIsLoading(false);
     }

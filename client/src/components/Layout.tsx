@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Home, History, Settings, Users, BarChart3, Bitcoin, PieChart, User, Wallet } from 'lucide-react';
 import { useBalance } from '../contexts/BalanceContext';
-import { userAPI } from '../services/api';
+import { useWebSocket } from '../contexts/WebSocketContext';
 import { formatBitcoin, formatCurrencyInr } from '../utils/formatters';
 import WebSocketStatusIndicator from './WebSocketStatusIndicator';
 
@@ -14,6 +14,7 @@ interface LayoutProps {
 const Layout: React.FC<LayoutProps> = ({ children, isAdmin = false }) => {
   // const { user } = useAuth(); // Currently unused
   const { balanceVersion } = useBalance();
+  const { getDashboard } = useWebSocket();
   const location = useLocation();
   const navigate = useNavigate();
   const [bitcoinBalance, setBitcoinBalance] = useState<number>(0);
@@ -23,8 +24,7 @@ const Layout: React.FC<LayoutProps> = ({ children, isAdmin = false }) => {
   const fetchBalance = useCallback(async () => {
     if (!isAdmin) {
       try {
-        const response = await userAPI.getDashboard();
-        const data = response.data.data;
+        const data = await getDashboard();
         if (data) {
           setBitcoinBalance(data.balances.btc || 0);
           setSellRate(data.prices.sell_rate || 0);
@@ -33,7 +33,7 @@ const Layout: React.FC<LayoutProps> = ({ children, isAdmin = false }) => {
         console.error('Error fetching balance:', error);
       }
     }
-  }, [isAdmin]);
+  }, [isAdmin, getDashboard]);
 
   useEffect(() => {
     fetchBalance();
