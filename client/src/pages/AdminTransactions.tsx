@@ -38,7 +38,9 @@ import {
   formatTimeAgo,
   formatBitcoin,
   formatCurrency,
-  formatCurrencyInr
+  formatCurrencyInr,
+  formatBitcoinDisplay,
+  satoshisToBitcoin
 } from '../utils/formatters';
 
 type TransactionType = 'ALL' | 'BUY' | 'SELL' | 'LIMIT_BUY' | 'LIMIT_SELL' | 'DEPOSIT_INR' | 'DEPOSIT_BTC' | 'WITHDRAW_INR' | 'WITHDRAW_BTC' | 'LOAN_CREATE' | 'LOAN_BORROW' | 'LOAN_REPAY' | 'LOAN_ADD_COLLATERAL';
@@ -277,15 +279,16 @@ const AdminTransactions: React.FC = () => {
     if (transaction.type.includes('INR')) {
       return formatCurrencyInr(transaction.inr_amount);
     } else if (transaction.type.includes('BTC')) {
-      return `₿${formatBitcoin(transaction.btc_amount)}`;
+      return formatBitcoinDisplay(satoshisToBitcoin(transaction.btc_amount));
+
     } else if (transaction.type.includes('LOAN') || transaction.type.includes('INTEREST') || transaction.type.includes('LIQUIDATION')) {
       // For loan transactions, show both amounts if they exist
       if (transaction.inr_amount > 0 && transaction.btc_amount > 0) {
-        return `${formatCurrencyInr(transaction.inr_amount)} / ₿${formatBitcoin(transaction.btc_amount)}`;
+        return `${formatCurrencyInr(transaction.inr_amount)} / ${formatBitcoinDisplay(transaction.btc_amount)}`;
       } else if (transaction.inr_amount > 0) {
         return formatCurrencyInr(transaction.inr_amount);
       } else if (transaction.btc_amount > 0) {
-        return `₿${formatBitcoin(transaction.btc_amount)}`;
+        return formatBitcoinDisplay(transaction.btc_amount);
       }
       return 'N/A';
     }

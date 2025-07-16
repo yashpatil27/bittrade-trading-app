@@ -25,7 +25,7 @@ const BorrowModal: React.FC<BorrowModalProps> = ({
   const [error, setError] = useState('');
   const [isPinModalOpen, setIsPinModalOpen] = useState(false);
   const { updateBalance } = useBalance();
-  const { sendMessage } = useWebSocket();
+  const { sendMessage, on, off } = useWebSocket();
 
   useBodyScrollLock(isOpen && !isPinModalOpen);
 

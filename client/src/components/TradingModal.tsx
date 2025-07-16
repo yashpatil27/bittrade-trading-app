@@ -26,7 +26,9 @@ const TradingModal: React.FC<TradingModalProps> = ({
   onError
 }) => {
   const { refreshBalance } = useBalance();
-  const { sendMessage } = useWebSocket();
+  const { sendMessage, on, off } = useWebSocket();
+  const [realtimeBalances, setRealtimeBalances] = useState<Balances | null>(balances);
+  const [realtimePrices, setRealtimePrices] = useState<Prices | null>(prices);
   const [isSingleInputModalOpen, setIsSingleInputModalOpen] = useState(false);
   const [isConfirmDetailsModalOpen, setIsConfirmDetailsModalOpen] = useState(false);
   const [isTargetPriceModalOpen, setIsTargetPriceModalOpen] = useState(false);
@@ -45,6 +47,9 @@ const TradingModal: React.FC<TradingModalProps> = ({
       setTargetPrice('');
       setIsLimitOrder(false);
       setIsLoading(false);
+      // Initialize real-time data with props
+      setRealtimeBalances(balances);
+      setRealtimePrices(prices);
     } else {
       setIsSingleInputModalOpen(false);
       setIsConfirmDetailsModalOpen(false);
@@ -54,7 +59,52 @@ const TradingModal: React.FC<TradingModalProps> = ({
       setIsLimitOrder(false);
       setIsLoading(false);
     }
-  }, [isOpen]);
+  }, [isOpen]); // Remove balances and prices from dependency array
+
+  // Separate effect to update real-time data when props change (without resetting modal state)
+  useEffect(() => {
+    if (isOpen) {
+      setRealtimeBalances(balances);
+      setRealtimePrices(prices);
+    }
+  }, [isOpen, balances, prices]);
+
+  // Real-time event listeners for balance and price updates
+  useEffect(() => {
+    if (!isOpen) return;
+
+    // Handle balance updates
+    const handleBalanceUpdate = (data: any) => {
+      console.log('Balance update received:', data);
+      if (data?.balances) {
+        setRealtimeBalances(data.balances);
+      }
+    };
+
+    // Handle price updates
+    const handlePriceUpdate = (data: any) => {
+      console.log('Price update received:', data);
+      if (data?.buy_rate !== undefined || data?.sell_rate !== undefined) {
+        setRealtimePrices(prev => ({
+          ...prev,
+          buy_rate: data.buy_rate || prev?.buy_rate || 0,
+          sell_rate: data.sell_rate || prev?.sell_rate || 0,
+          btc_usd: data.btc_usd || prev?.btc_usd || 0,
+          last_update: data.last_update || prev?.last_update || new Date().toISOString()
+        }));
+      }
+    };
+
+    // Subscribe to WebSocket events
+    on('balance_update', handleBalanceUpdate);
+    on('price_update', handlePriceUpdate);
+
+    // Cleanup event listeners when modal closes or component unmounts
+    return () => {
+      off('balance_update', handleBalanceUpdate);
+      off('price_update', handlePriceUpdate);
+    };
+  }, [isOpen, on, off]);
 
   const handleTrade = async (amount: number) => {
     setIsLoading(true);
@@ -143,7 +193,7 @@ const TradingModal: React.FC<TradingModalProps> = ({
         onClose={handleModalClose}
         title={type === 'buy' ? 'Buy Bitcoin' : 'Sell Bitcoin'}
         type={type === 'buy' ? 'inr' : 'btc'}
-        maxValue={type === 'buy' ? (balances?.inr || 0) : (balances?.btc || 0)}
+        maxValue={type === 'buy' ? (realtimeBalances?.inr || 0) : (realtimeBalances?.btc || 0)}
         confirmText="Next"
         onConfirm={handleSingleInputConfirm}
         validation={(value) => {
@@ -167,7 +217,7 @@ const TradingModal: React.FC<TradingModalProps> = ({
             return 'Minimum amount is ₹1';
           }
           
-          const maxValue = type === 'buy' ? (balances?.inr || 0) : (balances?.btc || 0);
+          const maxValue = type === 'buy' ? (realtimeBalances?.inr || 0) : (realtimeBalances?.btc || 0);
           if (numValue > maxValue) return 'Insufficient balance';
           
           return null;
@@ -177,8 +227,8 @@ const TradingModal: React.FC<TradingModalProps> = ({
         sectionAmount={isLimitOrder ? 
           formatCurrencyInr(parseFloat(targetPrice || '0')) : 
           (type === 'buy' ? 
-            formatCurrencyInr(prices?.buy_rate || 0) : 
-            formatCurrencyInr(prices?.sell_rate || 0))
+            formatCurrencyInr(realtimePrices?.buy_rate || 0) : 
+            formatCurrencyInr(realtimePrices?.sell_rate || 0))
         }
         onSectionClick={handleSectionClick}
       />
@@ -205,8 +255,8 @@ const TradingModal: React.FC<TradingModalProps> = ({
         sectionTitle="Current Market Rate"
         sectionDetail="Current Bitcoin price"
         sectionAmount={type === 'buy' ? 
-          formatCurrencyInr(prices?.buy_rate || 0) : 
-          formatCurrencyInr(prices?.sell_rate || 0)
+          formatCurrencyInr(realtimePrices?.buy_rate || 0) : 
+          formatCurrencyInr(realtimePrices?.sell_rate || 0)
         }
       />
 
@@ -224,10 +274,10 @@ const TradingModal: React.FC<TradingModalProps> = ({
           (type === 'buy' ? 
             (parseFloat(inputAmount || '0') / parseFloat(targetPrice || '1')).toFixed(8) : 
             (parseFloat(inputAmount || '0') * parseFloat(targetPrice || '0')).toFixed(2)) : 
-          (type === 'buy' && prices ? 
-            (parseFloat(inputAmount || '0') / (prices.buy_rate || 1)).toFixed(8) : 
-            type === 'sell' && prices ? 
-            (parseFloat(inputAmount || '0') * (prices.sell_rate || 1)).toFixed(2) : undefined)
+          (type === 'buy' && realtimePrices ? 
+            (parseFloat(inputAmount || '0') / (realtimePrices.buy_rate || 1)).toFixed(8) : 
+            type === 'sell' && realtimePrices ? 
+            (parseFloat(inputAmount || '0') * (realtimePrices.sell_rate || 1)).toFixed(2) : undefined)
         }
         subAmountType={type === 'buy' ? 'btc' : 'inr'}
         details={[
@@ -241,8 +291,8 @@ const TradingModal: React.FC<TradingModalProps> = ({
             value: isLimitOrder ? 
               formatCurrencyInr(parseFloat(targetPrice || '0')) : 
               (type === 'buy' ? 
-                formatCurrencyInr(prices?.buy_rate || 0) : 
-                formatCurrencyInr(prices?.sell_rate || 0)),
+                formatCurrencyInr(realtimePrices?.buy_rate || 0) : 
+                formatCurrencyInr(realtimePrices?.sell_rate || 0)),
             highlight: isLimitOrder
           },
           {
@@ -259,8 +309,8 @@ const TradingModal: React.FC<TradingModalProps> = ({
                 `₿${(parseFloat(inputAmount || '0') / parseFloat(targetPrice || '1')).toFixed(8)}` : 
                 formatCurrencyInr(parseFloat(inputAmount || '0') * parseFloat(targetPrice || '0'))) : 
               (type === 'buy' ? 
-                `₿${(parseFloat(inputAmount || '0') / (prices?.buy_rate || 1)).toFixed(8)}` : 
-                formatCurrencyInr(parseFloat(inputAmount || '0') * (prices?.sell_rate || 1))),
+                `₿${(parseFloat(inputAmount || '0') / (realtimePrices?.buy_rate || 1)).toFixed(8)}` : 
+                formatCurrencyInr(parseFloat(inputAmount || '0') * (realtimePrices?.sell_rate || 1))),
             highlight: false
           }
         ]}

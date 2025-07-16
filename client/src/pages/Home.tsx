@@ -34,8 +34,9 @@ import {
   getTransactionDisplayName, 
   getTransactionIcon, 
   formatTimeAgo,
-  formatCurrency,
-  formatCurrencyInr
+  formatBitcoin,
+  formatCurrencyInr,
+  satoshisToBitcoin
 } from '../utils/formatters';
 
 const Home: React.FC = () => {
@@ -86,23 +87,29 @@ const Home: React.FC = () => {
       bitcoinChartRef.current?.refreshPrice();
     };
 
-    const handleTransactionUpdate = (transaction: Transaction) => {
-      // Add new transaction to the top of the list
-      setRecentTransactions(prev => [transaction, ...prev.slice(0, 4)]);
+    const handleTransactionUpdate = async (notification: any) => {
+      // When we get a transaction notification, refresh the recent transactions
+      // This ensures we get the complete transaction data from the server
+      try {
+        const dashboardData = await getDashboard();
+        setRecentTransactions(dashboardData.recent_transactions);
+      } catch (error) {
+        console.error('Error refreshing recent transactions:', error);
+      }
     };
 
     // Listen for real-time updates
     on('balance_update', handleBalanceUpdate);
     on('price_update', handlePriceUpdate);
-    on('transaction_update', handleTransactionUpdate);
+    on('transaction_notification', handleTransactionUpdate);
 
     // Cleanup listeners on unmount
     return () => {
       off('balance_update', handleBalanceUpdate);
       off('price_update', handlePriceUpdate);
-      off('transaction_update', handleTransactionUpdate);
+      off('transaction_notification', handleTransactionUpdate);
     };
-  }, [on, off, refreshBalance]);
+  }, [on, off, refreshBalance, getDashboard]);
 
   const handleOpenTradingModal = (type: 'buy' | 'sell') => {
     setTradingType(type);
@@ -239,7 +246,7 @@ const Home: React.FC = () => {
             </div>
             <div className="space-y-0.5">
               <p className="text-zinc-400 text-xs">Bitcoin</p>
-              <p className="text-lg font-semibold text-white">{formatCurrency(balances?.btc || 0, 'BTC')}</p>
+              <p className="text-lg font-semibold text-white">₿{formatBitcoin(balances?.btc || 0)}</p>
               {balances && prices && (
                 <p className="text-xs text-zinc-500">
                   ≈ {formatCurrencyInr(Math.floor((balances.btc || 0) * (prices.sell_rate || 0)))}
@@ -382,7 +389,7 @@ const Home: React.FC = () => {
                               {formatCurrencyInr(transaction.inr_amount)}
                             </p>
                             <p className="text-xs text-zinc-400">
-                              {formatCurrency(transaction.btc_amount, 'BTC')}
+                              ₿{formatBitcoin(satoshisToBitcoin(transaction.btc_amount))}
                             </p>
                             {transaction.status === 'PENDING' && transaction.btc_price && (
                               <p className="text-xs text-orange-300">
@@ -393,7 +400,7 @@ const Home: React.FC = () => {
                         ) : transaction.type === 'LOAN_CREATE' ? (
                           <div>
                             <p className="font-semibold text-sm text-white">
-                              {formatCurrency(transaction.btc_amount, 'BTC')}
+                              ₿{formatBitcoin(satoshisToBitcoin(transaction.btc_amount))}
                             </p>
                             <p className="text-xs text-zinc-400">
                               Collateral Locked
@@ -402,7 +409,7 @@ const Home: React.FC = () => {
                         ) : transaction.type === 'LOAN_ADD_COLLATERAL' ? (
                           <div>
                             <p className="font-semibold text-sm text-white">
-                              {formatCurrency(transaction.btc_amount, 'BTC')}
+                              ₿{formatBitcoin(satoshisToBitcoin(transaction.btc_amount))}
                             </p>
                             <p className="text-xs text-zinc-400">
                               Collateral Added
@@ -417,7 +424,7 @@ const Home: React.FC = () => {
                             )}
                             {transaction.btc_amount > 0 && (
                               <p className="text-xs text-zinc-400">
-                                {formatCurrency(transaction.btc_amount, 'BTC')}
+                                ₿{formatBitcoin(satoshisToBitcoin(transaction.btc_amount))}
                               </p>
                             )}
                           </div>
@@ -426,7 +433,7 @@ const Home: React.FC = () => {
                             {transaction.type.includes('INR') ? (
                               formatCurrencyInr(transaction.inr_amount)
                             ) : (
-                              formatCurrency(transaction.btc_amount, 'BTC')
+`₿${formatBitcoin(satoshisToBitcoin(transaction.btc_amount))}`
                             )}
                           </p>
                         )}

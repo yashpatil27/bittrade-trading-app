@@ -25,13 +25,34 @@ const AddCollateralModal: React.FC<AddCollateralModalProps> = ({
   const [showPinModal, setShowPinModal] = useState(false);
   const [availableBtc, setAvailableBtc] = useState(0);
   const { updateBalance } = useBalance();
-  const { sendMessage } = useWebSocket();
+  const { sendMessage, on, off } = useWebSocket();
 
   useEffect(() => {
     if (isOpen) {
       fetchAvailableBalance();
     }
   }, [isOpen]);
+
+  // Real-time event listeners for balance updates
+  useEffect(() => {
+    if (!isOpen) return;
+
+    // Handle balance updates
+    const handleBalanceUpdate = (data: any) => {
+      console.log('Balance update received:', data);
+      if (data?.balances?.btc !== undefined) {
+        setAvailableBtc(data.balances.btc);
+      }
+    };
+
+    // Subscribe to WebSocket events
+    on('balance_update', handleBalanceUpdate);
+
+    // Cleanup event listeners when modal closes or component unmounts
+    return () => {
+      off('balance_update', handleBalanceUpdate);
+    };
+  }, [isOpen, on, off]);
 
   const fetchAvailableBalance = async () => {
     try {

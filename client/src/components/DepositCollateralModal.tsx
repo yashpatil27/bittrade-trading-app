@@ -25,7 +25,7 @@ const DepositCollateralModal: React.FC<DepositCollateralModalProps> = ({
   const [error, setError] = useState('');
   const [isPinModalOpen, setIsPinModalOpen] = useState(false);
   const { updateBalance } = useBalance();
-  const { sendMessage } = useWebSocket();
+  const { sendMessage, on, off } = useWebSocket();
 
   useBodyScrollLock(isOpen && !isPinModalOpen);
 
@@ -35,11 +35,52 @@ const DepositCollateralModal: React.FC<DepositCollateralModalProps> = ({
     }
   }, [isOpen]);
 
+  // Real-time event listeners for balance and price updates
+  useEffect(() => {
+    if (!isOpen) return;
+
+    // Handle balance updates
+    const handleBalanceUpdate = (data: any) => {
+      console.log('Balance update received:', data);
+      if (data?.balances?.btc !== undefined) {
+        setAvailableBtc(data.balances.btc);
+      }
+    };
+
+    // Handle price updates
+    const handlePriceUpdate = (data: any) => {
+      console.log('Price update received:', data);
+      if (data?.sell_rate !== undefined) {
+        setBtcSellRate(data.sell_rate);
+      }
+    };
+
+    // Handle settings updates (for interest rate)
+    const handleSettingsUpdate = (data: any) => {
+      console.log('Settings update received:', data);
+      if (data?.loan_interest_rate !== undefined) {
+        setInterestRate(data.loan_interest_rate);
+      }
+    };
+
+    // Subscribe to WebSocket events
+    on('balance_update', handleBalanceUpdate);
+    on('price_update', handlePriceUpdate);
+    on('settings_update', handleSettingsUpdate);
+
+    // Cleanup event listeners when modal closes or component unmounts
+    return () => {
+      off('balance_update', handleBalanceUpdate);
+      off('price_update', handlePriceUpdate);
+      off('settings_update', handleSettingsUpdate);
+    };
+  }, [isOpen, on, off]);
+
   const fetchData = async () => {
     try {
       const [dashboardResponse, pricesResponse, settingsResponse] = await Promise.all([
-        sendMessage('user.get-dashboard'),
-        sendMessage('user.get-prices'),
+        sendMessage('user.dashboard'),
+        sendMessage('user.prices'),
         sendMessage('admin.get-settings')
       ]);
       

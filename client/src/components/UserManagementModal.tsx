@@ -59,6 +59,8 @@ const UserManagementModal: React.FC<UserManagementModalProps> = ({
 
   useBodyScrollLock(isOpen);
 
+  const { on, off } = useWebSocket();
+  
   useEffect(() => {
     if (isOpen) {
       setActiveTab('info');
@@ -69,8 +71,23 @@ const UserManagementModal: React.FC<UserManagementModalProps> = ({
       setExternalBtcAmount('');
       setMessage('');
       setError('');
+
+      const handleUserUpdate = (updatedUser: AdminUser) => {
+        if (user && user.id === updatedUser.id) {
+          // Update the user data in the parent component
+          onUserUpdated();
+        }
+      };
+
+      // Subscribe to real-time updates
+      on('user_update', handleUserUpdate);
+
+      return () => {
+        // Cleanup listeners on unmount or when modal closes
+        off('user_update', handleUserUpdate);
+      };
     }
-  }, [isOpen]);
+  }, [isOpen, user, on, off, onUserUpdated]);
 
   // PIN confirmation methods
   const requirePinConfirmation = (action: () => Promise<void>, title: string, message: string) => {

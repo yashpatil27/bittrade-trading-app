@@ -32,8 +32,9 @@ import {
   getTransactionDisplayName, 
   getTransactionIcon, 
   formatTimeAgo,
-  formatCurrency,
-  formatInr
+  formatBitcoin,
+  formatInr,
+  satoshisToBitcoin
 } from '../utils/formatters';
 
 type TransactionType = 'ALL' | 'MARKET_BUY' | 'MARKET_SELL' | 'LIMIT_BUY' | 'LIMIT_SELL' | 'DEPOSIT_INR' | 'DEPOSIT_BTC' | 'WITHDRAW_INR' | 'WITHDRAW_BTC' | 'DCA_BUY' | 'DCA_SELL' | 'LOAN_CREATE' | 'LOAN_BORROW' | 'LOAN_REPAY' | 'LOAN_ADD_COLLATERAL' | 'INTEREST_ACCRUAL' | 'PARTIAL_LIQUIDATION' | 'FULL_LIQUIDATION';
@@ -194,15 +195,15 @@ const History: React.FC = () => {
     if (transaction.type.includes('INR')) {
       return formatInr(transaction.inr_amount);
     } else if (transaction.type.includes('BTC')) {
-      return formatCurrency(transaction.btc_amount, 'BTC');
+      return `₿${formatBitcoin(satoshisToBitcoin(transaction.btc_amount))}`;
     } else if (transaction.type.includes('LOAN') || transaction.type.includes('INTEREST') || transaction.type.includes('LIQUIDATION')) {
       // For loan transactions, show both amounts if they exist
       if (transaction.inr_amount > 0 && transaction.btc_amount > 0) {
-        return `${formatInr(transaction.inr_amount)} / ${formatCurrency(transaction.btc_amount, 'BTC')}`;
+        return `${formatInr(transaction.inr_amount)} / ₿${formatBitcoin(satoshisToBitcoin(transaction.btc_amount))}`;
       } else if (transaction.inr_amount > 0) {
         return formatInr(transaction.inr_amount);
       } else if (transaction.btc_amount > 0) {
-        return formatCurrency(transaction.btc_amount, 'BTC');
+        return `₿${formatBitcoin(satoshisToBitcoin(transaction.btc_amount))}`;
       }
       return 'N/A';
     }
@@ -464,7 +465,7 @@ const History: React.FC = () => {
                             {formatInr(transaction.inr_amount)}
                           </p>
                           <p className="text-xs text-zinc-400">
-                            {formatCurrency(transaction.btc_amount, 'BTC')}
+                            ₿{formatBitcoin(satoshisToBitcoin(transaction.btc_amount))}
                           </p>
                           {transaction.status === 'PENDING' && transaction.btc_price && (
                             <p className="text-xs text-orange-300">
@@ -475,7 +476,7 @@ const History: React.FC = () => {
                         ) : transaction.type === 'LOAN_CREATE' ? (
                           <div>
                             <p className="font-bold text-sm text-white">
-                              {formatCurrency(transaction.btc_amount, 'BTC')}
+                              ₿{formatBitcoin(satoshisToBitcoin(transaction.btc_amount))}
                             </p>
                             <p className="text-xs text-zinc-400">
                               Collateral Locked
@@ -484,7 +485,7 @@ const History: React.FC = () => {
                         ) : transaction.type === 'LOAN_ADD_COLLATERAL' ? (
                           <div>
                             <p className="font-bold text-sm text-white">
-                              {formatCurrency(transaction.btc_amount, 'BTC')}
+                              ₿{formatBitcoin(satoshisToBitcoin(transaction.btc_amount))}
                             </p>
                             <p className="text-xs text-zinc-400">
                               Collateral Added
@@ -499,7 +500,7 @@ const History: React.FC = () => {
                             )}
                             {transaction.btc_amount > 0 && (
                               <p className="text-xs text-zinc-400">
-                                {formatCurrency(transaction.btc_amount, 'BTC')}
+                                ₿{formatBitcoin(satoshisToBitcoin(transaction.btc_amount))}
                               </p>
                             )}
                           </div>

@@ -27,12 +27,43 @@ const DcaPlanModal: React.FC<DcaPlanModalProps> = ({
   onError
 }) => {
   const { refreshBalance } = useBalance();
-  const { sendMessage } = useWebSocket();
+  const { sendMessage, on, off } = useWebSocket();
   const [isSingleInputModalOpen, setIsSingleInputModalOpen] = useState(false);
   const [isConfirmDetailsModalOpen, setIsConfirmDetailsModalOpen] = useState(false);
   const [inputAmount, setInputAmount] = useState('');
   const [selectedFrequency, setSelectedFrequency] = useState<'HOURLY' | 'DAILY' | 'WEEKLY' | 'MONTHLY'>('DAILY');
   const [isLoading, setIsLoading] = useState(false);
+  const [currentBalances, setCurrentBalances] = useState<Balances | null>(balances);
+  const [currentPrices, setCurrentPrices] = useState<Prices | null>(prices);
+
+  // Update current balances and prices when props change
+  useEffect(() => {
+    setCurrentBalances(balances);
+    setCurrentPrices(prices);
+  }, [balances, prices]);
+
+  // Real-time WebSocket updates for balances and prices
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleBalanceUpdate = (newBalances: Balances) => {
+      setCurrentBalances(newBalances);
+    };
+
+    const handlePriceUpdate = (newPrices: Prices) => {
+      setCurrentPrices(newPrices);
+    };
+
+    // Subscribe to real-time updates
+    on('balance_update', handleBalanceUpdate);
+    on('price_update', handlePriceUpdate);
+
+    // Cleanup listeners on unmount or when modal closes
+    return () => {
+      off('balance_update', handleBalanceUpdate);
+      off('price_update', handlePriceUpdate);
+    };
+  }, [isOpen, on, off]);
 
   // Reset state when modal opens/closes
   useEffect(() => {
@@ -65,11 +96,11 @@ const DcaPlanModal: React.FC<DcaPlanModalProps> = ({
       };
 
       if (type === 'buy') {
-        await sendMessage('user.create-dca-buy-plan', dcaData);
+        await sendMessage('user.create-dca-buy', dcaData);
         onSuccess();
         onClose();
       } else {
-        await sendMessage('user.create-dca-sell-plan', dcaData);
+        await sendMessage('user.create-dca-sell', dcaData);
         onSuccess();
         onClose();
       }
@@ -147,7 +178,7 @@ const DcaPlanModal: React.FC<DcaPlanModalProps> = ({
         onClose={handleModalClose}
         title={`Create DCA ${type === 'buy' ? 'Buy' : 'Sell'} Plan`}
         type={type === 'buy' ? 'inr' : 'btc'}
-        maxValue={type === 'buy' ? (balances?.inr || 0) : (balances?.btc || 0)}
+        maxValue={type === 'buy' ? (currentBalances?.inr || 0) : (currentBalances?.btc || 0)}
         confirmText="Next"
         onConfirm={handleSingleInputConfirm}
         validation={(value) => {
@@ -169,7 +200,7 @@ const DcaPlanModal: React.FC<DcaPlanModalProps> = ({
             return 'Minimum amount is ₹1';
           }
           
-          const maxValue = type === 'buy' ? (balances?.inr || 0) : (balances?.btc || 0);
+          const maxValue = type === 'buy' ? (currentBalances?.inr || 0) : (currentBalances?.btc || 0);
           if (numValue > maxValue) return 'Insufficient balance';
           
           return null;
@@ -203,10 +234,10 @@ const DcaPlanModal: React.FC<DcaPlanModalProps> = ({
         title={`Create DCA ${type === 'buy' ? 'Buy' : 'Sell'} Plan`}
         amount={inputAmount}
         amountType={type === 'buy' ? 'inr' : 'btc'}
-        subAmount={type === 'buy' && prices ? 
-          (parseFloat(inputAmount || '0') / (prices.buy_rate || 1)).toFixed(8) : 
-          type === 'sell' && prices ? 
-          (parseFloat(inputAmount || '0') * (prices.sell_rate || 1)).toFixed(2) : undefined
+        subAmount={type === 'buy' && currentPrices ? 
+          (parseFloat(inputAmount || '0') / (currentPrices.buy_rate || 1)).toFixed(8) : 
+          type === 'sell' && currentPrices ? 
+          (parseFloat(inputAmount || '0') * (currentPrices.sell_rate || 1)).toFixed(2) : undefined
         }
         subAmountType={type === 'buy' ? 'btc' : 'inr'}
         details={[
@@ -230,15 +261,15 @@ const DcaPlanModal: React.FC<DcaPlanModalProps> = ({
           {
             label: 'Estimated per Execution',
             value: type === 'buy' ? 
-              `₿${(parseFloat(inputAmount || '0') / (prices?.buy_rate || 1)).toFixed(8)}` : 
-              formatCurrencyInr(parseFloat(inputAmount || '0') * (prices?.sell_rate || 1)),
+              `₿${(parseFloat(inputAmount || '0') / (currentPrices?.buy_rate || 1)).toFixed(8)}` : 
+              formatCurrencyInr(parseFloat(inputAmount || '0') * (currentPrices?.sell_rate || 1)),
             highlight: false
           },
           {
             label: 'Current Price',
             value: type === 'buy' ? 
-              formatCurrencyInr(prices?.buy_rate || 0) : 
-              formatCurrencyInr(prices?.sell_rate || 0),
+              formatCurrencyInr(currentPrices?.buy_rate || 0) : 
+              formatCurrencyInr(currentPrices?.sell_rate || 0),
             highlight: false
           },
           {

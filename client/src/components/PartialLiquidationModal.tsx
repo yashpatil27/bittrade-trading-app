@@ -23,7 +23,8 @@ const PartialLiquidationModal: React.FC<PartialLiquidationModalProps> = ({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [isPinModalOpen, setIsPinModalOpen] = useState(false);
-  const { sendMessage } = useWebSocket();
+  const { sendMessage, on, off } = useWebSocket();
+  const [currentBtcPrice, setCurrentBtcPrice] = useState(loanStatus?.currentBtcPrice || 0);
 
   useBodyScrollLock(isOpen && !isPinModalOpen);
 
@@ -31,7 +32,32 @@ const PartialLiquidationModal: React.FC<PartialLiquidationModalProps> = ({
     if (isOpen && error) {
       setError('');
     }
-  }, [isOpen, error]);
+    // Initialize current BTC price from loanStatus when modal opens
+    if (isOpen && loanStatus) {
+      setCurrentBtcPrice(loanStatus.currentBtcPrice);
+    }
+  }, [isOpen, error, loanStatus]);
+
+  // Real-time event listeners for price updates
+  useEffect(() => {
+    if (!isOpen) return;
+
+    // Handle price updates
+    const handlePriceUpdate = (data: any) => {
+      console.log('Price update received:', data);
+      if (data?.sell_rate !== undefined) {
+        setCurrentBtcPrice(data.sell_rate);
+      }
+    };
+
+    // Subscribe to WebSocket events
+    on('price_update', handlePriceUpdate);
+
+    // Cleanup event listeners when modal closes or component unmounts
+    return () => {
+      off('price_update', handlePriceUpdate);
+    };
+  }, [isOpen, on, off]);
 
   const getTotalDue = () => {
     if (!loanStatus) return 0;
@@ -152,25 +178,25 @@ const PartialLiquidationModal: React.FC<PartialLiquidationModalProps> = ({
           {/* Percentage Quick Select Buttons */}
           <div className="flex gap-2 mt-3">
             <button
-              onClick={() => setBtcAmount(((getTotalDue() / loanStatus.currentBtcPrice) * 0.25).toFixed(8))}
+              onClick={() => setBtcAmount(((getTotalDue() / currentBtcPrice) * 0.25).toFixed(8))}
               className="flex-1 text-xs bg-zinc-800 hover:bg-zinc-700 px-3 py-2 rounded transition-colors"
             >
               25%
             </button>
             <button
-              onClick={() => setBtcAmount(((getTotalDue() / loanStatus.currentBtcPrice) * 0.5).toFixed(8))}
+              onClick={() => setBtcAmount(((getTotalDue() / currentBtcPrice) * 0.5).toFixed(8))}
               className="flex-1 text-xs bg-zinc-800 hover:bg-zinc-700 px-3 py-2 rounded transition-colors"
             >
               50%
             </button>
             <button
-              onClick={() => setBtcAmount(((getTotalDue() / loanStatus.currentBtcPrice) * 0.75).toFixed(8))}
+              onClick={() => setBtcAmount(((getTotalDue() / currentBtcPrice) * 0.75).toFixed(8))}
               className="flex-1 text-xs bg-zinc-800 hover:bg-zinc-700 px-3 py-2 rounded transition-colors"
             >
               75%
             </button>
             <button
-              onClick={() => setBtcAmount((getTotalDue() / loanStatus.currentBtcPrice).toFixed(8))}
+              onClick={() => setBtcAmount((getTotalDue() / currentBtcPrice).toFixed(8))}
               className="flex-1 text-xs bg-zinc-700 hover:bg-zinc-600 px-3 py-2 rounded transition-colors"
             >
               Max
@@ -196,7 +222,7 @@ const PartialLiquidationModal: React.FC<PartialLiquidationModalProps> = ({
               <div className="flex justify-between">
                 <span className="text-zinc-400">Est. ₹ Proceeds:</span>
                 <span className="text-white">
-                  {formatCurrencyInr(Math.round(parseFloat(btcAmount) * loanStatus.currentBtcPrice))}
+                  {formatCurrencyInr(Math.round(parseFloat(btcAmount) * currentBtcPrice))}
                 </span>
               </div>
               <div className="flex justify-between">
@@ -208,7 +234,7 @@ const PartialLiquidationModal: React.FC<PartialLiquidationModalProps> = ({
               <div className="flex justify-between">
                 <span className="text-zinc-400">Remaining Debt:</span>
                 <span className="text-white">
-                  {formatCurrencyInr(Math.round(Math.max(0, getTotalDue() - (parseFloat(btcAmount) * loanStatus.currentBtcPrice))))}
+                  {formatCurrencyInr(Math.round(Math.max(0, getTotalDue() - (parseFloat(btcAmount) * currentBtcPrice))))}
                 </span>
               </div>
             </div>

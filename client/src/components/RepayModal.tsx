@@ -26,7 +26,7 @@ const RepayModal: React.FC<RepayModalProps> = ({
   const [isPinModalOpen, setIsPinModalOpen] = useState(false);
   const [availableBalance, setAvailableBalance] = useState(0);
   const { updateBalance } = useBalance();
-  const { sendMessage } = useWebSocket();
+  const { sendMessage, on, off } = useWebSocket();
 
   useBodyScrollLock(isOpen && !isPinModalOpen);
 
@@ -38,6 +38,27 @@ const RepayModal: React.FC<RepayModalProps> = ({
       fetchAvailableBalance();
     }
   }, [isOpen, error]);
+
+  // Real-time event listeners for balance updates
+  useEffect(() => {
+    if (!isOpen) return;
+
+    // Handle balance updates
+    const handleBalanceUpdate = (data: any) => {
+      console.log('Balance update received:', data);
+      if (data?.balances?.inr !== undefined) {
+        setAvailableBalance(data.balances.inr);
+      }
+    };
+
+    // Subscribe to WebSocket events
+    on('balance_update', handleBalanceUpdate);
+
+    // Cleanup event listeners when modal closes or component unmounts
+    return () => {
+      off('balance_update', handleBalanceUpdate);
+    };
+  }, [isOpen, on, off]);
 
   const fetchAvailableBalance = async () => {
     try {
