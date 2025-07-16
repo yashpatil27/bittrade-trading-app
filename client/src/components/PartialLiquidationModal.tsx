@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { X, Zap, Calculator, Info, Bitcoin } from 'lucide-react';
+import { createPortal } from 'react-dom';
 import { useWebSocket } from '../contexts/WebSocketContext';
+import SingleInputModal from './SingleInputModal';
+import ConfirmDetailsModal from './ConfirmDetailsModal';
 import { LoanStatus } from '../types';
-import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 import { formatBitcoin, formatCurrencyInr } from '../utils/formatters';
 
 interface PartialLiquidationModalProps {
@@ -21,20 +22,25 @@ const PartialLiquidationModal: React.FC<PartialLiquidationModalProps> = ({
   const [btcAmount, setBtcAmount] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [isSingleInputModalOpen, setIsSingleInputModalOpen] = useState(false);
+  const [isConfirmDetailsModalOpen, setIsConfirmDetailsModalOpen] = useState(false);
   const { sendMessage, on, off } = useWebSocket();
   const [currentBtcPrice, setCurrentBtcPrice] = useState(loanStatus?.currentBtcPrice || 0);
 
-  useBodyScrollLock(isOpen);
-
   useEffect(() => {
-    if (isOpen && error) {
+    if (isOpen) {
+      setIsSingleInputModalOpen(true);
+      setIsConfirmDetailsModalOpen(false);
+      setBtcAmount('');
+      setError('');
+      setCurrentBtcPrice(loanStatus?.currentBtcPrice || 0);
+    } else {
+      setIsSingleInputModalOpen(false);
+      setIsConfirmDetailsModalOpen(false);
+      setBtcAmount('');
       setError('');
     }
-    // Initialize current BTC price from loanStatus when modal opens
-    if (isOpen && loanStatus) {
-      setCurrentBtcPrice(loanStatus.currentBtcPrice);
-    }
-  }, [isOpen, error, loanStatus]);
+  }, [isOpen, loanStatus]);
 
   // Real-time event listeners for price updates
   useEffect(() => {
@@ -62,27 +68,20 @@ const PartialLiquidationModal: React.FC<PartialLiquidationModalProps> = ({
     return loanStatus.borrowedAmount + (loanStatus.minimumInterestDue || 0);
   };
 
-  const handlePartialLiquidation = async () => {
-    if (!btcAmount || parseFloat(btcAmount) <= 0) {
-      setError('Please enter a valid ₿ amount');
-      return;
-    }
+  const handleSingleInputConfirm = async (value: string) => {
+    setBtcAmount(value);
+    setIsSingleInputModalOpen(false);
+    setIsConfirmDetailsModalOpen(true);
+  };
 
-    if (!loanStatus) {
-      setError('No active loan found');
-      return;
-    }
+  const handleConfirmDetailsClose = () => {
+    setIsConfirmDetailsModalOpen(false);
+    setIsSingleInputModalOpen(true);
+  };
 
-    const btcToLiquidate = parseFloat(btcAmount);
-    const maxBtcLiquidation = loanStatus.collateralAmount / 100000000; // Convert satoshis to BTC
-
-    if (btcToLiquidate > maxBtcLiquidation) {
-      setError('Amount exceeds available collateral');
-      return;
-    }
-
-    setError('');
+  const handleConfirmDetailsConfirm = async () => {
     await handleLiquidation();
+    setIsConfirmDetailsModalOpen(false);
   };
 
   const handleLiquidation = async () => {
@@ -101,170 +100,108 @@ const PartialLiquidationModal: React.FC<PartialLiquidationModalProps> = ({
     }
   };
 
+  const handleClose = () => {
+    if (!loading) {
+      setIsSingleInputModalOpen(false);
+      setIsConfirmDetailsModalOpen(false);
+      onClose();
+    }
+  };
+
+  const getMaxAmount = () => {
+    if (!loanStatus) return 0;
+    
+    // Use current BTC price, fallback to loanStatus price if currentBtcPrice is 0
+    const btcPrice = currentBtcPrice || loanStatus.currentBtcPrice;
+    
+    if (!btcPrice) return 0;
+    
+    // Calculate the Bitcoin amount needed to repay the total debt
+    const totalDue = getTotalDue();
+    const btcNeededToRepayDebt = totalDue / btcPrice;
+    const availableCollateral = loanStatus.collateralAmount / 100000000;
+    
+    // Return the minimum of debt-based requirement and available collateral, rounded to 8 decimal places
+    const maxAmount = Math.min(btcNeededToRepayDebt, availableCollateral);
+    return parseFloat(maxAmount.toFixed(8));
+  };
+
   if (!isOpen || !loanStatus) return null;
 
-  return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={onClose}>
-      <div className="bg-gradient-to-br from-zinc-950 to-zinc-900 rounded-2xl border border-zinc-800 p-6 w-full max-w-md" onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-zinc-800 rounded-lg">
-              <Zap className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <h2 className="text-xl font-bold">Close Loan</h2>
-              <p className="text-sm text-zinc-400">
-                Liquidate your ₿ collateral to reduce or close debt
-              </p>
-            </div>
-          </div>
-          <button onClick={onClose} className="p-2 hover:bg-zinc-800 rounded-lg transition-colors">
-            <X className="w-5 h-5" />
-          </button>
-        </div>
+  return createPortal(
+    <>
+      <SingleInputModal
+        isOpen={isSingleInputModalOpen}
+        onClose={handleClose}
+        title="Partial Liquidation"
+        type="btc"
+        maxValue={getMaxAmount()}
+        confirmText="Next"
+        onConfirm={handleSingleInputConfirm}
+        validation={(value) => {
+          if (value === '' || value === '.' || value.endsWith('.')) return null;
 
-        {error && (
-          <div className="bg-red-900/50 border border-red-700 rounded-lg p-4 mb-4">
-            <p className="text-red-200 text-sm">{error}</p>
-          </div>
-        )}
+          const numValue = parseFloat(value);
+          if (isNaN(numValue)) return 'Please enter a valid number';
+          if (numValue <= 0) return 'Amount must be greater than 0';
+          if (numValue > getMaxAmount()) return 'Amount exceeds available collateral';
 
-        {/* BTC Amount Input */}
-        <div className="mb-6">
-          <label className="block text-sm font-medium mb-2">
-            ₿ to Liquidate
-          </label>
-          <div className="relative">
-            <input
-              type="number"
-              inputMode="decimal"
-              pattern="[0-9]*"
-              value={btcAmount}
-              onChange={(e) => setBtcAmount(e.target.value)}
-              className="input-field w-full"
-              placeholder="0.01"
-              step="0.0001"
-              min="0"
-              max={loanStatus.collateralAmount / 100000000}
-            />
-            <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-              <Bitcoin className="w-4 h-4 text-zinc-400" />
-            </div>
-          </div>
+          return null;
+        }}
+      />
 
-          {/* Percentage Quick Select Buttons */}
-          <div className="flex gap-2 mt-3">
-            <button
-              onClick={() => setBtcAmount(((getTotalDue() / currentBtcPrice) * 0.25).toFixed(8))}
-              className="flex-1 text-xs bg-zinc-800 hover:bg-zinc-700 px-3 py-2 rounded transition-colors"
-            >
-              25%
-            </button>
-            <button
-              onClick={() => setBtcAmount(((getTotalDue() / currentBtcPrice) * 0.5).toFixed(8))}
-              className="flex-1 text-xs bg-zinc-800 hover:bg-zinc-700 px-3 py-2 rounded transition-colors"
-            >
-              50%
-            </button>
-            <button
-              onClick={() => setBtcAmount(((getTotalDue() / currentBtcPrice) * 0.75).toFixed(8))}
-              className="flex-1 text-xs bg-zinc-800 hover:bg-zinc-700 px-3 py-2 rounded transition-colors"
-            >
-              75%
-            </button>
-            <button
-              onClick={() => setBtcAmount((getTotalDue() / currentBtcPrice).toFixed(8))}
-              className="flex-1 text-xs bg-zinc-700 hover:bg-zinc-600 px-3 py-2 rounded transition-colors"
-            >
-              Max
-            </button>
-          </div>
-        </div>
-
-        {/* Liquidation Impact Preview */}
-        {btcAmount && parseFloat(btcAmount) > 0 && (
-          <div className="bg-zinc-800/50 border border-zinc-700 rounded-lg p-4 mb-6">
-            <div className="flex items-center gap-2 mb-3">
-              <Calculator className="w-4 h-4 text-white" />
-              <span className="text-sm font-medium text-white">Liquidation Impact</span>
-            </div>
-
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span className="text-zinc-400">₿ Liquidated:</span>
-                <span className="text-white">
-                  ₿{formatBitcoin(parseFloat(btcAmount))}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-zinc-400">Est. ₹ Proceeds:</span>
-                <span className="text-white">
-                  {formatCurrencyInr(Math.round(parseFloat(btcAmount) * currentBtcPrice))}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-zinc-400">Remaining Collateral:</span>
-                <span className="text-white">
-                  ₿{formatBitcoin((loanStatus.collateralAmount / 100000000) - parseFloat(btcAmount))}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-zinc-400">Remaining Debt:</span>
-                <span className="text-white">
-                  {formatCurrencyInr(Math.round(Math.max(0, getTotalDue() - (parseFloat(btcAmount) * currentBtcPrice))))}
-                </span>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Info Box */}
-        <div className="bg-zinc-800/30 border border-zinc-700 rounded-lg p-3 mb-6">
-          <div className="flex items-start gap-2">
-            <Info className="w-4 h-4 text-zinc-400 mt-0.5 flex-shrink-0" />
-            <div className="text-zinc-300 text-xs">
-              {!btcAmount || parseFloat(btcAmount) === 0 ? (
-                <div>
-                  <p className="mb-2">Liquidate part of your collateral to reduce debt and improve your position.</p>
-                  <p><strong>Note:</strong> Total debt includes principal + 30-day minimum interest.</p>
-                </div>
-              ) : (
-                <div>
-                  <p className="mb-2">Bitcoin will be sold at current market price to reduce your loan debt.</p>
-                  <p>The proceeds will be applied to your total outstanding balance (principal + interest).</p>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Action Buttons */}
-        <div className="flex gap-3">
-          <button
-            onClick={onClose}
-            className="flex-1 bg-zinc-700 text-white hover:bg-zinc-600 py-2 rounded-lg font-medium transition-colors"
-            disabled={loading}
-          >
-            Cancel
-          </button>
-          <button
-            onClick={handlePartialLiquidation}
-            disabled={
-              !btcAmount || 
-              parseFloat(btcAmount) <= 0 || 
-              loading || 
-              parseFloat(btcAmount) > (loanStatus.collateralAmount / 100000000)
-            }
-            className="flex-1 bg-white text-black hover:bg-zinc-200 py-2 rounded-lg font-medium transition-colors"
-          >
-            {loading ? 'Processing...' : 'Liquidate ₿'}
-          </button>
-        </div>
-      </div>
-
-    </div>
+      <ConfirmDetailsModal
+        isOpen={isConfirmDetailsModalOpen}
+        onClose={handleConfirmDetailsClose}
+        title="Confirm Partial Liquidation"
+        amount={btcAmount}
+        amountType="btc"
+        details={[
+          {
+            label: 'Bitcoin Amount',
+            value: `₿${formatBitcoin(parseFloat(btcAmount || '0'))}`,
+            highlight: true
+          },
+          {
+            label: 'Est. ₹ Proceeds',
+            value: formatCurrencyInr(Math.round(parseFloat(btcAmount || '0') * (currentBtcPrice || loanStatus.currentBtcPrice))),
+            highlight: false
+          },
+          {
+            label: 'Remaining Collateral',
+            value: `₿${formatBitcoin((loanStatus.collateralAmount / 100000000) - parseFloat(btcAmount || '0'))}`,
+            highlight: false
+          },
+          {
+            label: 'Remaining Debt',
+            value: formatCurrencyInr(Math.round(Math.max(0, getTotalDue() - (parseFloat(btcAmount || '0') * (currentBtcPrice || loanStatus.currentBtcPrice))))),
+            highlight: true
+          },
+          {
+            label: 'Total Due',
+            value: formatCurrencyInr(getTotalDue()),
+            highlight: false
+          },
+          {
+            label: 'Current BTC Price',
+            value: formatCurrencyInr(currentBtcPrice || loanStatus.currentBtcPrice),
+            highlight: false
+          },
+          {
+            label: 'Important Note',
+            value: parseFloat(btcAmount || '0') === 0 ? 
+              'Liquidate part of your collateral to reduce debt and improve your position. Total debt includes principal + 30-day minimum interest.' :
+              'Bitcoin will be sold at current market price to reduce your loan debt. The proceeds will be applied to your total outstanding balance (principal + interest).',
+            highlight: false
+          }
+        ]}
+        confirmText="Confirm Liquidation"
+        onConfirm={handleConfirmDetailsConfirm}
+        isLoading={loading}
+      />
+    </>,
+    document.body
   );
 };
 
 export default PartialLiquidationModal;
-

@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { X, ArrowDown, Calculator, AlertTriangle, Info } from 'lucide-react';
+import { createPortal } from 'react-dom';
 import { useWebSocket } from '../contexts/WebSocketContext';
+import SingleInputModal from './SingleInputModal';
+import ConfirmDetailsModal from './ConfirmDetailsModal';
 import { LoanStatus } from '../types';
 import { useBalance } from '../contexts/BalanceContext';
-import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 import { formatCurrencyInr } from '../utils/formatters';
 
 interface BorrowModalProps {
@@ -22,16 +23,24 @@ const BorrowModal: React.FC<BorrowModalProps> = ({
   const [amount, setAmount] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [isSingleInputModalOpen, setIsSingleInputModalOpen] = useState(false);
+  const [isConfirmDetailsModalOpen, setIsConfirmDetailsModalOpen] = useState(false);
   const { updateBalance } = useBalance();
   const { sendMessage, on, off } = useWebSocket();
 
-  useBodyScrollLock(isOpen);
-
   useEffect(() => {
-    if (isOpen && error) {
+    if (isOpen) {
+      setIsSingleInputModalOpen(true);
+      setIsConfirmDetailsModalOpen(false);
+      setAmount('');
+      setError('');
+    } else {
+      setIsSingleInputModalOpen(false);
+      setIsConfirmDetailsModalOpen(false);
+      setAmount('');
       setError('');
     }
-  }, [isOpen, error]);
+  }, [isOpen]);
 
   const calculateNewLtv = () => {
     if (!amount || !loanStatus) return 0;
@@ -53,25 +62,20 @@ const BorrowModal: React.FC<BorrowModalProps> = ({
     return 'LOW RISK';
   };
 
-  const handleBorrow = async () => {
-    if (!amount || parseFloat(amount) <= 0) {
-      setError('Please enter a valid amount');
-      return;
-    }
+  const handleSingleInputConfirm = async (value: string) => {
+    setAmount(value);
+    setIsSingleInputModalOpen(false);
+    setIsConfirmDetailsModalOpen(true);
+  };
 
-    if (!loanStatus) {
-      setError('No active loan found');
-      return;
-    }
+  const handleConfirmDetailsClose = () => {
+    setIsConfirmDetailsModalOpen(false);
+    setIsSingleInputModalOpen(true);
+  };
 
-    const borrowAmount = parseFloat(amount);
-    if (borrowAmount > loanStatus.availableCapacity) {
-      setError('Amount exceeds available borrowing capacity');
-      return;
-    }
-
-    setError('');
+  const handleConfirmDetailsConfirm = async () => {
     await handleBorrowFunds();
+    setIsConfirmDetailsModalOpen(false);
   };
 
   const handleBorrowFunds = async () => {
@@ -93,202 +97,101 @@ const BorrowModal: React.FC<BorrowModalProps> = ({
     }
   };
 
+  const handleClose = () => {
+    if (!loading) {
+      setIsSingleInputModalOpen(false);
+      setIsConfirmDetailsModalOpen(false);
+      onClose();
+    }
+  };
+
   const getMaxAmount = () => {
     return loanStatus?.availableCapacity || 0;
   };
 
   if (!isOpen || !loanStatus) return null;
 
-  return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={onClose}>
-      <div className="bg-gradient-to-br from-zinc-950 to-zinc-900 rounded-2xl border border-zinc-800 p-6 w-full max-w-md shadow-2xl" onClick={(e) => e.stopPropagation()}>
-        {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-zinc-800 rounded-lg">
-              <ArrowDown className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <h2 className="text-xl font-bold">Borrow Funds</h2>
-              <p className="text-sm text-zinc-400">
-                Borrow ₹ against your collateral
-              </p>
-            </div>
-          </div>
-          <button
-            onClick={onClose}
-            className="p-2 hover:bg-zinc-800 rounded-lg transition-colors"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-
-        {error && (
-          <div className="bg-red-900/50 border border-red-700 rounded-lg p-4 mb-4">
-            <p className="text-red-200 text-sm">{error}</p>
-          </div>
-        )}
-
-        {/* Loan Status */}
-        <div className="bg-zinc-800/50 rounded-lg p-4 mb-6">
-          <div className="grid grid-cols-2 gap-4 text-sm">
-            <div>
-              <p className="text-zinc-400">Available to Borrow</p>
-              <p className="text-white font-semibold">
-                {formatCurrencyInr(loanStatus.availableCapacity)}
-              </p>
-            </div>
-            <div>
-              <p className="text-zinc-400">Current LTV</p>
-              <p className="text-white font-semibold">
-                {loanStatus.currentLtv.toFixed(1)}%
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Amount Input */}
-        <div className="mb-6">
-          <label className="block text-sm font-medium mb-2">
-            Amount to Borrow (₹)
-          </label>
-          <div className="relative">
-            <input
-              type="number"
-              inputMode="numeric"
-              pattern="[0-9]*"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              className="input-field w-full"
-              placeholder="1000"
-              step="1"
-              min="0"
-              max={getMaxAmount()}
-            />
-            <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-zinc-400 text-sm">
-              ₹
-            </div>
-          </div>
+  return createPortal(
+    <>
+      <SingleInputModal
+        isOpen={isSingleInputModalOpen}
+        onClose={handleClose}
+        title="Borrow Funds"
+        type="inr"
+        maxValue={getMaxAmount()}
+        confirmText="Next"
+        onConfirm={handleSingleInputConfirm}
+        validation={(value) => {
+          if (value === '' || value === '.' || value.endsWith('.')) return null;
           
-          {/* Percentage Quick Select Buttons */}
-          <div className="flex gap-2 mt-3">
-            <button
-              onClick={() => setAmount((loanStatus.availableCapacity * 0.25).toFixed(0))}
-              className="flex-1 text-xs bg-zinc-800 hover:bg-zinc-700 px-3 py-2 rounded transition-colors"
-            >
-              25%
-            </button>
-            <button
-              onClick={() => setAmount((loanStatus.availableCapacity * 0.5).toFixed(0))}
-              className="flex-1 text-xs bg-zinc-800 hover:bg-zinc-700 px-3 py-2 rounded transition-colors"
-            >
-              50%
-            </button>
-            <button
-              onClick={() => setAmount((loanStatus.availableCapacity * 0.75).toFixed(0))}
-              className="flex-1 text-xs bg-zinc-800 hover:bg-zinc-700 px-3 py-2 rounded transition-colors"
-            >
-              75%
-            </button>
-            <button
-              onClick={() => setAmount(getMaxAmount().toFixed(0))}
-              className="flex-1 text-xs bg-zinc-700 hover:bg-zinc-600 px-3 py-2 rounded transition-colors"
-            >
-              Max
-            </button>
-          </div>
-        </div>
+          const numValue = parseFloat(value);
+          if (isNaN(numValue)) return 'Please enter a valid number';
+          if (numValue <= 0) return 'Amount must be greater than 0';
+          if (numValue > getMaxAmount()) return 'Amount exceeds available borrowing capacity';
+          
+          return null;
+        }}
+      />
 
-        {/* Loan Impact Preview */}
-        {amount && parseFloat(amount) > 0 && (
-          <div className="bg-zinc-800/50 border border-zinc-700 rounded-lg p-4 mb-6">
-            <div className="flex items-center gap-2 mb-3">
-              <Calculator className="w-4 h-4 text-white" />
-              <span className="text-sm font-medium text-white">Loan Impact</span>
-            </div>
-            
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span className="text-zinc-400">Amount Borrowed:</span>
-                <span className="text-white">
-                  {formatCurrencyInr(parseFloat(amount))}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-zinc-400">Total Debt:</span>
-                <span className="text-white">
-                  {formatCurrencyInr(loanStatus.borrowedAmount + parseFloat(amount))}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-zinc-400">New LTV:</span>
-                <span className={getRiskColor(calculateNewLtv())}>
-                  {calculateNewLtv().toFixed(1)}% ({getRiskText(calculateNewLtv())})
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-zinc-400">Remaining Capacity:</span>
-                <span className="text-white">
-                  {formatCurrencyInr(loanStatus.availableCapacity - parseFloat(amount))}
-                </span>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Info Box */}
-        <div className="bg-zinc-800/30 border border-zinc-700 rounded-lg p-3 mb-6">
-          <div className="flex items-start gap-2">
-            {amount && parseFloat(amount) > 0 && calculateNewLtv() >= 85 ? (
-              <AlertTriangle className="w-4 h-4 text-yellow-400 mt-0.5 flex-shrink-0" />
-            ) : (
-              <Info className="w-4 h-4 text-zinc-400 mt-0.5 flex-shrink-0" />
-            )}
-            <div className="text-zinc-300 text-xs">
-              {amount && parseFloat(amount) > 0 && calculateNewLtv() >= 85 ? (
-                <p><strong className="text-yellow-400">High Risk:</strong> LTV near liquidation threshold. Consider borrowing less.</p>
-              ) : (
-                <p>Borrowed funds added to ₹ balance. Interest accrues daily at {loanStatus.interestRate}% APR.</p>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Action Buttons */}
-        <div className="flex gap-3">
-          <button
-            onClick={onClose}
-            className="flex-1 btn-secondary"
-            disabled={loading}
-          >
-            Cancel
-          </button>
-          <button
-            onClick={handleBorrow}
-            disabled={
-              !amount || 
-              parseFloat(amount) <= 0 || 
-              loading || 
-              parseFloat(amount) > loanStatus.availableCapacity
-            }
-            className="flex-1 font-medium px-4 py-2 rounded-lg transition-all duration-200 flex items-center justify-center gap-2 bg-white text-black hover:bg-zinc-200 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {loading ? (
-              <>
-                <div className="w-4 h-4 border-2 border-black/30 border-t-black rounded-full animate-spin" />
-                Processing...
-              </>
-            ) : (
-              <>
-                <ArrowDown className="w-4 h-4" />
-                Borrow Funds
-              </>
-            )}
-          </button>
-        </div>
-      </div>
-
-    </div>
+      <ConfirmDetailsModal
+        isOpen={isConfirmDetailsModalOpen}
+        onClose={handleConfirmDetailsClose}
+        title="Confirm Borrow"
+        amount={amount}
+        amountType="inr"
+        details={[
+          {
+            label: 'Amount to Borrow',
+            value: formatCurrencyInr(parseFloat(amount || '0')),
+            highlight: true
+          },
+          {
+            label: 'Current Borrowed',
+            value: formatCurrencyInr(loanStatus.borrowedAmount),
+            highlight: false
+          },
+          {
+            label: 'New Total Debt',
+            value: formatCurrencyInr(loanStatus.borrowedAmount + parseFloat(amount || '0')),
+            highlight: true
+          },
+          {
+            label: 'Current LTV',
+            value: `${loanStatus.currentLtv.toFixed(1)}%`,
+            highlight: false
+          },
+          {
+            label: 'New LTV',
+            value: `${calculateNewLtv().toFixed(1)}% (${getRiskText(calculateNewLtv())})`,
+            highlight: true
+          },
+          {
+            label: 'Available Capacity',
+            value: formatCurrencyInr(loanStatus.availableCapacity),
+            highlight: false
+          },
+          {
+            label: 'Remaining Capacity',
+            value: formatCurrencyInr(loanStatus.availableCapacity - parseFloat(amount || '0')),
+            highlight: true
+          },
+          {
+            label: 'Interest Rate',
+            value: `${loanStatus.interestRate}% APR`,
+            highlight: false
+          },
+          {
+            label: 'Risk Level',
+            value: getRiskText(calculateNewLtv()),
+            highlight: calculateNewLtv() >= 85
+          }
+        ]}
+        confirmText="Confirm Borrow"
+        onConfirm={handleConfirmDetailsConfirm}
+        isLoading={loading}
+      />
+    </>,
+    document.body
   );
 };
 
