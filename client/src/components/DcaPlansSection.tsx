@@ -29,7 +29,7 @@ export interface DcaPlansSectionRef {
 
 const DcaPlansSection = forwardRef<DcaPlansSectionRef, DcaPlansSectionProps>(({ onUpdate, balances, prices }, ref) => {
   const { refreshBalance } = useBalance();
-  const { getDcaPlans, deleteDcaPlan, pauseDcaPlan, resumeDcaPlan } = useWebSocket();
+  const { getDcaPlans, deleteDcaPlan, pauseDcaPlan, resumeDcaPlan, on, off } = useWebSocket();
   const [dcaPlans, setDcaPlans] = useState<DcaPlan[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedPlan, setSelectedPlan] = useState<DcaPlan | null>(null);
@@ -45,6 +45,57 @@ const DcaPlansSection = forwardRef<DcaPlansSectionRef, DcaPlansSectionProps>(({ 
   useEffect(() => {
     fetchDcaPlans();
   }, []);
+
+  // Real-time WebSocket updates for DCA plans
+  useEffect(() => {
+    const handleDcaPlanUpdate = (updatedPlan: DcaPlan) => {
+      setDcaPlans(prev => {
+        const existingIndex = prev.findIndex(plan => plan.id === updatedPlan.id);
+        if (existingIndex >= 0) {
+          // Update existing plan
+          const newPlans = [...prev];
+          newPlans[existingIndex] = updatedPlan;
+          return newPlans;
+        } else {
+          // Add new plan
+          return [updatedPlan, ...prev];
+        }
+      });
+    };
+
+    const handleDcaPlanDelete = (planId: number) => {
+      setDcaPlans(prev => prev.filter(plan => plan.id !== planId));
+    };
+
+    const handleDcaPlanExecution = (execution: any) => {
+      // Refresh DCA plans when execution happens
+      fetchDcaPlans();
+      onUpdate?.(); // Notify parent component
+    };
+
+    // Subscribe to real-time updates
+    on('dca_plan_update', handleDcaPlanUpdate);
+    on('dca_plan_delete', handleDcaPlanDelete);
+    on('dca_plan_execution', handleDcaPlanExecution);
+    on('transaction_update', (transaction: any) => {
+      // If it's a DCA-related transaction, refresh plans
+      if (transaction.type === 'DCA_BUY' || transaction.type === 'DCA_SELL') {
+        fetchDcaPlans();
+      }
+    });
+
+    // Cleanup listeners on unmount
+    return () => {
+      off('dca_plan_update', handleDcaPlanUpdate);
+      off('dca_plan_delete', handleDcaPlanDelete);
+      off('dca_plan_execution', handleDcaPlanExecution);
+      off('transaction_update', (transaction: any) => {
+        if (transaction.type === 'DCA_BUY' || transaction.type === 'DCA_SELL') {
+          fetchDcaPlans();
+        }
+      });
+    };
+  }, [on, off, onUpdate]);
 
   useImperativeHandle(ref, () => ({
     refresh: fetchDcaPlans

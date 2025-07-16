@@ -84,11 +84,62 @@ const Portfolio: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
 
-  const { getPortfolio, getBitcoinData, getBitcoinSentiment } = useWebSocket();
+  const { getPortfolio, getBitcoinData, getBitcoinSentiment, on, off } = useWebSocket();
 
   useEffect(() => {
     fetchPortfolioData();
   }, []);
+
+  // Real-time WebSocket updates for portfolio data
+  useEffect(() => {
+    const handleBalanceUpdate = () => {
+      // When balance changes, refresh portfolio data
+      fetchPortfolioData();
+    };
+
+    const handleTransactionUpdate = () => {
+      // When new transactions occur, refresh portfolio data
+      fetchPortfolioData();
+    };
+
+    const handlePriceUpdate = () => {
+      // When prices change, refresh portfolio data to update valuations
+      fetchPortfolioData();
+    };
+
+    const handlePortfolioUpdate = (newPortfolioData: PortfolioData) => {
+      // Direct portfolio update event
+      setPortfolioData(newPortfolioData);
+    };
+
+    const handleMarketDataUpdate = (newMarketData: BitcoinMarketData) => {
+      // Market data update event
+      setBitcoinData(newMarketData);
+    };
+
+    const handleSentimentUpdate = (newSentimentData: SentimentData) => {
+      // Sentiment data update event
+      setSentimentData(newSentimentData);
+    };
+
+    // Subscribe to real-time updates
+    on('balance_update', handleBalanceUpdate);
+    on('transaction_update', handleTransactionUpdate);
+    on('price_update', handlePriceUpdate);
+    on('portfolio_update', handlePortfolioUpdate);
+    on('market_data_update', handleMarketDataUpdate);
+    on('sentiment_update', handleSentimentUpdate);
+
+    // Cleanup listeners on unmount
+    return () => {
+      off('balance_update', handleBalanceUpdate);
+      off('transaction_update', handleTransactionUpdate);
+      off('price_update', handlePriceUpdate);
+      off('portfolio_update', handlePortfolioUpdate);
+      off('market_data_update', handleMarketDataUpdate);
+      off('sentiment_update', handleSentimentUpdate);
+    };
+  }, [on, off]);
 
   const fetchPortfolioData = async () => {
     try {

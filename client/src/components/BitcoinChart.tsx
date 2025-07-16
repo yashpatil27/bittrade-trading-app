@@ -48,6 +48,7 @@ const BitcoinChart = forwardRef<BitcoinChartRef, BitcoinChartProps>(({ onPriceRe
 
     if (cached && (now - cached.timestamp < 300000)) { // Cache valid for 5 minutes
       setChartData(cached.data);
+      setError(''); // Clear any previous error state
       return;
     }
 
@@ -68,34 +69,66 @@ const BitcoinChart = forwardRef<BitcoinChartRef, BitcoinChartProps>(({ onPriceRe
         
         const chartData = data as ChartData;
         // Handle both string and array formats for price_data
-        const priceData = typeof chartData.price_data === 'string' 
-          ? JSON.parse(chartData.price_data) 
-          : chartData.price_data;
+        let priceData;
+        try {
+          priceData = typeof chartData.price_data === 'string' 
+            ? JSON.parse(chartData.price_data) 
+            : chartData.price_data;
+        } catch (parseError) {
+          console.error('Error parsing price data:', parseError);
+          setError('Invalid chart data format');
+          setChartData([]);
+          return;
+        }
+        
+        // Ensure priceData is an array
+        if (!Array.isArray(priceData) || priceData.length === 0) {
+          setError(`No ${timeframeTabs.find(tab => tab.key === timeframe)?.name} data available yet`);
+          setChartData([]);
+          return;
+        }
         
         // Transform price data for chart - handle both array and object formats
         const formattedData = priceData.map((point: [number, number] | {timestamp: number, price: number}) => {
           let timestamp: number;
           let price: number;
           
-          // Handle both formats: [timestamp, price] and {timestamp, price}
-          if (Array.isArray(point)) {
-            timestamp = point[0];
-            price = point[1];
-          } else {
-            timestamp = point.timestamp;
-            price = point.price;
+          try {
+            // Handle both formats: [timestamp, price] and {timestamp, price}
+            if (Array.isArray(point)) {
+              timestamp = point[0];
+              price = point[1];
+            } else {
+              timestamp = point.timestamp;
+              price = point.price;
+            }
+            
+            // Validate the data
+            if (isNaN(timestamp) || isNaN(price)) {
+              throw new Error('Invalid timestamp or price');
+            }
+            
+            const date = new Date(timestamp);
+            
+            return {
+              timestamp,
+              price,
+              date: timeframe === '1d' 
+                ? date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
+                : date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+            };
+          } catch (pointError) {
+            console.error('Error processing data point:', pointError, point);
+            return null;
           }
-          
-          const date = new Date(timestamp);
-          
-          return {
-            timestamp,
-            price,
-            date: timeframe === '1d' 
-              ? date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
-              : date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-          };
-        });
+        }).filter(point => point !== null) as ChartDataPoint[];
+        
+        // Check if we have valid data after filtering
+        if (formattedData.length === 0) {
+          setError(`No valid ${timeframeTabs.find(tab => tab.key === timeframe)?.name} data available`);
+          setChartData([]);
+          return;
+        }
         
         setChartData(formattedData);
         
@@ -139,6 +172,8 @@ const BitcoinChart = forwardRef<BitcoinChartRef, BitcoinChartProps>(({ onPriceRe
 
   const handleTabChange = (timeframe: string) => {
     setActiveTab(timeframe);
+    // Clear error state when switching tabs
+    setError('');
   };
 
   const formatPrice = (price: number) => {

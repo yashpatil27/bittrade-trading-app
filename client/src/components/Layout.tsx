@@ -5,6 +5,7 @@ import { useBalance } from '../contexts/BalanceContext';
 import { useWebSocket } from '../contexts/WebSocketContext';
 import { formatBitcoin, formatCurrencyInr } from '../utils/formatters';
 import WebSocketStatusIndicator from './WebSocketStatusIndicator';
+import { Balances, Prices } from '../types';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -14,7 +15,7 @@ interface LayoutProps {
 const Layout: React.FC<LayoutProps> = ({ children, isAdmin = false }) => {
   // const { user } = useAuth(); // Currently unused
   const { balanceVersion } = useBalance();
-  const { getDashboard } = useWebSocket();
+  const { getDashboard, on, off } = useWebSocket();
   const location = useLocation();
   const navigate = useNavigate();
   const [bitcoinBalance, setBitcoinBalance] = useState<number>(0);
@@ -50,6 +51,29 @@ const Layout: React.FC<LayoutProps> = ({ children, isAdmin = false }) => {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, [isAdmin, balanceVersion, fetchBalance]);
+
+  // Real-time WebSocket updates for balance bar
+  useEffect(() => {
+    if (isAdmin) return; // Skip WebSocket setup for admin users
+
+    const handleBalanceUpdate = (newBalances: Balances) => {
+      setBitcoinBalance(newBalances.btc || 0);
+    };
+
+    const handlePriceUpdate = (newPrices: Prices) => {
+      setSellRate(newPrices.sell_rate || 0);
+    };
+
+    // Subscribe to real-time updates
+    on('balance_update', handleBalanceUpdate);
+    on('price_update', handlePriceUpdate);
+
+    // Cleanup listeners on unmount
+    return () => {
+      off('balance_update', handleBalanceUpdate);
+      off('price_update', handlePriceUpdate);
+    };
+  }, [isAdmin, on, off]);
 
 
   const userNavItems = [

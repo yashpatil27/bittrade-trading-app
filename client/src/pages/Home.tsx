@@ -24,10 +24,8 @@ import {
 } from 'lucide-react';
 import { useWebSocket } from '../contexts/WebSocketContext';
 import { Balances, Prices, Transaction, DashboardData } from '../types';
-import MobileTradingModal from '../components/MobileTradingModal';
 import TradingModal from '../components/TradingModal';
 import DcaPlanModal from '../components/DcaPlanModal';
-import PriceUpdateTimer from '../components/PriceUpdateTimer';
 import TransactionDetailModal from '../components/TransactionDetailModal';
 import BitcoinChart, { BitcoinChartRef } from '../components/BitcoinChart';
 import DcaPlansSection, { DcaPlansSectionRef } from '../components/DcaPlansSection';
@@ -42,7 +40,7 @@ import {
 
 const Home: React.FC = () => {
   const { refreshBalance } = useBalance();
-  const { getDashboard, createDcaBuyPlan, createDcaSellPlan, buyBitcoin, sellBitcoin, placeLimitBuyOrder, placeLimitSellOrder } = useWebSocket();
+  const { getDashboard, createDcaBuyPlan, createDcaSellPlan, buyBitcoin, sellBitcoin, placeLimitBuyOrder, placeLimitSellOrder, on, off, isConnected } = useWebSocket();
   const dcaPlansSectionRef = useRef<DcaPlansSectionRef>(null);
   const bitcoinChartRef = useRef<BitcoinChartRef>(null);
   const [balances, setBalances] = useState<Balances | null>(null);
@@ -51,8 +49,6 @@ const Home: React.FC = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [modalType, setModalType] = useState<'buy' | 'sell'>('buy');
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
   const [isTransactionModalOpen, setIsTransactionModalOpen] = useState(false);
   const [isTradingModalOpen, setIsTradingModalOpen] = useState(false);
@@ -60,6 +56,7 @@ const Home: React.FC = () => {
   const [isDcaPlanModalOpen, setIsDcaPlanModalOpen] = useState(false);
   const [dcaPlanType, setDcaPlanType] = useState<'buy' | 'sell'>('buy');
 
+  // Initial data fetch
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -75,6 +72,37 @@ const Home: React.FC = () => {
 
     fetchData();
   }, [getDashboard]);
+
+  // Real-time WebSocket event listeners
+  useEffect(() => {
+    const handleBalanceUpdate = (newBalances: Balances) => {
+      setBalances(newBalances);
+      refreshBalance(); // Update global balance indicator
+    };
+
+    const handlePriceUpdate = (newPrices: Prices) => {
+      setPrices(newPrices);
+      // Update chart if needed
+      bitcoinChartRef.current?.refreshPrice();
+    };
+
+    const handleTransactionUpdate = (transaction: Transaction) => {
+      // Add new transaction to the top of the list
+      setRecentTransactions(prev => [transaction, ...prev.slice(0, 4)]);
+    };
+
+    // Listen for real-time updates
+    on('balance_update', handleBalanceUpdate);
+    on('price_update', handlePriceUpdate);
+    on('transaction_update', handleTransactionUpdate);
+
+    // Cleanup listeners on unmount
+    return () => {
+      off('balance_update', handleBalanceUpdate);
+      off('price_update', handlePriceUpdate);
+      off('transaction_update', handleTransactionUpdate);
+    };
+  }, [on, off, refreshBalance]);
 
   const handleOpenTradingModal = (type: 'buy' | 'sell') => {
     setTradingType(type);
@@ -94,7 +122,7 @@ const Home: React.FC = () => {
     try {
       if (dcaConfig) {
         // DCA plan
-        if (modalType === 'buy') {
+        if (dcaPlanType === 'buy') {
           await createDcaBuyPlan({ 
             amountPerExecution: amount, 
             frequency: dcaConfig.frequency,
@@ -113,9 +141,11 @@ const Home: React.FC = () => {
           });
           setSuccess(`🔄 DCA ${dcaConfig.frequency.toLowerCase()} sell plan created successfully!`);
         }
+        // Refresh DCA plans section
+        await dcaPlansSectionRef.current?.refresh();
       } else if (targetPrice) {
         // Limit order
-        if (modalType === 'buy') {
+        if (tradingType === 'buy') {
           await placeLimitBuyOrder(amount, targetPrice);
           setSuccess('📊 Limit buy order placed successfully!');
         } else {
@@ -124,7 +154,7 @@ const Home: React.FC = () => {
         }
       } else {
         // Market order
-        if (modalType === 'buy') {
+        if (tradingType === 'buy') {
           await buyBitcoin(amount);
           setSuccess('🎉 Bitcoin purchased successfully!');
         } else {
@@ -133,22 +163,11 @@ const Home: React.FC = () => {
         }
       }
       
-      // Refresh data
-      const dashboardData = await getDashboard();
-      const { balances, prices, recent_transactions } = dashboardData;
-      setBalances(balances);
-      setPrices(prices);
-      setRecentTransactions(recent_transactions);
+      // Real-time WebSocket events will handle balance/price/transaction updates automatically
+      // No manual refresh needed!
       
-      // Refresh DCA plans if a DCA plan was created
-      if (dcaConfig) {
-        await dcaPlansSectionRef.current?.refresh();
-      }
-      
-      // Trigger balance refresh for persistent top bar
-      refreshBalance();
     } catch (error: any) {
-      setError(error.response?.data?.message || `Failed to ${dcaConfig ? 'create DCA plan' : targetPrice ? 'place limit order' : modalType + ' Bitcoin'}`);
+      setError(error.response?.data?.message || `Failed to ${dcaConfig ? 'create DCA plan' : targetPrice ? 'place limit order' : tradingType + ' Bitcoin'}`);
     } finally {
       setIsLoading(false);
     }
@@ -237,10 +256,10 @@ const Home: React.FC = () => {
               <TrendingUp className="w-4 h-4 text-white" />
               Bitcoin Price
             </h2>
-            <PriceUpdateTimer 
-              className="text-zinc-400" 
-              onUpdate={refreshData}
-            />
+            <div className="flex items-center gap-1 text-xs text-zinc-400">
+              <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'}`} />
+              <span>{isConnected ? 'Live' : 'Offline'}</span>
+            </div>
           </div>
           
           <div className="grid grid-cols-3 gap-2 mb-3">
@@ -427,7 +446,6 @@ const Home: React.FC = () => {
         </div>
       </div>
 
-{/* New Trading Modal */}
       <TradingModal
         isOpen={isTradingModalOpen}
         onClose={() => setIsTradingModalOpen(false)}
@@ -439,16 +457,6 @@ const Home: React.FC = () => {
           refreshData();
         }}
         onError={(message) => setError(message)}
-      />
-{/* Trading Modal */}
-      <MobileTradingModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        type={modalType}
-        prices={prices}
-        userBalance={balances || { inr: 0, btc: 0 }}
-        onTrade={handleTrade}
-        isLoading={isLoading}
       />
 
       <TransactionDetailModal

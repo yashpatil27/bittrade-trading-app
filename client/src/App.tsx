@@ -16,7 +16,6 @@ const Portfolio = React.lazy(() => import('./pages/Portfolio'));
 const History = React.lazy(() => import('./pages/History'));
 const Profile = React.lazy(() => import('./pages/Profile'));
 const Loans = React.lazy(() => import('./pages/Loans'));
-const ModalDemo = React.lazy(() => import('./pages/ModalDemo'));
 const AdminDashboard = React.lazy(() => import('./pages/AdminDashboard'));
 const AdminUsers = React.lazy(() => import('./pages/AdminUsers'));
 const AdminTransactions = React.lazy(() => import('./pages/AdminTransactions'));
@@ -73,14 +72,6 @@ function App() {
               <ProtectedRoute>
                 <Layout>
                   <Loans />
-                </Layout>
-              </ProtectedRoute>
-            } />
-            
-            <Route path="/modal-demo" element={
-              <ProtectedRoute>
-                <Layout>
-                  <ModalDemo />
                 </Layout>
               </ProtectedRoute>
             } />
